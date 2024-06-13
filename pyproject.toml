@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "cnpj-api"
+version = "0.0.1"
+description = "API para consulta de CNPJ"
+authors = ["Bruno Peixoto <brunolnetto@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.12.4"
+fastapi = "0.111.0"
+fastapi-limiter = "0.1.6"
+pandas = "^2.2.2"
+psycopg2 = "^2.9.9"
+starlette = "^0.37.2"
+SQLAlchemy = "^2.0.30"
+SQLAlchemy-Utils = "^0.41.2"
+typing-extensions = "^4.12.2"
+python-dotenv = "^1.0.1"
+python-json-logger = "^2.0.7"
+sentry-sdk = "2.5.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-cov = "^5.0.0"
+virtualenv = "^20.26.2"
+pytest-mock = "^3.14.0"
+pytest-watch = "^4.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
