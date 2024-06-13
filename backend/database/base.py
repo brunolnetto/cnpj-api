@@ -1,6 +1,5 @@
 from os import getenv, path, getcwd
 from dotenv import load_dotenv
-from typing import Union
 from psycopg2 import OperationalError
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import pool, text
@@ -8,7 +7,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from backend.setup.logging import logger
-from backend.utils.misc import makedir 
 from backend.database.schemas import Base
 
 def get_db_uri():

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 
 from backend.repositories.cnpj import CNPJRepository
 from backend.api.dependencies.cnpj import CNPJRepositoryDependency

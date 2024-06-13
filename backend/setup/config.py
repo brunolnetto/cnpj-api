@@ -1,4 +1,3 @@
-from pydantic_core import MultiHostUrl
 from pydantic_settings import (
     BaseSettings,
     SettingsConfigDict,
@@ -6,8 +5,6 @@ from pydantic_settings import (
 from pydantic import (
     AnyUrl,
     BeforeValidator,
-    HttpUrl,
-    PostgresDsn,
     computed_field,
     model_validator,
 )

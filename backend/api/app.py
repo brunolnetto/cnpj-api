@@ -1,14 +1,11 @@
 # Descrição: Este arquivo é responsável por criar
 # a instância do aplicativo FastAPI e adicionar as rotas a ele.
 
-from fastapi import FastAPI,  Request
-from fastapi.responses import FileResponse
-from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
-from pathlib import Path
 import sentry_sdk
 
 from backend.setup.config import settings
