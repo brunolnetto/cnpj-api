@@ -1,6 +1,4 @@
-import pytest
-from os import path, rmdir, makedirs
-from unittest.mock import MagicMock
+from os import rmdir, makedirs
 
 from backend.utils.misc import (
     is_database_field_valid,

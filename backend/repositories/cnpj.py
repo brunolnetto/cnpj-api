@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Dict
 from sqlalchemy import text
 import pandas as pd
 
@@ -8,7 +8,6 @@ from backend.utils.misc import (
     replace_spaces, 
     replace_nan_on_list_tuple,
     replace_spaces_on_list_tuple,
-    remove_leading_zeros, 
     is_database_field_valid,
     format_database_date,
     format_cep,
