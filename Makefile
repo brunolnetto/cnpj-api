@@ -61,7 +61,7 @@ replace: ## Replaces a token in the code. Usage: make replace token=your_token
 		--exclude=poetry.lock)
 
 test: ## Test the application. Usage: make test
-	poetry run coverage run --rcfile=.coveragerc -m pytest backend/
+	poetry run coverage run --rcfile=.coveragerc -m pytest
 
 test-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
 	ptw --quiet --spool 200 --clear --nobeep \
