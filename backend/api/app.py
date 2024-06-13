@@ -34,6 +34,10 @@ def create_app():
     obj=StaticFiles(directory="static")
     app_.mount("/static", obj, name="static")
 
+    @app_.get("/favicon.ico")
+    async def get_favicon():
+        return FileResponse("static/favicon.ico")
+
     return app_
 
 
