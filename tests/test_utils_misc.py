@@ -1,11 +1,11 @@
 from os import rmdir, makedirs
 
 from backend.utils.misc import (
-    is_database_field_valid,
+    is_field_valid,
     format_database_date,
     format_cep,
     replace_spaces_on_list_tuple,
-    replace_nan_on_list_tuple,
+    replace_invalid_fields_on_list_tuple,
     makedir,
     replace_spaces,
     remove_leading_zeros,
@@ -16,22 +16,22 @@ def test_is_database_field_valid():
     """Tests the is_database_field_valid function."""
 
     # Valid fields (should return True)
-    assert is_database_field_valid("valid_data")
-    assert is_database_field_valid("0")  # Numbers are considered valid
+    assert is_field_valid("valid_data")
+    assert is_field_valid("0")  # Numbers are considered valid
 
     # Invalid fields (should return False)
-    assert not is_database_field_valid(None)
-    assert not is_database_field_valid("nan")
-    assert not is_database_field_valid("NaT")  # Case-insensitive
-    assert not is_database_field_valid("NULL")
-    assert not is_database_field_valid("None")  # Case-insensitive
+    assert not is_field_valid(None)
+    assert not is_field_valid("nan")
+    assert not is_field_valid("NaT")  # Case-insensitive
+    assert not is_field_valid("NULL")
+    assert not is_field_valid("None")  # Case-insensitive
 
 def test_format_database_date():
     """Tests the format_database_date function."""
 
-    assert format_database_date("20240613") == "2024-06-13"
+    assert format_database_date("20240613") == "13/06/2024"
     assert format_database_date("invalid_date") is None
-    assert format_database_date("20240613", delimiter="/") == "2024/06/13"
+    assert format_database_date("20240613", delimiter="/") == "13/06/2024"
 
 
 def test_format_cep():
@@ -56,7 +56,7 @@ def test_replace_nan_on_list_tuple():
 
     data = [("valid", "data"), ("nan", "value"), ("", "empty")]
     expected = [("valid", "data"), ("", "value"), ("", "empty")]
-    assert replace_nan_on_list_tuple(data) == expected
+    assert replace_invalid_fields_on_list_tuple(data) == expected
 
 
 # Test with pytest.mock
