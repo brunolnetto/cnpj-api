@@ -9,12 +9,12 @@ router = APIRouter()
 
 @router.get("/health")
 async def health_check():
-    return dict(
-        name=settings.PROJECT_NAME,
-        version=settings.VERSION,
-        status="OK",
-        message=f"Visit {settings.API_V1_STR}/docs for more information.",
-    )
+    return {
+        "name": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "status": "OK",
+        "message": f"Visit {settings.API_V1_STR}/docs for more information.",
+    }
 
 @router.get("/info")
 async def info():

@@ -59,3 +59,12 @@ def parse_cnpj_str(cnpj: str) -> List[str]:
         raise ValueError(validation_dict['reason'])
     else:
         return [cnpj[:8], cnpj[8:12], cnpj[12:14]]
+    
+def format_cnpj(cnpj_str: str) -> str:
+    basico, ordem, digitos_verificadores=parse_cnpj_str(cnpj_str)
+    
+    basico=f"{basico[:2]}.{basico[2:5]}.{basico[5:8]}"
+    ordem=f"{ordem}"
+    digitos_verificadores=f"{digitos_verificadores}"
+    
+    return f"{basico}/{ordem}-{digitos_verificadores}"
