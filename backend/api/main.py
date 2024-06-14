@@ -10,4 +10,4 @@ if __name__ == "__main__":
     run(app, host=settings.APP_HOST, port=settings.APP_PORT)
 
     # Log the application URL
-    logger.info(f"App running on {settings.server_host}")
+    logger.info(f"🚀 App running on {settings.server_host}")

@@ -4,7 +4,6 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
@@ -32,13 +31,6 @@ def create_app():
         redoc_url=f"{settings.API_V1_STR}/redoc",
         generate_unique_id_function=custom_generate_unique_id,
     )
-    
-    obj=StaticFiles(directory="static")
-    app_.mount("/static", obj, name="static")
-
-    @app_.get("/favicon.ico", include_in_schema=False)
-    async def my_favicon():
-        return FileResponse("static/favicon.ico")
 
     return app_
 
@@ -56,6 +48,15 @@ def setup_app(app_):
     
     # Add routers here
     app_.include_router(api_router, prefix=settings.API_V1_STR)
+
+    # Add static files
+    obj=StaticFiles(directory="static")
+    app_.mount("/static", obj, name="static")
+
+    # Add favicon
+    @app_.get("/favicon.ico", include_in_schema=False)
+    async def my_favicon():
+        return FileResponse("static/favicon.ico")
 
     # Sentry configuration
     if settings.SENTRY_DSN:
@@ -85,9 +86,14 @@ def setup_app(app_):
 
     return app_
 
+def init_app():
+    # Get the number of applications from the environment variable
+    app = create_app()
 
-# Get the number of applications from the environment variable
-app = create_app()
+    # Setup the application
+    app = setup_app(app)
 
-# Setup the application
-app = setup_app(app)
+    return app
+
+# Initialize the application
+app = init_app()
