@@ -1,4 +1,3 @@
-from pydantic_core import MultiHostUrl
 from pydantic_settings import (
     BaseSettings,
     SettingsConfigDict,
@@ -6,8 +5,6 @@ from pydantic_settings import (
 from pydantic import (
     AnyUrl,
     BeforeValidator,
-    HttpUrl,
-    PostgresDsn,
     computed_field,
     model_validator,
 )
@@ -18,7 +15,7 @@ from typing_extensions import Self, Annotated
 from warnings import warn
 import toml
 
-DEFAULT_PASSWORD = "changethis"
+DEFAULT_PASSWORD = "postgres"
 POSTGRES_DSN_SCHEME = "postgresql+psycopg"
 
 def parse_cors(v: Any) -> Union[List[str], str]:
@@ -44,6 +41,7 @@ class Settings(BaseSettings):
 
     VERSION: str = config["tool"]["poetry"]["version"]
     PROJECT_NAME: str = config["tool"]["poetry"]["name"]
+    DESCRIPTION: str = config["tool"]["poetry"]["description"]
     API_V1_STR: str = "/api"
 
     ENVIRONMENT: Literal["development"] = "development"
@@ -61,7 +59,7 @@ class Settings(BaseSettings):
     @property
     def server_host(self) -> str:
         # Use HTTPS for anything other than local development
-        protocol = "http" if self.ENVIRONMENT == "local" else "https"
+        protocol = "http" if self.ENVIRONMENT == "development" else "https"
         return f"{protocol}://{self.DOMAIN}"
 
     POSTGRES_HOST: str
@@ -87,6 +85,6 @@ class Settings(BaseSettings):
     def _enforce_non_default_secrets(self) -> Self:
         self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
 
-        return self
+        return self    
 
 settings = Settings()

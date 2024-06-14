@@ -1,14 +1,12 @@
 # Descrição: Este arquivo é responsável por criar
 # a instância do aplicativo FastAPI e adicionar as rotas a ele.
 
-from fastapi import FastAPI,  Request
+from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.staticfiles import StaticFiles
-
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
-from pathlib import Path
+
 import sentry_sdk
 
 from backend.setup.config import settings
@@ -26,20 +24,19 @@ def create_app():
     # Generates the FastAPI application
     app_ = FastAPI(
         title=settings.PROJECT_NAME,
+        version=settings.VERSION,
+        summary=settings.DESCRIPTION,
         docs_url=f"{settings.API_V1_STR}/docs",
         openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        redoc_url=f"{settings.API_V1_STR}/redoc",
         generate_unique_id_function=custom_generate_unique_id,
     )
-    
-    obj=StaticFiles(directory="static")
-    app_.mount("/static", obj, name="static")
 
     @app_.get("/favicon.ico")
     async def get_favicon():
         return FileResponse("static/favicon.ico")
 
     return app_
-
 
 
 def setup_app(app_):
@@ -55,6 +52,15 @@ def setup_app(app_):
     
     # Add routers here
     app_.include_router(api_router, prefix=settings.API_V1_STR)
+
+    # Add static files
+    obj=StaticFiles(directory="static")
+    app_.mount("/static", obj, name="static")
+
+    # Add favicon
+    @app_.get("/favicon.ico", include_in_schema=False)
+    async def my_favicon():
+        return FileResponse("static/favicon.ico")
 
     # Sentry configuration
     if settings.SENTRY_DSN:
@@ -84,9 +90,14 @@ def setup_app(app_):
 
     return app_
 
+def init_app():
+    # Get the number of applications from the environment variable
+    app = create_app()
 
-# Get the number of applications from the environment variable
-app = create_app()
+    # Setup the application
+    app = setup_app(app)
 
-# Setup the application
-app = setup_app(app)
+    return app
+
+# Initialize the application
+app = init_app()

@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Dict
 from sqlalchemy import text
 import pandas as pd
 
@@ -8,7 +8,6 @@ from backend.utils.misc import (
     replace_spaces, 
     replace_nan_on_list_tuple,
     replace_spaces_on_list_tuple,
-    remove_leading_zeros, 
     is_database_field_valid,
     format_database_date,
     format_cep,
@@ -222,6 +221,56 @@ class CNPJRepository:
             
             return None if not municipio_result else municipio_result.fetchall()[0][0]
     
+    def get_cnaes(self, limit: int = 10):
+        """
+        Get all CNAEs from the database.
+        
+        Returns:
+        DataFrame: The DataFrame with the CNAEs.
+        """
+        
+        with self.database.engine.begin() as connection:
+            query = text(
+                f"""
+                    select
+                        codigo, descricao
+                    from cnae
+                    limit {limit}
+                """
+            )
+            
+            cnaes_result = connection.execute(query)
+            cnaes_result = cnaes_result.fetchall()
+            
+            columns = ["codigo", "descricao"]
+            
+            return pd.DataFrame(cnaes_result, columns=columns) 
+
+    def get_legal_natures(self, limit: int = 10):
+        """
+        Get all legal natures from the database.
+        
+        Returns:
+        DataFrame: The DataFrame with the legal natures.
+        """
+        
+        with self.database.engine.begin() as connection:
+            query = text(
+                f"""
+                    select
+                        codigo, descricao
+                    from natju
+                    limit {limit}
+                """
+            )
+            
+            legal_natures_result = connection.execute(query)
+            legal_natures_result = legal_natures_result.fetchall()
+            
+            columns = ["codigo", "descricao"]
+            
+            return pd.DataFrame(legal_natures_result, columns=columns)
+
     def get_company(self, cnpj: CNPJ):
         """
         Get the company for the CNPJ.

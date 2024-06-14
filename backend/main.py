@@ -1,10 +1,9 @@
-import json
 import time
 from collections import Counter
 
 from repositories.cnpj import CNPJRepository
 from api.models.cnpj import CNPJ
-from database.base import Database, get_db_uri
+from database.base import get_db_uri
 
 # Example of a CNPJ to be searched
 cnpj_basico='9236040'

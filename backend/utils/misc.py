@@ -1,6 +1,6 @@
 from typing import List, Tuple
 from os import makedirs, path
-from typing import List, Any
+from typing import Any
 import re
 
 from backend.setup.logging import logger

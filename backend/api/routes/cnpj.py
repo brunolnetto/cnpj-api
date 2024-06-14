@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 
 from backend.repositories.cnpj import CNPJRepository
 from backend.api.dependencies.cnpj import CNPJRepositoryDependency
@@ -7,8 +7,17 @@ from backend.api.utils.cnpj import parse_cnpj_str
 
 router = APIRouter()
 
-@router.get("/client-info")
-async def read_item(request: Request):
+@router.get("/request-info")
+async def get_request_info(request: Request):
+    """
+    Get information about the incoming request.
+
+    Parameters:
+    - request: The incoming request object.
+
+    Returns:
+    - A dictionary with information about the request.
+    """
     headers = request.headers
     
     # Access other request attributes as needed (e.g., headers, body)
@@ -42,6 +51,63 @@ async def get_cnpjs(
     
     return cnpjs.to_dict(orient='records')
 
+@router.get("/cnae/{cnae}")
+async def get_cnae_description(
+    cnae: str,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+):
+    """
+    Get the description of a CNAE code.
+    
+    Parameters:
+    - cnae: The CNAE code to search for.
+    
+    Returns:
+    - A dictionary with the CNAE description.
+    """
+    try:
+        cnae_description=cnpj_repository.get_cnae_description(cnae)
+        
+        return cnae_description
+        
+    except ValueError as e:
+        return {"error": str(e)}
+
+@router.get("/cnae")
+async def get_cnaes(
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
+    limit: int = 10
+):
+    """
+    Get a list of CNAEs from the database.
+    
+    Parameters:
+    - limit: The maximum number of CNAEs to return.
+    
+    Returns:
+    - A list of CNAEs as dictionaries.
+    """
+    cnaes=cnpj_repository.get_cnaes(limit=limit)
+    
+    return cnaes.to_dict(orient='records')
+
+@router.get("/legal-nature")
+async def get_legal_natures(
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
+    limit: int = 10
+):
+    """
+    Get a list of legal natures from the database.
+    
+    Parameters:
+    - limit: The maximum number of legal natures to return.
+    
+    Returns:
+    - A list of legal natures as dictionaries.
+    """
+    legal_natures=cnpj_repository.get_legal_natures(limit=limit)
+    
+    return legal_natures.to_dict(orient='records')
 
 # Example route handler with CNPJRepository dependency
 @router.get("/cnpj/{cnpj}")

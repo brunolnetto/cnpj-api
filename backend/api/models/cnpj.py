@@ -1,4 +1,3 @@
-from pydantic import BaseModel
 
 from backend.api.utils.cnpj import is_cnpj_str_valid
 
