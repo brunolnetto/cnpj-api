@@ -64,9 +64,7 @@ test: ## Test the application. Usage: make test
 	poetry run coverage run --rcfile=.coveragerc -m pytest
 
 test-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
-	ptw --quiet --spool 200 --clear --nobeep \
-    --config pytest.ini --ext=.py \
-    --onfail="echo Tests failed, fix the issues"
+	ptw --quiet --spool 200 --clear --nobeep --config pytest.ini --ext=.py --onfail="echo Tests failed, fix the issues"
 
 minimal-requirements: ## Generates minimal requirements. Usage: make requirements
 	python3 scripts/clean_packages.py requirements.txt requirements.txt
