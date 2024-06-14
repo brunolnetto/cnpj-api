@@ -40,7 +40,11 @@ class Database():
             max_overflow=10,            # Adjust maximum overflow connections
             pool_recycle=3600           # Periodically recycle connections (optional)
         )
-        self.session_maker = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.session_maker = sessionmaker(
+            autocommit=False, 
+            autoflush=False, 
+            bind=self.engine
+        )
         
         # Create the database, test connection and tables
         self.create_database()
@@ -96,8 +100,6 @@ async def get_db():
         raise Exception("Database URI {uri} not found")
     
     db = Database(uri)
-    try:
-        yield db
-    finally:
-        await db.engine.dispose()
-        
+    
+    yield db
+

@@ -10,7 +10,21 @@ def is_number(text: str) -> bool:
     pattern = r"^\d+(\.\d+)?$"  
     return bool(re.match(pattern, text))
 
-def is_database_field_valid(field: str) -> bool:
+def format_decimal(float_string: str, num_decimal_places: int = 2) -> str:
+    """
+    Formats a decimal number to a string with a fixed number of decimal places.
+
+    Args:
+        float_string (str): The decimal number to format.
+        num_decimal_places (int): The number of decimal places to use.
+
+    Returns:
+        str: The formatted decimal number.
+    """
+    return f"{float(float_string):.{num_decimal_places}f}"
+
+
+def is_field_valid(field: str) -> bool:
     """
     Checks if a field is valid.
     
@@ -29,8 +43,21 @@ def is_database_field_valid(field: str) -> bool:
     
     return not is_invalid
 
+def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[str]:
+    """
+    Replaces NaN values with empty string.
+
+    Args:
+        lst (List): The list to process.
+
+    Returns:
+        The list with NaN values replaced by None.
+    """
+    clean_field_map=lambda el: '' if not is_field_valid(el) else el
+    return operate_on_list_tuple(lst, clean_field_map)
+
 # Define a function to format the date
-DELIMITER='-'
+DELIMITER='/'
 def format_database_date(date_str: str, delimiter: str = DELIMITER) -> str:
     """
     Formats a date string to the database format.
@@ -43,12 +70,12 @@ def format_database_date(date_str: str, delimiter: str = DELIMITER) -> str:
         str: The formatted date string.
     """
     date_str=str(date_str)
-    if not is_database_field_valid(date_str) or \
+    if not is_field_valid(date_str) or \
         not is_number(date_str) or \
             len(date_str) != 8:
         return None
 
-    return f"{date_str[:4]}{delimiter}{date_str[4:6]}{delimiter}{date_str[6:]}"
+    return f"{date_str[6:]}{delimiter}{date_str[4:6]}{delimiter}{date_str[:4]}"
     
 def format_cep(cep_str: str):
     """
@@ -68,7 +95,7 @@ def format_cep(cep_str: str):
     cep_str=str(int(float(cep_str)))
     cep_str=cep_str.zfill(8)
     
-    is_valid_cep=is_database_field_valid(cep_str) and len(cep_str) == 8
+    is_valid_cep=is_field_valid(cep_str) and len(cep_str) == 8
     
     if not is_valid_cep:
         return None    
@@ -78,8 +105,8 @@ def format_cep(cep_str: str):
 # Define a function to format the phone number
 def format_phone(ddd, phone_num):
     campos_validos=\
-        is_database_field_valid(ddd) and \
-        is_database_field_valid(phone_num)
+        is_field_valid(ddd) and \
+        is_field_valid(phone_num)
     
     if not campos_validos:
         return ""
@@ -116,20 +143,6 @@ def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
     """
     clean_spaces_map=lambda el: " ".join(str(el).split())
     return operate_on_list_tuple(lst, clean_spaces_map) 
-    
-
-def replace_nan_on_list_tuple(lst: List[Tuple]) -> List[str]:
-    """
-    Replaces NaN values with empty string.
-
-    Args:
-        lst (List): The list to process.
-
-    Returns:
-        The list with NaN values replaced by None.
-    """
-    clean_field_map=lambda el: '' if str(el).lower()=='nan' else el
-    return operate_on_list_tuple(lst, clean_field_map) 
 
 
 def makedir(folder_name: str, is_verbose: bool = False):
