@@ -5,18 +5,18 @@ class CNPJ:
     def __init__(self, basico: str, ordem: str, digitos_verificadores: str):
         try:
             self.basico_int:str = int(basico)
-        except ValueError:
-            raise ValueError("Digits 'basico' contains non-numeric characters.")
+        except ValueError as exc:
+            raise ValueError("Digits 'basico' contains non-numeric characters.") from exc
         
         try:
             self.ordem_int = int(ordem)
-        except ValueError:
-            raise ValueError("Digits 'ordem' contains non-numeric characters.")
+        except ValueError as exc:
+            raise ValueError("Digits 'ordem' contains non-numeric characters.") from exc
         
         try:
             self.digitos_verificadores_int = int(digitos_verificadores)
-        except ValueError:
-            raise ValueError("Digits 'digitos_verificadores' contains non-numeric characters.")
+        except ValueError as exc:
+            raise ValueError("Digits 'digitos_verificadores' contains non-numeric characters.") from exc
         
         self.basico_str = str(basico).zfill(8)
         self.ordem_str = str(ordem).zfill(4)
