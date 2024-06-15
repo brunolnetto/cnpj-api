@@ -4,12 +4,27 @@ from backend.utils.misc import (
     is_field_valid,
     format_database_date,
     format_cep,
+    format_phone,
     replace_spaces_on_list_tuple,
     replace_invalid_fields_on_list_tuple,
     makedir,
     replace_spaces,
     remove_leading_zeros,
+    is_number,
 )
+
+def test_is_number():
+    """Tests the is_number function."""
+
+    # Valid numbers (should return True)
+    assert is_number("0")
+    assert is_number("0.0")
+    assert is_number("0.123")
+
+    # Invalid numbers (should return False)
+    assert not is_number("invalid_number")
+    assert not is_number("0.")
+    assert not is_number("0.0.0")
 
 
 def test_is_database_field_valid():
@@ -33,15 +48,30 @@ def test_format_database_date():
     assert format_database_date("invalid_date") is None
     assert format_database_date("20240613", delimiter="/") == "13/06/2024"
 
+def test_format_phone():
+    """Tests the format_phone function."""
+
+    assert format_phone("12", "34567890") == "(12) 3456-7890"
+    assert format_phone("12", "34567890", ddd_ldelimiter="") == "12) 3456-7890"
+    assert format_phone("12", "34567890", ddd_rdelimiter="") == "(12 3456-7890"
+    assert format_phone("12", "34567890", phone_delimiter="") == "(12) 34567890"
+    assert format_phone(
+        "12", "34567890", 
+        ddd_rdelimiter="",
+        ddd_ldelimiter="", 
+        phone_delimiter=""
+    ) == "12 34567890"
+
+    assert format_phone("nan", "invalid_phone") == ""
+
 
 def test_format_cep():
     """Tests the format_cep function."""
 
     assert format_cep("12345678") == "12.345-678"
-    assert format_cep("invalid_cep") is None
     assert format_cep(12345678.0) == "12.345-678"  # Accepts floats
     assert format_cep("00000000") == "00.000-000"  # Leading zeros
-
+    assert format_cep("invalid_cep") == ""
 
 def test_replace_spaces_on_list_tuple():
     """Tests the replace_spaces_on_list_tuple function."""
