@@ -1,13 +1,31 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from os import makedirs, path
 from typing import Any
+import json
 import re
 
 from backend.setup.logging import logger
 
+def string_to_json(string: str) -> dict:
+    string=string.replace("'", '\"')
+    string = re.sub(r'\bNone\b', 'null', string)
+    
+    return json.loads(string)
+
+
 def is_number(text: str) -> bool:
+    """
+    Checks if a string is a number.
+
+    Args:
+        text (str): The string to check.
+
+    Returns:
+        bool: Whether the string is a number.
+    """
+
     # Matches digits with an optional decimal part
-    pattern = r"^\d+(\.\d+)?$"  
+    pattern = r"^\d+(\.\d+)?$"
     return bool(re.match(pattern, text))
 
 def format_decimal(float_string: str, num_decimal_places: int = 2) -> str:
@@ -43,7 +61,7 @@ def is_field_valid(field: str) -> bool:
     
     return not is_invalid
 
-def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[str]:
+def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[Tuple]:
     """
     Replaces NaN values with empty string.
 
@@ -55,6 +73,19 @@ def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[str]:
     """
     clean_field_map=lambda el: '' if not is_field_valid(el) else el
     return operate_on_list_tuple(lst, clean_field_map)
+
+def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
+    """
+    Replaces NaN values with empty string.
+
+    Args:
+        lst (List): The list to process.
+
+    Returns:
+        The list with NaN values replaced by None.
+    """
+    clean_field_map=lambda el: '' if not is_field_valid(el) else el
+    return operate_on_list_dict(lst, clean_field_map)
 
 # Define a function to format the date
 DELIMITER='/'
@@ -88,34 +119,61 @@ def format_cep(cep_str: str):
         str: The formatted CEP string
     """
     cep_str=str(cep_str)
-    if not is_number(cep_str):
-        return None
+    is_valid_cep=is_field_valid(cep_str) and is_number(cep_str)
+
+    if not is_valid_cep:
+        return ""
     
     # Remove decimal part if it exists
     cep_str=str(int(float(cep_str)))
-    cep_str=cep_str.zfill(8)
-    
-    is_valid_cep=is_field_valid(cep_str) and len(cep_str) == 8
-    
-    if not is_valid_cep:
-        return None    
-    
+    cep_str=cep_str.zfill(8)   
+
     return f"{cep_str[0:2]}.{cep_str[2:5]}-{cep_str[5:8]}"
 
 # Define a function to format the phone number
-def format_phone(ddd, phone_num):
-    campos_validos=\
-        is_field_valid(ddd) and \
-        is_field_valid(phone_num)
+def format_phone(
+    ddd_num: str, phone_num: str, 
+    ddd_ldelimiter: tuple='(', 
+    ddd_rdelimiter: tuple=')', 
+    phone_delimiter='-'
+):
+    """
+    Formats a phone number.
+
+    Args:
+        ddd (str): The DDD part of the phone number.
+        phone_num (str): The phone number.
+        ddd_ldelimiter (tuple, optional): The left delimiter for the DDD. Defaults to '('.
+        ddd_rdelimiter (tuple, optional): The right delimiter for the DDD. Defaults to ')'.
+        phone_delimiter (str, optional): The delimiter for the phone number. Defaults to '-'.
+
+    Returns:
+        str: The formatted phone number.
+    """
+    is_phone_valid=lambda phone_: (
+        is_number(phone_) and \
+        is_field_valid(phone_) and \
+        (len(phone_) in (8, 9))
+    )
+    is_ddd_valid=lambda ddd_: (
+        is_number(ddd_) and \
+        is_field_valid(ddd_) and \
+        (len(ddd_) in (1, 2))
+    )
+
+    are_fields_valid=is_phone_valid(phone_num) and is_ddd_valid(ddd_num)
     
-    if not campos_validos:
+    if not are_fields_valid:
         return ""
     
-    ddd=str(int(float(ddd)))
+    ddd_num=str(int(float(ddd_num)))
     phone_num=str(int(float(phone_num)))
     phone_num=phone_num.zfill(8)
 
-    return f"({ddd}) {phone_num[:4]}-{phone_num[4:]}"
+    formated_ddd=f"{ddd_ldelimiter}{ddd_num}{ddd_rdelimiter}"
+    formatted_phone=f"{phone_num[:4]}{phone_delimiter}{phone_num[4:]}"
+
+    return f"{formated_ddd} {formatted_phone}"
 
 def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:
     """
@@ -129,7 +187,24 @@ def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:
     Returns:
         The list with the operation performed.
     """
-    return list(map(lambda row: tuple(map(operation, row)), lst))
+    tuple_map=lambda tuple_: tuple(map(operation, tuple_))
+    return list(map(tuple_map, lst))
+
+def operate_on_list_dict(lst: List[Tuple], operation: callable) -> List[Any]:
+    """
+    Operates on a list of dictionaries.
+
+    Args:
+        lst (List): The list to process.
+        operation (str): The operation to perform.
+        value (str): The value to operate with.
+
+    Returns:
+        The list with the operation performed.
+    """
+    item_map=lambda item: (item[0], operation(item[1]))
+    dict_map=lambda dict_: dict(map(item_map, dict_.items()))
+    return list(map(dict_map, lst))
 
 def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
     """
@@ -143,6 +218,7 @@ def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
     """
     clean_spaces_map=lambda el: " ".join(str(el).split())
     return operate_on_list_tuple(lst, clean_spaces_map) 
+
 
 
 def makedir(folder_name: str, is_verbose: bool = False):

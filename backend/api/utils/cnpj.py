@@ -1,4 +1,40 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
+
+from backend.utils.misc import is_number
+
+def calculate_cnpj_verification_digits(cnpj: str) -> Tuple[int, int]:
+    """
+    Calculates the verification digits of a given CNPJ number.
+
+    Args:
+        cnpj: The CNPJ number to calculate the verification digits for.
+    
+    Returns:
+        The two verification digits.
+    """
+    if(len(cnpj) != 14):
+        raise ValueError("Invalid length. CNPJ should have 14 digits.")
+
+    if(not is_number(cnpj)):
+        raise ValueError("CNPJ contains non-numeric characters.")
+
+    weights1 = "543298765432"
+    weights2 = "6543298765432"
+    sum1 = 0
+    for i in range(1, 13):
+        sum1 += int(cnpj[i-1]) * int(weights1[i-1])
+
+    rest = sum1 % 11
+    digit1 = 0 if rest < 2 else 11 - rest
+
+    sum2 = 0
+    for i in range(1, 14):
+        sum2 += int(cnpj[i-1]) * int(weights2[i-1])
+
+    rest = sum2 % 11
+    digit2 = 0 if rest < 2 else 11 - rest
+
+    return digit1, digit2
 
 # Define the namedtuple for the CNPJ
 def is_cnpj_str_valid(cnpj: str) -> Dict[str, Union[bool, str]]:
@@ -12,26 +48,12 @@ def is_cnpj_str_valid(cnpj: str) -> Dict[str, Union[bool, str]]:
         True if the CNPJ is valid, False otherwise.
     """
     # Check length
-    if len(cnpj) > 14:
+    if len(cnpj) != 14:
         return {'is_valid': False, 'reason': 'Invalid length. CNPJ should have 14 digits.'}
 
     # Calculate verification digits
     try:
-        weights1 = "543298765432"
-        weights2 = "6543298765432"
-        sum1 = 0
-        for i in range(1, 13):
-            sum1 += int(cnpj[i-1]) * int(weights1[i-1])
-
-        rest = sum1 % 11
-        digit1 = 0 if rest < 2 else 11 - rest
-
-        sum2 = 0
-        for i in range(1, 14):
-            sum2 += int(cnpj[i-1]) * int(weights2[i-1])
-
-        rest = sum2 % 11
-        digit2 = 0 if rest < 2 else 11 - rest
+        digit1, digit2=calculate_cnpj_verification_digits(cnpj)
 
     except ValueError:
         return {'is_valid': False, 'reason': 'CNPJ contains non-numeric characters.'}

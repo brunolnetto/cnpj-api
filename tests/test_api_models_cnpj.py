@@ -7,7 +7,7 @@ def test_valid_cnpj():
   """
   Tests if a valid CNPJ number is correctly identified.
   """
-  valid_cnpj = CNPJ(9236040, 1, 1)
+  valid_cnpj = CNPJ(12345678, 9012, 30)
   validation_result = valid_cnpj.is_valid_dict()
   assert validation_result["is_valid"] == True
   assert validation_result["reason"] == ""
@@ -35,6 +35,32 @@ def test_invalid_characters_cnpj():
 
     with pytest.raises(ValueError):
         CNPJ("12345678", "9012", "3A")
+
+
+def test_cnpj_dict():
+    """
+    Tests if a CNPJ with non-numeric characters is correctly identified.
+    """
+    cnpj_obj=CNPJ("12345678", "9012", "34")
+
+    cnpj_dict=cnpj_obj.__dict__()
+
+    assert cnpj_dict['basico']=='12345678'
+    assert cnpj_dict['ordem']=='9012'
+    assert cnpj_dict['digitos_verificadores']=='34'
+    assert cnpj_dict['is_valid']==False
+    assert cnpj_dict['reason']=='Invalid verification digits.'
+
+
+def test_cnpj_repr():
+    """
+    Tests if a CNPJ with non-numeric characters is correctly identified.
+    """
+    cnpj_obj=CNPJ("12345678", "9012", "34")
+
+    cnpj_repr=cnpj_obj.__repr__()
+
+    assert cnpj_repr=='12.345.678/9012-34'
 
 
 def test_invalid_verification_digits():

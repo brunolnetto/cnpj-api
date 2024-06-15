@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api"
 
     ENVIRONMENT: Literal["development"] = "development"
-    DOMAIN: str = "localhost"
+    DOMAIN: str = "localhost:8000"
 
     # CORS
     BACKEND_CORS_ORIGINS: Annotated[
