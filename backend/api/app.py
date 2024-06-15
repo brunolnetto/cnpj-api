@@ -1,5 +1,4 @@
-# Descrição: Este arquivo é responsável por criar
-# a instância do aplicativo FastAPI e adicionar as rotas a ele.
+# Description: This file initializes the FastAPI application and sets up the necessary configurations.
 
 from fastapi import FastAPI
 from fastapi.responses import FileResponse

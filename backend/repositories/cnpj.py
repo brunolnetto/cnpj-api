@@ -156,6 +156,17 @@ class CNPJRepository:
             
             columns = ["code", "text"]
             
+            establishment_result = replace_invalid_fields_on_list_tuple(establishment_result)
+            establishment_result = replace_spaces_on_list_tuple(establishment_result)
+
+            columns=[
+                "cnpj_basico", "cnpj_ordem", "cnpj_dv", "email", "data_inicio_atividade",  
+                "data_situacao_cadastral", "situacao_cadastral", "motivo_situacao_cadastral", "nome_fantasia", 
+                "tipo_logradouro", "logradouro", "numero", "complemento", "bairro",
+                "municipio", "cep", "uf", "cnae_fiscal_principal", "cnae_fiscal_secundaria", 
+                "identificador_matriz_filial", "situacao_especial", "data_situacao_especial", 
+                "ddd_1", "telefone_1", "ddd_2", "telefone_2"
+            ]
             empty_df=pd.DataFrame(columns=columns)
             legal_natures_df=pd.DataFrame(legal_natures_result, columns=columns)
             df=empty_df if len(legal_natures_df)==0 else legal_natures_df
