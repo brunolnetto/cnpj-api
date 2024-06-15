@@ -37,15 +37,15 @@ sanitize: # Remove dangling images and volumes
 clean: clean-logs clean-test clean-cache sanitize ## Add a rule to remove unnecessary assets. Usage: make clean
 
 env: ## Creates a virtual environment. Usage: make env
-	pip install uv
-	uv venv
+	pip install virtualenv
+	virtualenv .venv
 
 install: ## Installs the python requirements. Usage: make install
 	pip install uv
 	uv pip install -r requirements.txt
 
 run: ## Run the application. Usage: make run
-	uvicorn backend.api.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+	uvicorn backend.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
 
 search: ## Searchs for a token in the code. Usage: make search token=your_token
 	grep -rnw . \
