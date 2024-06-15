@@ -1,4 +1,7 @@
 from os import rmdir, makedirs
+import pytest
+import json
+from json import JSONDecodeError
 
 from backend.utils.misc import (
     is_field_valid,
@@ -7,10 +10,13 @@ from backend.utils.misc import (
     format_phone,
     replace_spaces_on_list_tuple,
     replace_invalid_fields_on_list_tuple,
+    replace_invalid_fields_on_list_dict,
     makedir,
     replace_spaces,
     remove_leading_zeros,
     is_number,
+    format_decimal,
+    string_to_json,
 )
 
 def test_is_number():
@@ -80,6 +86,24 @@ def test_replace_spaces_on_list_tuple():
     expected = [("text", "another"), ("multiple", "spaces")]
     assert replace_spaces_on_list_tuple(data) == expected
 
+def test_replace_invalid_fields_on_list_dict():
+    """Tests the replace_invalid_fields_on_list_dict function."""
+
+    data = [
+        {"valid": "data", "invalid": "nan"},
+        {"valid": "data", "invalid": "NaT"},
+        {"valid": "data", "invalid": "NULL"},
+        {"valid": "data", "invalid": "None"},
+    ]
+    expected = [
+        {"valid": "data", "invalid": ""},
+        {"valid": "data", "invalid": ""},
+        {"valid": "data", "invalid": ""},
+        {"valid": "data", "invalid": ""},
+    ]
+
+    assert replace_invalid_fields_on_list_dict(data) == expected
+
 
 def test_replace_nan_on_list_tuple():
     """Tests the replace_nan_on_list_tuple function."""
@@ -133,3 +157,34 @@ def test_remove_leading_zeros():
     assert remove_leading_zeros("00123") == "123"
     assert remove_leading_zeros("no leading zeros") == "no leading zeros"
     assert remove_leading_zeros("0") == "0"  # Handles single zero
+
+def test_format_decimal_default_decimal_places():
+  """Tests the format_decimal function with a default number of decimal places."""
+  decimal_number = '3.14159'
+  formatted_number = format_decimal(decimal_number)
+  assert formatted_number == '3.14'
+
+def test_format_decimal_custom_decimal_places():
+  """Tests the format_decimal function with a custom number of decimal places."""
+  decimal_number = '3.14159'
+  formatted_number = format_decimal(decimal_number, 3)
+  assert formatted_number == '3.142'
+
+def test_string_to_json_valid_string():
+  """Tests the string_to_json function with a valid JSON string."""
+  valid_string = '{"key": "value"}'
+  json_data = string_to_json(valid_string)
+  assert json_data == {'key': 'value'}
+
+def test_string_to_json_invalid_json():
+  """Tests the string_to_json function with an invalid JSON string (raises json.JSONDecodeError)."""
+  invalid_string = '{"key": "value" unbalanced'
+  with pytest.raises(JSONDecodeError):
+    string_to_json(invalid_string)
+
+def test_string_to_json_empty_string():
+  """Tests the string_to_json function with an empty string."""
+  empty_string = ''
+  with pytest.raises(JSONDecodeError):
+    string_to_json(empty_string)
+
