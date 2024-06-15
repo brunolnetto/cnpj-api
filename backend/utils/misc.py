@@ -1,9 +1,16 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from os import makedirs, path
 from typing import Any
+import json
 import re
 
 from backend.setup.logging import logger
+
+def string_to_json(string: str) -> dict:
+    string=string.replace("'", '\"')
+    string = re.sub(r'\bNone\b', 'null', string)
+    
+    return json.loads(string)
 
 
 def is_number(text: str) -> bool:
@@ -18,7 +25,7 @@ def is_number(text: str) -> bool:
     """
 
     # Matches digits with an optional decimal part
-    pattern = r"^\d+(\.\d+)?$"  
+    pattern = r"^\d+(\.\d+)?$"
     return bool(re.match(pattern, text))
 
 def format_decimal(float_string: str, num_decimal_places: int = 2) -> str:
@@ -54,7 +61,7 @@ def is_field_valid(field: str) -> bool:
     
     return not is_invalid
 
-def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[str]:
+def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[Tuple]:
     """
     Replaces NaN values with empty string.
 
@@ -66,6 +73,19 @@ def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[str]:
     """
     clean_field_map=lambda el: '' if not is_field_valid(el) else el
     return operate_on_list_tuple(lst, clean_field_map)
+
+def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
+    """
+    Replaces NaN values with empty string.
+
+    Args:
+        lst (List): The list to process.
+
+    Returns:
+        The list with NaN values replaced by None.
+    """
+    clean_field_map=lambda el: '' if not is_field_valid(el) else el
+    return operate_on_list_dict(lst, clean_field_map)
 
 # Define a function to format the date
 DELIMITER='/'
@@ -167,7 +187,24 @@ def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:
     Returns:
         The list with the operation performed.
     """
-    return list(map(lambda row: tuple(map(operation, row)), lst))
+    tuple_map=lambda tuple_: tuple(map(operation, tuple_))
+    return list(map(tuple_map, lst))
+
+def operate_on_list_dict(lst: List[Tuple], operation: callable) -> List[Any]:
+    """
+    Operates on a list of dictionaries.
+
+    Args:
+        lst (List): The list to process.
+        operation (str): The operation to perform.
+        value (str): The value to operate with.
+
+    Returns:
+        The list with the operation performed.
+    """
+    item_map=lambda item: (item[0], operation(item[1]))
+    dict_map=lambda dict_: dict(map(item_map, dict_.items()))
+    return list(map(dict_map, lst))
 
 def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
     """
@@ -181,6 +218,7 @@ def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
     """
     clean_spaces_map=lambda el: " ".join(str(el).split())
     return operate_on_list_tuple(lst, clean_spaces_map) 
+
 
 
 def makedir(folder_name: str, is_verbose: bool = False):

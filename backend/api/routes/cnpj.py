@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, HTTPException
 
 from backend.repositories.cnpj import CNPJRepository
 from backend.api.dependencies.cnpj import CNPJRepositoryDependency
@@ -7,34 +7,7 @@ from backend.api.utils.cnpj import parse_cnpj_str
 
 router = APIRouter()
 
-@router.get("/request-info")
-async def get_request_info(request: Request):
-    """
-    Get information about the incoming request.
-
-    Parameters:
-    - request: The incoming request object.
-
-    Returns:
-    - A dictionary with information about the request.
-    """
-    headers = request.headers
-    
-    # Access other request attributes as needed (e.g., headers, body)
-    return {
-        "client": request.client,
-        "base_url": request.base_url,
-        "url": request.url,
-        "method": request.method,
-        "query_params": request.query_params,
-        "path_params": request.path_params,
-        "headers": headers,
-        "cookies": request.cookies,
-        "body": await request.body()
-    }
-
-
-@router.get("/cnpj")
+@router.get("/cnpjs")
 async def get_cnpjs(
     cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10, 
@@ -56,11 +29,12 @@ async def get_cnpjs(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/cnae")
+@router.get("/cnaes")
 async def get_cnaes(
     cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10,
-    offset: int = 0
+    offset: int = 0,
+    all: bool = False
 ):
     """
     Get a list of CNAEs from the database.
@@ -72,7 +46,7 @@ async def get_cnaes(
     - A list of CNAEs as dictionaries.
     """
     try:
-        cnaes=cnpj_repository.get_cnaes(limit=limit)
+        cnaes=cnpj_repository.get_cnaes(limit=limit, offset=offset, all=all)
         
         return cnaes.to_dict(orient='records')
     except Exception as e:
@@ -94,13 +68,47 @@ async def get_cnae_description(
     - A dictionary with the CNAE description.
     """
     try:
-        return cnpj_repository.get_cnae(cnae_code)
+        cnaes=cnpj_repository.get_cnae(cnae_code)
+        
+        if len(cnaes)==0:
+            raise ValueError(f"CNAE code {cnae_code} not found.")
+        else:
+            return cnaes
         
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/city")
+@router.get("/cnae/{cnae_code}/establishments")
+async def get_establishments_by_cnae(
+    cnae_code: str,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
+    limit: int = 10,
+    offset: int = 0
+):
+    """
+    Get a list of establishments with a given CNAE code.
+    
+    Parameters:
+    - cnae_code: The CNAE code to search for.
+    - limit: The maximum number of establishments to return.
+    - offset: The number of establishments to skip.
+    
+    Returns:
+    - A list of establishments as dictionaries.
+    """
+    try:
+        establishments=cnpj_repository.get_establishments_by_cnae(cnae_code, limit=limit, offset=offset)
+
+        if len(establishments)==0:
+            raise ValueError(f"There are no establishents with CNAE code {cnae_code}.")
+        else:
+            return establishments 
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/cities")
 def get_cities(
     cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10,
@@ -122,7 +130,7 @@ def get_cities(
 
 
 @router.get("/city/{city_code}")
-def get_city_name(
+def get_city(
     city_code: str,
     cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
@@ -136,17 +144,23 @@ def get_city_name(
     - A dictionary with the city name.
     """
     try:
-        return cnpj_repository.get_city(city_code)
+        city=cnpj_repository.get_city(city_code)
+
+        if len(city)==0:
+            raise ValueError(f"City code {city_code} not found.")
+        else:
+            return city 
         
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/legal-nature")
+@router.get("/legal-natures")
 async def get_legal_natures(
     cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10,
-    offset: int = 0
+    offset: int = 0,
+    all: bool = False
 ):
     """
     Get a list of legal natures from the database.
@@ -158,7 +172,7 @@ async def get_legal_natures(
     - A list of legal natures as dictionaries.
     """
     try:
-        return cnpj_repository.get_legal_natures(limit=limit, offset=offset)
+        return cnpj_repository.get_legal_natures(limit=limit, offset=offset, all=all)
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -178,7 +192,61 @@ async def get_legal_nature(
     - A list of legal natures as dictionaries.
     """
     try:
-        return cnpj_repository.get_legal_nature(legal_nature_code)
+        legal_nature=cnpj_repository.get_legal_nature(legal_nature_code)
+
+        if len(legal_nature)==0:
+            raise ValueError(f"Legal nature code {legal_nature_code} not found.")
+        else:
+            return legal_nature
+         
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/registration-status/{registration_status_code}")
+async def get_registration_status(
+    registration_status_code: str,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+):
+    """
+    Get a registration status from the database.
+    
+    Parameters:
+    - registration_status_code: The registration status code to search for.
+    
+    Returns:
+    - A dictionary with the registration status.
+    """
+    try:
+        registration_status=cnpj_repository.get_registration_status(registration_status_code)
+
+        if len(registration_status)==0:
+            raise ValueError(f"Registration status code {registration_status_code} not found.")
+        else:
+            return registration_status
+         
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/registration-statuses")
+async def get_registration_statuses(
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
+    limit: int = 10,
+    offset: int = 0,
+    all: bool = False
+):
+    """
+    Get a list of registration statuses from the database.
+    
+    Parameters:
+    - limit: The maximum number of registration statuses to return.
+    
+    Returns:
+    - A list of registration statuses as dictionaries.
+    """
+    try:
+        return cnpj_repository.get_registration_statuses(limit=limit, offset=offset, all=all)
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
