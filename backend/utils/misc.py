@@ -3,9 +3,49 @@ from os import makedirs, path
 from typing import Any
 from datetime import datetime
 import json
-import re
+import re 
+from typing import Union, Any
 
 from backend.setup.logging import logger
+
+NumberList=List[Union[int, float]]
+
+def are(args: List[Any], validation_map: callable) -> bool:
+    """
+    Checks if a field is equal to any of the given values.
+
+    Args:
+        field (str): The field to check.
+        *args (str): The values to compare with.
+
+    Returns:
+        bool: Whether the field is equal to any of the values.
+    """
+    return all(map(validation_map, args))
+
+def is_positive(x: NumberList)->bool:
+    return x > 0
+
+def is_non_negative(x: NumberList)->bool:
+    return x >= 0
+
+def is_negative(x: NumberList)->bool:
+    return x < 0
+
+def is_non_positive(x: NumberList)->bool:
+    return x <= 0
+
+def are_positive(lst: NumberList)->bool:
+    return are(lst, is_positive)
+
+def are_non_negative(lst: NumberList)->bool:
+    return are(lst, is_non_negative)
+
+def are_negative(lst: List[Union[int, float]])->bool:
+    return are(lst, is_negative)
+
+def are_non_positive(lst: NumberList)->bool:
+    return are(lst, is_non_positive)
 
 def date_str():
     """
