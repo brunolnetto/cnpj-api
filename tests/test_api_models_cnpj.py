@@ -9,7 +9,7 @@ def test_valid_cnpj():
   """
   valid_cnpj = CNPJ(12345678, 9012, 30)
   validation_result = valid_cnpj.is_valid_dict()
-  assert validation_result["is_valid"] == True
+  assert validation_result["is_valid"] is True
   assert validation_result["reason"] == ""
 
 
@@ -19,7 +19,7 @@ def test_invalid_length_cnpj():
   """
   invalid_cnpj = CNPJ("123456789", "9012", "34")
   validation_result = invalid_cnpj.is_valid_dict()
-  assert validation_result["is_valid"] == False
+  assert validation_result["is_valid"] is False
   assert validation_result["reason"] == "Invalid length. CNPJ should have 14 digits."
 
 
@@ -48,7 +48,7 @@ def test_cnpj_dict():
     assert cnpj_dict['basico']=='12345678'
     assert cnpj_dict['ordem']=='9012'
     assert cnpj_dict['digitos_verificadores']=='34'
-    assert cnpj_dict['is_valid']==False
+    assert cnpj_dict['is_valid'] is False
     assert cnpj_dict['reason']=='Invalid verification digits.'
 
 
@@ -69,7 +69,7 @@ def test_invalid_verification_digits():
   """
   invalid_cnpj = CNPJ("14741321", "0001", "80")  # One digit off in the verification code
   validation_result = invalid_cnpj.is_valid_dict()
-  assert validation_result["is_valid"] == False
+  assert validation_result["is_valid"] is False
   assert validation_result["reason"] == "Invalid verification digits."
 
 

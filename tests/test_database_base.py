@@ -1,9 +1,7 @@
 import pytest
 from unittest.mock import patch
-from sqlalchemy import pool, text
 from sqlalchemy.exc import (
-  ArgumentError, 
-  OperationalError,
+  ArgumentError,
 )
 
 from backend.database.base import (

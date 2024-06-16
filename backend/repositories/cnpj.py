@@ -151,7 +151,7 @@ class CNPJRepository:
                     offset {offset}
                 """
             ) if not all else text(
-                f"""
+                """
                     select
                         codigo, descricao
                     from natju
@@ -211,7 +211,7 @@ class CNPJRepository:
                     offset {offset}
                 """
             ) if not all else text(
-                f"""
+                """
                     select
                         codigo, descricao
                     from moti
