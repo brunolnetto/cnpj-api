@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 from os import getenv, makedirs, path
 from pythonjsonlogger import jsonlogger
 
-from backend.utils.logging import clear_latest_items
+from backend.utils.logging import clear_folder_items
+
 
 # Use the logger
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ log_root_path = f'logs/{date_str}'
 # Clear the latest 5 files (adjust 'n' as needed)
 LOG_FILES_HORIZON = 5
 if path.exists(log_root_path):
-    clear_latest_items(log_root_path, LOG_FILES_HORIZON)
+    clear_folder_items(log_root_path, LOG_FILES_HORIZON)
 
 base_path = f"{log_root_path}/{time_str}"
 error_file = f"{base_path}/error_log.log"
