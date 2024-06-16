@@ -4,7 +4,7 @@ from typing import Any
 from datetime import datetime
 import json
 import re
-from typing import Union, Any
+from typing import Union
 
 from backend.setup.logging import logger
 
