@@ -3,7 +3,11 @@ from fastapi import APIRouter, HTTPException
 from backend.repositories.cnpj import CNPJRepository
 from backend.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.api.models.cnpj import CNPJ
-from backend.api.utils.cnpj import parse_cnpj_str, format_cnpj
+from backend.api.utils.cnpj import (
+    parse_cnpj_str, 
+    format_cnpj, 
+    is_number,
+)
 from backend.api.utils.misc import check_limit_and_offset
 
 router = APIRouter()
@@ -148,7 +152,8 @@ def get_cities(
 
 @router.get("/city/{city_code}")
 def get_city(
-    city_code: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    city_code: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the name of a city code.
@@ -160,6 +165,9 @@ def get_city(
     - A dictionary with the city name.
     """
     try:
+        if(not is_number(city_code)):
+            raise ValueError(f"City code {city_code} is not a number.")
+
         city = cnpj_repository.get_city(city_code)
 
         if len(city) == 0:
@@ -197,7 +205,8 @@ async def get_legal_natures(
 
 @router.get("/legal-nature/{legal_nature_code}")
 async def get_legal_nature(
-    legal_nature_code: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    legal_nature_code: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get a list of legal natures from the database.
@@ -209,6 +218,9 @@ async def get_legal_nature(
     - A list of legal natures as dictionaries.
     """
     try:
+        if(not is_number(legal_nature_code)):
+            raise ValueError(f"Legal nature code {legal_nature_code} is not a number.")
+
         legal_nature = cnpj_repository.get_legal_nature(legal_nature_code)
 
         if len(legal_nature) == 0:
@@ -235,6 +247,11 @@ async def get_registration_status(
     - A dictionary with the registration status.
     """
     try:
+        if(not is_number(registration_status_code)):
+            raise ValueError(
+                f"Registration status code {registration_status_code} is not a number."
+            )
+
         registration_status = cnpj_repository.get_registration_status(
             registration_status_code
         )
@@ -278,7 +295,8 @@ async def get_registration_statuses(
 
 @router.get("/cnpj/{cnpj}/activities")
 async def get_activities(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the activities of a CNPJ number.
@@ -290,6 +308,9 @@ async def get_activities(
     - A list of activities associated with the CNPJ.
     """
     try:
+        if not is_number(cnpj):
+            raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
+
         cnpj_list = parse_cnpj_str(cnpj)
         cnpj_obj = CNPJ(*cnpj_list)
 
@@ -308,7 +329,8 @@ async def get_activities(
 
 @router.get("/cnpj/{cnpj}/partners")
 async def get_partners(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the partners of a CNPJ number.
@@ -320,6 +342,9 @@ async def get_partners(
     - A list of partners associated with the CNPJ.
     """
     try:
+        if not is_number(cnpj):
+            raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
+
         cnpj_list = parse_cnpj_str(cnpj)
         cnpj_obj = CNPJ(*cnpj_list)
         cnpj_info = cnpj_repository.get_partners(cnpj_obj)
@@ -337,7 +362,8 @@ async def get_partners(
 
 @router.get("/cnpj/{cnpj}/company")
 async def get_company(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the company associated with a CNPJ number.
@@ -349,6 +375,9 @@ async def get_company(
     - A dictionary with information about the company.
     """
     try:
+        if not is_number(cnpj):
+            raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
+
         cnpj_list = parse_cnpj_str(cnpj)
         cnpj_obj = CNPJ(*cnpj_list)
         company_info = cnpj_repository.get_company(cnpj_obj)
@@ -376,6 +405,9 @@ async def get_establishment(
     - A dictionary with information about the establishment.
     """
     try:
+        if not is_number(cnpj):
+            raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
+
         cnpj_list = parse_cnpj_str(cnpj)
         cnpj_obj = CNPJ(*cnpj_list)
         est_info = cnpj_repository.get_establishment(cnpj_obj)
@@ -393,7 +425,8 @@ async def get_establishment(
 
 @router.get("/cnpj/{cnpj}/establishments")
 async def get_establishments(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the establishments associated with a CNPJ base (First 8 digits). You must provide any full CNPJ number.
@@ -405,6 +438,9 @@ async def get_establishments(
     - A list of establishments associated with the CNPJ.
     """
     try:
+        if not is_number(cnpj):
+            raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
+
         cnpj_list = parse_cnpj_str(cnpj)
         cnpj_base = cnpj_list[:8]
         cnpj_obj = CNPJ(*cnpj_list)
@@ -436,10 +472,11 @@ async def get_cnpj_info(
     - A dictionary with information about the CNPJ.
     """
     try:
+        if not is_number(cnpj):
+            raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
+
         cnpj_list = parse_cnpj_str(cnpj)
-
         cnpj_obj = CNPJ(*cnpj_list)
-
         cnpj_info = cnpj_repository.get_cnpj_info(cnpj_obj)
 
         if not cnpj_info:
