@@ -107,8 +107,9 @@ class CNPJRepository:
             cnaes_result = cnaes_result.fetchall()
             
             columns = ["code", "text"]
-            
-            return pd.DataFrame(cnaes_result, columns=columns) 
+            cnae_df=pd.DataFrame(cnaes_result, columns=columns)
+
+            return cnae_df.to_dict(orient='records')
 
     def get_legal_nature(self, legal_nature_code: str):
         """
@@ -406,11 +407,8 @@ class CNPJRepository:
         data_situacao_cadastral=establishment_dict['data_situacao_cadastral']
         establishment_dict['data_situacao']=format_database_date(data_situacao_cadastral)
         del establishment_dict['data_situacao_cadastral']
-        
-        situacao_cadastral_code=establishment_dict['motivo_situacao_cadastral']
-        situacao_cadastral_descrip=self.get_registration_status(situacao_cadastral_code)['text']
 
-        establishment_dict['motivo_situacao']=situacao_cadastral_descrip
+        establishment_dict['motivo_situacao']=establishment_dict['motivo_situacao_cadastral']
         del establishment_dict['motivo_situacao_cadastral']
 
         # Format the phone number
@@ -432,8 +430,7 @@ class CNPJRepository:
         del establishment_dict["telefone_1"]
         del establishment_dict["ddd_2"]
         del establishment_dict["telefone_2"]
-        
-        # Format address
+                # Format address
         address_type=replace_spaces(establishment_dict["tipo_logradouro"]).strip()
         address_name=replace_spaces(establishment_dict["logradouro"]).strip()
         establishment_dict["logradouro"]=address_type+' '+address_name
@@ -455,6 +452,7 @@ class CNPJRepository:
         # Get city name
         city_code=establishment_dict['municipio']
         city_dict=self.get_city(city_code)
+        
         establishment_dict['municipio'] = city_dict['text']
         
         # Get the main CNAE
@@ -538,11 +536,10 @@ class CNPJRepository:
             registration_status_result = registration_status_result.fetchall()
 
             registration_status_descrip=registration_status_result[0][0]
-            
+        
         establishment_df=pd.DataFrame(establishment_result, columns=columns)
         establishment_df=empty_df if len(establishment_result)==0 else establishment_df
         establishment_dict=establishment_df.to_dict(orient='records')[0]
-        
         establishment_dict['motivo_situacao_cadastral']=registration_status_descrip
 
         # Normalize data
@@ -873,5 +870,6 @@ class CNPJRepository:
             df_comp=empty_df if len(comp_result)==0 else comp_df
             
             df=pd.merge(df_est, df_comp, on='cnpj_basico', how='left')
-            
+            df=replace_invalid_fields_on_list_dict(df.to_dict(orient='records'))
+
             return df
