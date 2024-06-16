@@ -1,4 +1,3 @@
-
 from backend.api.app import app
 from backend.setup.config import settings
 from backend.setup.logging import logger

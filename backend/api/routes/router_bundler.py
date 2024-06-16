@@ -6,4 +6,4 @@ api_router = APIRouter()
 
 # Add routers here
 api_router.include_router(setup.router, tags=["setup"])
-api_router.include_router(cnpj.router, tags=["cnpj"])
+api_router.include_router(cnpj.router, tags=["CNPJ"])

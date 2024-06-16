@@ -18,6 +18,7 @@ import toml
 DEFAULT_PASSWORD = "postgres"
 POSTGRES_DSN_SCHEME = "postgresql+psycopg"
 
+
 def parse_cors(v: Any) -> Union[List[str], str]:
     if isinstance(v, str) and not v.startswith("["):
         return [i.strip() for i in v.split(",")]
@@ -25,18 +26,18 @@ def parse_cors(v: Any) -> Union[List[str], str]:
         return v
     raise ValueError(v)
 
+
 # Project settings
 with open("pyproject.toml", "r") as f:
     config = toml.load(f)
+
 
 # Settings class
 class Settings(BaseSettings):
     """App settings."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", 
-        env_ignore_empty=True, 
-        extra="ignore"
+        env_file=".env", env_ignore_empty=True, extra="ignore"
     )
 
     VERSION: str = config["tool"]["poetry"]["version"]
@@ -51,7 +52,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: Annotated[
         Union[List[AnyUrl], str], BeforeValidator(parse_cors)
     ] = []
-    
+
     # 1 day
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1 * 24 * 60
 
@@ -67,9 +68,9 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DBNAME: str = ""
-    
+
     SENTRY_DSN: str = ""
-    
+
     def _check_default_secret(self, var_name: str, value: Union[str, None]) -> None:
         if value == DEFAULT_PASSWORD:
             message = (
@@ -80,11 +81,12 @@ class Settings(BaseSettings):
                 warn(message, stacklevel=1)
             else:
                 raise ValueError(message)
-    
+
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
         self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
 
-        return self    
+        return self
+
 
 settings = Settings()

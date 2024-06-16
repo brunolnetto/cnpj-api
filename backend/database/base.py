@@ -9,21 +9,23 @@ from sqlalchemy.orm import sessionmaker
 from backend.setup.logging import logger
 from backend.database.schemas import Base
 
-def get_db_uri():
-    env_path = path.join(getcwd(), '.env')
-    load_dotenv(env_path)
-    
-    # Get environment variables
-    host = getenv('POSTGRES_HOST', 'localhost')
-    port = int(getenv('POSTGRES_PORT', '5432'))
-    user = getenv('POSTGRES_USER', 'postgres')
-    passw = getenv('POSTGRES_PASSWORD', 'postgres')
-    database_name = getenv('POSTGRES_DBNAME')
-    
-    # Connect to the database
-    return f'postgresql://{user}:{passw}@{host}:{port}/{database_name}'
 
-class Database():
+def get_db_uri():
+    env_path = path.join(getcwd(), ".env")
+    load_dotenv(env_path)
+
+    # Get environment variables
+    host = getenv("POSTGRES_HOST", "localhost")
+    port = int(getenv("POSTGRES_PORT", "5432"))
+    user = getenv("POSTGRES_USER", "postgres")
+    passw = getenv("POSTGRES_PASSWORD", "postgres")
+    database_name = getenv("POSTGRES_DBNAME")
+
+    # Connect to the database
+    return f"postgresql://{user}:{passw}@{host}:{port}/{database_name}"
+
+
+class Database:
     """
     This class represents a database connection and session management object.
     It contains two attributes:
@@ -31,19 +33,18 @@ class Database():
     - engine: A callable that represents the database engine.
     - session_maker: A callable that represents the session maker.
     """
+
     def __init__(self, uri):
-        self.uri=uri
+        self.uri = uri
         self.engine = create_engine(
             uri,
-            poolclass=pool.QueuePool,   # Use connection pooling
-            pool_size=20,               # Adjust pool size based on your workload
-            max_overflow=10,            # Adjust maximum overflow connections
-            pool_recycle=3600           # Periodically recycle connections (optional)
+            poolclass=pool.QueuePool,  # Use connection pooling
+            pool_size=20,  # Adjust pool size based on your workload
+            max_overflow=10,  # Adjust maximum overflow connections
+            pool_recycle=3600,  # Periodically recycle connections (optional)
         )
         self.session_maker = sessionmaker(
-            autocommit=False, 
-            autoflush=False, 
-            bind=self.engine
+            autocommit=False, autoflush=False, bind=self.engine
         )
 
     def get_session(self):
@@ -52,34 +53,34 @@ class Database():
     def create_database(self):
         # Create the database if it does not exist
         try:
-            if not database_exists(self.uri): 
+            if not database_exists(self.uri):
                 # Create the database engine and session maker
                 create_database(self.uri)
-            
+
         except OperationalError as e:
             logger.error(f"Error creating to database: {e}")
 
     def test_connection(self):
-        try: 
+        try:
             with self.engine.connect() as conn:
                 query = text("SELECT 1")
 
                 # Test the connection
                 conn.execute(query)
 
-                logger.info('Connection to the database established!')
-                
+                logger.info("Connection to the database established!")
+
         except OperationalError as e:
             logger.error(f"Error connecting to the database: {e}")
 
-    def create_tables(self) :
+    def create_tables(self):
         """
         Connects to a PostgreSQL database using environment variables for connection details.
 
         Returns:
             Database: A NamedTuple with engine and conn attributes for the database connection.
             None: If there was an error connecting to the database.
-        
+
         """
         try:
             # Create all tables defined using the Base class (if not already created)
@@ -104,7 +105,7 @@ class Database():
             self.create_database()
         except Exception as e:
             logger.error(f"Error creating database: {e}")
-        
+
         try:
             self.test_connection()
         except Exception as e:
@@ -115,7 +116,7 @@ class Database():
         except Exception as e:
             logger.error(f"Error creating tables: {e}")
 
-            
+
 async def get_db():
     """
     Define a dependency to create a database connection
@@ -126,14 +127,14 @@ async def get_db():
     """
 
     uri = get_db_uri()
-    
+
     if uri is None:
         # Handle the case where URI is not available (raise exception, log error, etc.)
-        error_message=f"Database URI {uri} not found"
+        error_message = f"Database URI {uri} not found"
         logger.error(error_message)
         raise Exception(error_message)
-    
-    database=Database(uri)
+
+    database = Database(uri)
     database.init()
 
     yield database

@@ -3,12 +3,13 @@ from os import makedirs, path
 from typing import Any
 from datetime import datetime
 import json
-import re 
+import re
 from typing import Union, Any
 
 from backend.setup.logging import logger
 
-NumberList=List[Union[int, float]]
+NumberList = List[Union[int, float]]
+
 
 def are(args: List[Any], validation_map: callable) -> bool:
     """
@@ -23,29 +24,38 @@ def are(args: List[Any], validation_map: callable) -> bool:
     """
     return all(map(validation_map, args))
 
-def is_positive(x: NumberList)->bool:
+
+def is_positive(x: NumberList) -> bool:
     return x > 0
 
-def is_non_negative(x: NumberList)->bool:
+
+def is_non_negative(x: NumberList) -> bool:
     return x >= 0
 
-def is_negative(x: NumberList)->bool:
+
+def is_negative(x: NumberList) -> bool:
     return x < 0
 
-def is_non_positive(x: NumberList)->bool:
+
+def is_non_positive(x: NumberList) -> bool:
     return x <= 0
 
-def are_positive(lst: NumberList)->bool:
+
+def are_positive(lst: NumberList) -> bool:
     return are(lst, is_positive)
 
-def are_non_negative(lst: NumberList)->bool:
+
+def are_non_negative(lst: NumberList) -> bool:
     return are(lst, is_non_negative)
 
-def are_negative(lst: List[Union[int, float]])->bool:
+
+def are_negative(lst: List[Union[int, float]]) -> bool:
     return are(lst, is_negative)
 
-def are_non_positive(lst: NumberList)->bool:
+
+def are_non_positive(lst: NumberList) -> bool:
     return are(lst, is_non_positive)
+
 
 def date_str():
     """
@@ -66,30 +76,32 @@ def time_str():
     """
     return datetime.now().strftime("%H_%M")
 
+
 def humanize_string(s):
     # Step 1: Separate letters and special characters from numbers
-    s = re.sub(r'(\W+)(\d+)', r'\1 \2', s)
-    s = re.sub(r'([A-Za-z]+)(\d+)', r'\1 \2', s)
-    
+    s = re.sub(r"(\W+)(\d+)", r"\1 \2", s)
+    s = re.sub(r"([A-Za-z]+)(\d+)", r"\1 \2", s)
+
     # Step 2: Remove leading zeros from numbers
-    s = re.sub(r'\b0+(\d+)', r'\1', s)
-    
+    s = re.sub(r"\b0+(\d+)", r"\1", s)
+
     # Step 3: Replace multiple spaces with a single space
-    s = re.sub(r'\s+', ' ', s).strip()
-    
+    s = re.sub(r"\s+", " ", s).strip()
+
     # Step 4: Capitalize the first letter of each word
     s = s.title()
-    
+
     # Step 5: Add a dot at the end if not present
-    if not s.endswith('.'):
-        s += '.'
-    
+    if not s.endswith("."):
+        s += "."
+
     return s
 
+
 def string_to_json(string: str) -> dict:
-    string=string.replace("'", '\"')
-    string = re.sub(r'\bNone\b', 'null', string)
-    
+    string = string.replace("'", '"')
+    string = re.sub(r"\bNone\b", "null", string)
+
     return json.loads(string)
 
 
@@ -108,6 +120,7 @@ def is_number(text: str) -> bool:
     pattern = r"^\d+(\.\d+)?$"
     return bool(re.match(pattern, text))
 
+
 def format_decimal(float_string: str, num_decimal_places: int = 2) -> str:
     """
     Formats a decimal number to a string with a fixed number of decimal places.
@@ -125,21 +138,22 @@ def format_decimal(float_string: str, num_decimal_places: int = 2) -> str:
 def is_field_valid(field: str) -> bool:
     """
     Checks if a field is valid.
-    
+
     Args:
         field (str): The field to check.
-        
+
     Returns:
-        bool: Whether the field is valid.    
+        bool: Whether the field is valid.
     """
-    is_nan=str(field).lower() == 'nan'
-    is_nat=str(field).lower() == 'nat'
-    is_null=str(field).lower() == 'null'
-    is_none=str(field).lower() == 'none'
-    
-    is_invalid=is_nan or is_nat or is_null or is_none
-    
+    is_nan = str(field).lower() == "nan"
+    is_nat = str(field).lower() == "nat"
+    is_null = str(field).lower() == "null"
+    is_none = str(field).lower() == "none"
+
+    is_invalid = is_nan or is_nat or is_null or is_none
+
     return not is_invalid
+
 
 def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[Tuple]:
     """
@@ -151,9 +165,12 @@ def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[Tuple]:
     Returns:
         The list with NaN values replaced by None.
     """
+
     def clean_field_map(el):
         return "" if not is_field_valid(el) else el
+
     return operate_on_list_tuple(lst, clean_field_map)
+
 
 def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
     """
@@ -165,59 +182,65 @@ def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
     Returns:
         The list with NaN values replaced by None.
     """
+
     def clean_field_map(el):
         return "" if not is_field_valid(el) else el
+
     return operate_on_list_dict(lst, clean_field_map)
 
+
 # Define a function to format the date
-DELIMITER='/'
+DELIMITER = "/"
+
+
 def format_database_date(date_str: str, delimiter: str = DELIMITER) -> str:
     """
     Formats a date string to the database format.
-    
+
     Args:
         date_str (str): The date string to format.
         delimiter (str): The delimiter to use.
-        
+
     Returns:
         str: The formatted date string.
     """
-    date_str=str(date_str)
-    if not is_field_valid(date_str) or \
-        not is_number(date_str) or \
-            len(date_str) != 8:
+    date_str = str(date_str)
+    if not is_field_valid(date_str) or not is_number(date_str) or len(date_str) != 8:
         return None
 
     return f"{date_str[6:]}{delimiter}{date_str[4:6]}{delimiter}{date_str[:4]}"
-    
+
+
 def format_cep(cep_str: str):
     """
     Formats a CEP string.
-    
+
     Args:
         cep_str (str): The CEP string to format.
-        
+
     Returns:
         str: The formatted CEP string
     """
-    cep_str=str(cep_str)
-    is_valid_cep=is_field_valid(cep_str) and is_number(cep_str)
+    cep_str = str(cep_str)
+    is_valid_cep = is_field_valid(cep_str) and is_number(cep_str)
 
     if not is_valid_cep:
         return ""
-    
+
     # Remove decimal part if it exists
-    cep_str=str(int(float(cep_str)))
-    cep_str=cep_str.zfill(8)   
+    cep_str = str(int(float(cep_str)))
+    cep_str = cep_str.zfill(8)
 
     return f"{cep_str[0:2]}.{cep_str[2:5]}-{cep_str[5:8]}"
 
+
 # Define a function to format the phone number
 def format_phone(
-    ddd_num: str, phone_num: str, 
-    ddd_ldelimiter: tuple='(', 
-    ddd_rdelimiter: tuple=')', 
-    phone_delimiter='-'
+    ddd_num: str,
+    phone_num: str,
+    ddd_ldelimiter: tuple = "(",
+    ddd_rdelimiter: tuple = ")",
+    phone_delimiter="-",
 ):
     """
     Formats a phone number.
@@ -232,24 +255,27 @@ def format_phone(
     Returns:
         str: The formatted phone number.
     """
+
     def is_phone_valid(phone_):
         return is_number(phone_) and is_field_valid(phone_) and len(phone_) in (8, 9)
+
     def is_ddd_valid(ddd_):
         return is_number(ddd_) and is_field_valid(ddd_) and len(ddd_) in (1, 2)
 
-    are_fields_valid=is_phone_valid(phone_num) and is_ddd_valid(ddd_num)
-    
+    are_fields_valid = is_phone_valid(phone_num) and is_ddd_valid(ddd_num)
+
     if not are_fields_valid:
         return ""
-    
-    ddd_num=str(int(float(ddd_num)))
-    phone_num=str(int(float(phone_num)))
-    phone_num=phone_num.zfill(8)
 
-    formated_ddd=f"{ddd_ldelimiter}{ddd_num}{ddd_rdelimiter}"
-    formatted_phone=f"{phone_num[:4]}{phone_delimiter}{phone_num[4:]}"
+    ddd_num = str(int(float(ddd_num)))
+    phone_num = str(int(float(phone_num)))
+    phone_num = phone_num.zfill(8)
+
+    formated_ddd = f"{ddd_ldelimiter}{ddd_num}{ddd_rdelimiter}"
+    formatted_phone = f"{phone_num[:4]}{phone_delimiter}{phone_num[4:]}"
 
     return f"{formated_ddd} {formatted_phone}"
+
 
 def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:
     """
@@ -263,9 +289,12 @@ def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:
     Returns:
         The list with the operation performed.
     """
+
     def tuple_map(tuple_):
         return tuple(map(operation, tuple_))
+
     return list(map(tuple_map, lst))
+
 
 def operate_on_list_dict(lst: List[Tuple], operation: callable) -> List[Any]:
     """
@@ -279,11 +308,15 @@ def operate_on_list_dict(lst: List[Tuple], operation: callable) -> List[Any]:
     Returns:
         The list with the operation performed.
     """
+
     def item_map(item):
         return item[0], operation(item[1])
+
     def dict_map(dict_):
         return dict(map(item_map, dict_.items()))
+
     return list(map(dict_map, lst))
+
 
 def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
     """
@@ -295,10 +328,11 @@ def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
     Returns:
         The list with multiple spaces replaced by a single space.
     """
+
     def clean_spaces_map(el):
         return " ".join(str(el).split())
-    return operate_on_list_tuple(lst, clean_spaces_map) 
 
+    return operate_on_list_tuple(lst, clean_spaces_map)
 
 
 def makedir(folder_name: str, is_verbose: bool = False):
@@ -311,13 +345,14 @@ def makedir(folder_name: str, is_verbose: bool = False):
     """
     if not path.exists(folder_name):
         makedirs(folder_name)
-        
-        if(is_verbose):
-            logger.info('Folder: ' + repr(str(folder_name)))
+
+        if is_verbose:
+            logger.info("Folder: " + repr(str(folder_name)))
 
     else:
-        if(is_verbose):
-            logger.warning(f'Folder {repr(str(folder_name))} already exists!')
+        if is_verbose:
+            logger.warning(f"Folder {repr(str(folder_name))} already exists!")
+
 
 def replace_spaces(text):
     """
@@ -331,6 +366,7 @@ def replace_spaces(text):
     """
     return " ".join(text.split())
 
+
 def remove_leading_zeros(text: str) -> str:
     """
     Removes leading zeros from a string.
@@ -343,9 +379,9 @@ def remove_leading_zeros(text: str) -> str:
     """
     if len(text) == 1 and text == "0":
         return text
-    
+
     i = 0
     while i < len(text) and text[i] == "0":
         i += 1
-    
+
     return text[i:]
