@@ -1,6 +1,6 @@
 from os import rmdir, makedirs
 import pytest
-import json
+from unittest.mock import patch
 from json import JSONDecodeError
 
 from backend.utils.misc import (
@@ -17,7 +17,22 @@ from backend.utils.misc import (
     is_number,
     format_decimal,
     string_to_json,
+    humanize_string,
+    date_str,
+    time_str,
 )
+
+def test_date_str():
+    """Tests the date_str function."""
+    with patch('backend.utils.misc.datetime') as mock_datetime:
+        mock_datetime.now().strftime.return_value = "2024-06-13"
+        assert date_str() == "2024-06-13"
+
+def test_time_str():
+    """Tests the time_str function."""
+    with patch('backend.utils.misc.datetime') as mock_datetime:
+        mock_datetime.now().strftime.return_value = "12:34:56"
+        assert time_str() == "12:34:56"
 
 def test_is_number():
     """Tests the is_number function."""
@@ -188,3 +203,32 @@ def test_string_to_json_empty_string():
   with pytest.raises(JSONDecodeError):
     string_to_json(empty_string)
 
+def test_humanize_string_basic():
+    assert humanize_string("QUADRA101 SALA03 SALA04 LOTE0016") == "Quadra 101 Sala 3 Sala 4 Lote 16."
+
+def test_humanize_string_no_numbers():
+    assert humanize_string("QUADRA SALA LOTE") == "Quadra Sala Lote."
+
+def test_humanize_string_only_numbers():
+    assert humanize_string("101 03 04 0016") == "101 3 4 16."
+
+def test_humanize_string_mixed_case():
+    assert humanize_string("Quadra101 SaLa03 sala04 lotE0016") == "Quadra 101 Sala 3 Sala 4 Lote 16."
+
+def test_humanize_string_multiple_spaces():
+    assert humanize_string("QUADRA  101   SALA  03  SALA   04  LOTE  0016") == "Quadra 101 Sala 3 Sala 4 Lote 16."
+
+def test_humanize_string_leading_zeros():
+    assert humanize_string("LOTE00016") == "Lote 16."
+
+def test_humanize_string_no_trailing_dot():
+    assert humanize_string("Quadra101") == "Quadra 101."
+
+def test_humanize_string_already_has_dot():
+    assert humanize_string("Quadra101.") == "Quadra 101."
+
+def test_humanize_string_empty_string():
+    assert humanize_string("") == "."
+
+def test_humanize_string_special_characters():
+    assert humanize_string("QUADRA#101") == "Quadra# 101."
