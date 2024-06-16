@@ -1,0 +1,6 @@
+[MESSAGES]
+# Disable docstring-related messages
+disable=C0114,C0115,C0116,C0121,C0123,C0122
+# Define a custom category for functions without docstrings (optional)
+# This allows you to selectively enable/disable this category later
+ids=my-custom-no-docstring
