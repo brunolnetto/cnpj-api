@@ -58,7 +58,7 @@ class CNPJRepository:
             columns = ["cnpj"]
             cnpjs_df = pd.DataFrame(cnpjs_result, columns=columns)
 
-            return list(cnpjs_df.to_dict().values())[0]
+            return list(cnpjs_df.to_{}.values())[0]
 
     def get_cnae(self, cnae_code: str):
         """
@@ -71,7 +71,7 @@ class CNPJRepository:
         str: The description of the CNAE.
         """
         if not cnae_code and not is_number(cnae_code):
-            return dict()
+            return {}
 
         with self.database.engine.begin() as connection:
             query = text(f"select descricao from cnae where codigo = '{cnae_code}'")
@@ -81,7 +81,7 @@ class CNPJRepository:
             cnae_description = "" if len(cnae_result) == 0 else cnae_result[0][0]
 
             return (
-                dict()
+                {}
                 if len(cnae_description) == 0
                 else {
                     "code": cnae_code,
@@ -125,7 +125,7 @@ class CNPJRepository:
         """
         is_valid_legal_nature_code = legal_nature_code or is_number(legal_nature_code)
         if not is_valid_legal_nature_code:
-            return dict()
+            return {}
 
         with self.database.engine.begin() as connection:
             query = text(
@@ -139,7 +139,7 @@ class CNPJRepository:
             )
 
             return (
-                dict()
+                {}
                 if len(legal_nature_description) == 0
                 else {
                     "code": legal_nature_code,
@@ -213,7 +213,7 @@ class CNPJRepository:
             )
 
             return (
-                dict()
+                {}
                 if len(legal_nature_description) == 0
                 else {
                     "code": registration_status_code,
@@ -273,7 +273,7 @@ class CNPJRepository:
         str: The name of the city.
         """
         if not city_code and not is_number(city_code):
-            return dict()
+            return {}
 
         with self.database.engine.begin() as connection:
             query = text(
@@ -290,7 +290,7 @@ class CNPJRepository:
                 else pd.DataFrame(city_result, columns=columns)
             )
 
-            return dict() if len(city_df) == 0 else city_df.to_dict(orient="records")[0]
+            return {} if len(city_df) == 0 else city_df.to_dict(orient="records")[0]
 
     def get_cities(self, limit: int = 10, offset: int = 0):
         """
@@ -503,7 +503,7 @@ class CNPJRepository:
         atividade_principal = establishment_dict["cnae_fiscal_principal"]
 
         establishment_dict["atividade_principal"] = (
-            self.get_cnae(atividade_principal) if atividade_principal else dict()
+            self.get_cnae(atividade_principal) if atividade_principal else {}
         )
 
         del establishment_dict["cnae_fiscal_principal"]
@@ -826,7 +826,7 @@ class CNPJRepository:
             )
 
             is_empty = (
-                len(secondary_activities) == 1 and secondary_activities[0] == dict()
+                len(secondary_activities) == 1 and secondary_activities[0] == {}
             )
             atividades_secundarias = [] if is_empty else secondary_activities
 
