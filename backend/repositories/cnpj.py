@@ -58,7 +58,7 @@ class CNPJRepository:
             columns = ["cnpj"]
             cnpjs_df = pd.DataFrame(cnpjs_result, columns=columns)
 
-            return list(cnpjs_df.to_{}.values())[0]
+            return list(cnpjs_df.to_dict().values())[0]
 
     def get_cnae(self, cnae_code: str):
         """
@@ -825,9 +825,7 @@ class CNPJRepository:
                 partners_dict["atividades_secundarias"]
             )
 
-            is_empty = (
-                len(secondary_activities) == 1 and secondary_activities[0] == {}
-            )
+            is_empty = len(secondary_activities) == 1 and secondary_activities[0] == {}
             atividades_secundarias = [] if is_empty else secondary_activities
 
             return {

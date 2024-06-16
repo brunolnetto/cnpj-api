@@ -77,7 +77,7 @@ async def get_cnae_description(
 
         if len(cnaes) == 0:
             raise ValueError(f"CNAE code {cnae_code} not found.")
-        
+
         return cnaes
 
     except Exception as e:
@@ -109,16 +109,14 @@ async def get_establishments_by_cnae(
 
         if not cnaes:
             raise ValueError(f"There isn't CNAE code {cnae_code}.")
-        
+
         establishments = cnpj_repository.get_establishments_by_cnae(
             cnae_code, limit=limit, offset=offset
         )
 
         if len(establishments) == 0:
-            raise ValueError(
-                f"There are no establishents with CNAE code {cnae_code}."
-            )
-        
+            raise ValueError(f"There are no establishents with CNAE code {cnae_code}.")
+
         return establishments
 
     except Exception as e:
@@ -166,7 +164,7 @@ def get_city(
 
         if len(city) == 0:
             raise ValueError(f"City code {city_code} not found.")
-        
+
         return city
 
     except Exception as e:
@@ -215,7 +213,7 @@ async def get_legal_nature(
 
         if len(legal_nature) == 0:
             raise ValueError(f"Legal nature code {legal_nature_code} not found.")
-        
+
         return legal_nature
 
     except Exception as e:
@@ -245,7 +243,7 @@ async def get_registration_status(
             raise ValueError(
                 f"Registration status code {registration_status_code} not found."
             )
-        
+
         return registration_status
 
     except Exception as e:
@@ -301,7 +299,7 @@ async def get_activities(
             base = "There are no activities associated with CNPJ {cnpj}."
             explanation = "Try route /cnpj/{cnpj}/company to verify if the CNPJ exists."
             raise ValueError(f"{base}. {explanation}")
-        
+
         return activities
 
     except Exception as e:
@@ -330,7 +328,7 @@ async def get_partners(
             explanation = "It is likely either a sole proprietorship or a legal entity."
             msg = f"There are no partners associated with CNPJ {cnpj}. {explanation}"
             raise ValueError(msg)
-        
+
         return cnpj_info
 
     except Exception as e:
@@ -357,7 +355,7 @@ async def get_company(
 
         if not company_info:
             raise ValueError(f"There is no company associated with CNPJ {cnpj}.")
-        
+
         return company_info
 
     except Exception as e:
@@ -386,7 +384,7 @@ async def get_establishment(
             base_msg = "There is no establishment associated with CNPJ {cnpj}"
             explanation = "Try route /cnpj/{cnpj}/company to verify if the CNPJ exists."
             raise ValueError(f"{base_msg}. {explanation}")
-        
+
         return est_info
 
     except Exception as e:
@@ -417,7 +415,7 @@ async def get_establishments(
             raise ValueError(
                 f"There are no establishments associated with CNPJ base {cnpj_base}."
             )
-        
+
         return est_info
 
     except Exception as e:
@@ -447,7 +445,7 @@ async def get_cnpj_info(
         if not cnpj_info:
             formatted_cnpj = format_cnpj(cnpj)
             raise ValueError(f"CNPJ {formatted_cnpj} not found.")
-        
+
         return cnpj_info
 
     except Exception as e:
