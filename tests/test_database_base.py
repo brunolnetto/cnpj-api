@@ -52,6 +52,6 @@ def test_test_connection_error(mocker):
 
     # Mock a failing connection (don't patch connect method directly)
     error = Exception("Test Error")
-    with mocker.patch.object(db.engine, "connect", side_effect=error):
-        with pytest.raises(Exception):
-            db.test_connection()
+    mocker.patch.object(db.engine, "connect", side_effect=error)
+    with pytest.raises(Exception):
+        db.test_connection()
