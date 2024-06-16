@@ -70,7 +70,7 @@ minimal-requirements: ## Generates minimal requirements. Usage: make requirement
 	python3 scripts/clean_packages.py requirements.txt requirements.txt
 
 lint: ## perform inplace lint fixes
-	ruff check --fix .
+	ruff check --unsafe-fixes --fix .
 
 report: test ## Generate coverage report. Usage: make report
 	coverage report --omit=$(OMIT_PATHS) --show-missing
