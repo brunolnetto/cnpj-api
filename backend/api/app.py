@@ -1,7 +1,7 @@
 # Description: This file initializes the FastAPI application and sets up the necessary configurations.
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, status, Request, HTTPException
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
@@ -56,6 +56,14 @@ def setup_app(app_):
     @app_.get("/favicon.ico", include_in_schema=False)
     async def my_favicon():
         return FileResponse("static/favicon.ico")
+
+    @app_.exception_handler(status.HTTP_404_NOT_FOUND)
+    async def not_found_handler(request: Request, exc: HTTPException):
+        """Redirects to docs or redoc on 404 Not Found."""
+        # Choose between docs or redoc based on your preference
+        redirect_url = f"{settings.API_V1_STR}/docs"  # Or "/redoc"
+        return RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
+
 
     # Sentry configuration
     if settings.SENTRY_DSN:
