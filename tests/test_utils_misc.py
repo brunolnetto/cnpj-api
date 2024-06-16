@@ -20,7 +20,39 @@ from backend.utils.misc import (
     humanize_string,
     date_str,
     time_str,
+    are_positive,
+    are_non_negative,
+    are_negative,
+    are_non_positive,
 )
+
+def test_are_positive():
+    """Tests the are_positive function."""
+    assert are_positive([1, 2, 3, 4, 5])
+    assert not are_positive([1, 2, 3, 4, -5])
+    assert not are_positive([-1, 2, 3, 4, 5]) 
+    assert not are_positive([1, 2, 3, 4, 0])
+    assert not are_positive([1, 2, 3, 4, 0])
+
+def test_are_non_negative():
+    """Tests the are_non_negative function."""
+    assert are_non_negative([1, 2, 3, 4, 5])
+    assert not are_non_negative([1, 2, 3, 4, -5])
+    assert not are_non_negative([-1, 2, 3, 4, 5]) 
+    assert are_non_negative([1, 2, 3, 4, 0])
+
+def test_are_negative():
+    """Tests the are_negative function."""
+    assert not are_negative([1, 2, 3, 4, 5])
+    assert are_negative([-1, -2, -3, -4, -5]) 
+    assert not are_negative([1, 2, 3, 4, 0])
+
+def test_are_non_positive():
+    """Tests the are_non_positive function."""
+    assert are_non_positive([-1, -2, -3, -4, -5]) 
+    assert not are_non_positive([1, 2, 3, 4, 5])
+    assert not are_non_positive([-1, 2, 3, 4, 5]) 
+    assert are_non_positive([-1, -2, -3, -4, 0])
 
 def test_date_str():
     """Tests the date_str function."""
