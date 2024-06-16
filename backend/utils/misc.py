@@ -1,10 +1,50 @@
 from typing import List, Tuple, Dict
 from os import makedirs, path
 from typing import Any
+from datetime import datetime
 import json
 import re
 
 from backend.setup.logging import logger
+
+def date_str():
+    """
+    Returns the current date as a string in the format 'YYYY-MM-DD'.
+
+    Returns:
+        str: The current date as a string.
+    """
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def time_str():
+    """
+    Returns the current time as a string in the format 'HH_MM'.
+
+    Returns:
+        str: The current time as a string.
+    """
+    return datetime.now().strftime("%H_%M")
+
+def humanize_string(s):
+    # Step 1: Separate letters and special characters from numbers
+    s = re.sub(r'(\W+)(\d+)', r'\1 \2', s)
+    s = re.sub(r'([A-Za-z]+)(\d+)', r'\1 \2', s)
+    
+    # Step 2: Remove leading zeros from numbers
+    s = re.sub(r'\b0+(\d+)', r'\1', s)
+    
+    # Step 3: Replace multiple spaces with a single space
+    s = re.sub(r'\s+', ' ', s).strip()
+    
+    # Step 4: Capitalize the first letter of each word
+    s = s.title()
+    
+    # Step 5: Add a dot at the end if not present
+    if not s.endswith('.'):
+        s += '.'
+    
+    return s
 
 def string_to_json(string: str) -> dict:
     string=string.replace("'", '\"')
