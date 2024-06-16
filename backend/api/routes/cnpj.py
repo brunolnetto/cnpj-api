@@ -4,6 +4,7 @@ from backend.repositories.cnpj import CNPJRepository
 from backend.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.api.models.cnpj import CNPJ
 from backend.api.utils.cnpj import parse_cnpj_str, format_cnpj
+from backend.api.utils.misc import check_limit_and_offset
 
 router = APIRouter()
 
@@ -23,6 +24,8 @@ async def get_cnpjs(
     - A list of CNPJs as dictionaries.
     """
     try:
+        check_limit_and_offset(limit, offset)
+
         return cnpj_repository.get_cnpjs(limit=limit, offset=offset)
     
     except Exception as e:
@@ -46,9 +49,11 @@ async def get_cnaes(
     - A list of CNAEs as dictionaries.
     """
     try:
+        check_limit_and_offset(limit, offset)
+
         cnaes=cnpj_repository.get_cnaes(limit=limit, offset=offset, all=all)
         
-        return cnaes.to_dict(orient='records')
+        return cnaes
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -98,6 +103,8 @@ async def get_establishments_by_cnae(
     - A list of establishments as dictionaries.
     """
     try:
+        check_limit_and_offset(limit, offset)
+
         cnaes=cnpj_repository.get_cnae(cnae_code)
 
         if not cnaes:
@@ -130,6 +137,8 @@ def get_cities(
     - A list of cities as dictionaries.
     """
     try:
+        check_limit_and_offset(limit, offset)
+
         return cnpj_repository.get_cities(limit=limit, offset=offset)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -178,6 +187,8 @@ async def get_legal_natures(
     - A list of legal natures as dictionaries.
     """
     try:
+        check_limit_and_offset(limit, offset)
+
         return cnpj_repository.get_legal_natures(limit=limit, offset=offset, all=all)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -252,6 +263,8 @@ async def get_registration_statuses(
     - A list of registration statuses as dictionaries.
     """
     try:
+        check_limit_and_offset(limit, offset)
+
         return cnpj_repository.get_registration_statuses(limit=limit, offset=offset, all=all)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -422,7 +435,9 @@ async def get_cnpj_info(
     """
     try:
         cnpj_list=parse_cnpj_str(cnpj)
+        
         cnpj_obj=CNPJ(*cnpj_list)
+        
         cnpj_info=cnpj_repository.get_cnpj_info(cnpj_obj)
         
         if(not cnpj_info):
