@@ -66,6 +66,7 @@ def date_str():
     """
     return datetime.now().strftime("%Y-%m-%d")
 
+
 def number_string_to_number(number_string: str) -> int:
     """
     Converts a float string to an integer.
@@ -76,11 +77,12 @@ def number_string_to_number(number_string: str) -> int:
     Returns:
         int: The integer value.
     """
-    int_value=int(float(number_string))
-    float_value=float(number_string)
-    remainder=float_value-int_value
-    
-    return int_value if remainder==0 else float_value
+    int_value = int(float(number_string))
+    float_value = float(number_string)
+    remainder = float_value - int_value
+
+    return int_value if remainder == 0 else float_value
+
 
 def time_str():
     """
@@ -208,7 +210,7 @@ def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
 DELIMITER = "/"
 
 
-def format_database_date(date_str: str, delimiter: str = DELIMITER) -> str:
+def format_database_date(date_str_: str, delimiter: str = DELIMITER) -> str:
     """
     Formats a date string to the database format.
 
@@ -219,11 +221,11 @@ def format_database_date(date_str: str, delimiter: str = DELIMITER) -> str:
     Returns:
         str: The formatted date string.
     """
-    date_str = str(date_str)
-    if not is_field_valid(date_str) or not is_number(date_str) or len(date_str) != 8:
+    date_str_ = str(date_str_)
+    if not is_field_valid(date_str) or not is_number(date_str_) or len(date_str_) != 8:
         return None
 
-    return f"{date_str[6:]}{delimiter}{date_str[4:6]}{delimiter}{date_str[:4]}"
+    return f"{date_str_[6:]}{delimiter}{date_str_[4:6]}{delimiter}{date_str_[:4]}"
 
 
 def format_cep(cep_str: str):
