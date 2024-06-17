@@ -59,7 +59,7 @@ async def get_cnaes(
         cnaes = cnpj_repository.get_cnaes(limit=limit, offset=offset, all=all)
 
         return cnaes
-    
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -83,7 +83,7 @@ async def get_cnae_description(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if len(cnaes) == 0:
-        message=f"CNAE code {cnae_code} not found."
+        message = f"CNAE code {cnae_code} not found."
         raise HTTPException(status_code=404, detail=message)
 
     return cnaes
@@ -120,9 +120,9 @@ async def get_establishments_by_cnae(
         )
 
         if len(establishments) == 0:
-            message=f"There are no establishents with CNAE code {cnae_code}."
+            message = f"There are no establishents with CNAE code {cnae_code}."
             raise HTTPException(status_code=404, detail=message)
-    
+
         return establishments
 
     except Exception as e:
@@ -170,16 +170,16 @@ def get_city(
             raise ValueError(f"City code {city_code} is not a number.")
 
         city = cnpj_repository.get_city(city_code)
-            
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
-    
+
     if len(city) == 0:
-        message=f"City code {city_code} not found."
+        message = f"City code {city_code} not found."
         raise HTTPException(status_code=404, detail=message)
 
     return city
-    
+
 
 @router.get("/legal-natures")
 async def get_legal_natures(
@@ -228,7 +228,7 @@ async def get_legal_nature(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if len(legal_nature) == 0:
-        message=f"Legal nature code {legal_nature_code} not found."
+        message = f"Legal nature code {legal_nature_code} not found."
         raise HTTPException(status_code=404, detail=message)
 
     return legal_nature
@@ -262,7 +262,7 @@ async def get_registration_status(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if len(registration_status) == 0:
-        message=f"Registration status code {registration_status_code} not found."
+        message = f"Registration status code {registration_status_code} not found."
         raise HTTPException(status_code=404, detail=message)
 
     return registration_status
@@ -322,12 +322,10 @@ async def get_activities(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if not activities:
-        base = "There are no activities associated with CNPJ {cnpj}."
-        explanation = "Try route /cnpj/{cnpj}/company to verify if the CNPJ exists."
         raise HTTPException(status_code=404, detail=str(e)) from e
-        
+
     return activities
-        
+
 
 @router.get("/cnpj/{cnpj}/partners")
 async def get_partners(
@@ -356,12 +354,13 @@ async def get_partners(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if not cnpj_info:
-        error=f"There are no partners associated with CNPJ {cnpj}"
-        explanation="It is likely either a sole proprietorship or a legal entity."
-        msg=f"{error}. {explanation}"
+        error = f"There are no partners associated with CNPJ {cnpj}"
+        explanation = "It is likely either a sole proprietorship or a legal entity."
+        msg = f"{error}. {explanation}"
         raise HTTPException(status_code=404, detail=msg)
 
     return cnpj_info
+
 
 @router.get("/cnpj/{cnpj}/company")
 async def get_company(
@@ -390,7 +389,7 @@ async def get_company(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if not company_info:
-        message=f"There is no company associated with CNPJ {cnpj}."
+        message = f"There is no company associated with CNPJ {cnpj}."
         raise HTTPException(status_code=404, detail=message)
 
     return company_info
@@ -425,8 +424,8 @@ async def get_establishment(
     if not est_info:
         base_msg = f"There is no establishment associated with CNPJ {cnpj}"
         explanation = f"Try route /cnpj/{cnpj}/company to verify if the CNPJ exists."
-        message=f"{base_msg}. {explanation}"
-        
+        message = f"{base_msg}. {explanation}"
+
         raise HTTPException(status_code=404, detail=message)
 
     return est_info
@@ -461,8 +460,8 @@ async def get_establishments(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if not est_info:
-        message=f"There are no establishments associated with CNPJ base {cnpj_base}."
-        
+        message = f"There are no establishments associated with CNPJ base {cnpj_base}."
+
         raise HTTPException(status_code=404, detail=message)
 
     return est_info
@@ -496,8 +495,8 @@ async def get_cnpj_info(
 
     if not cnpj_info:
         formatted_cnpj = format_cnpj(cnpj)
-        message=f"CNPJ {formatted_cnpj} not found."
-        
+        message = f"CNPJ {formatted_cnpj} not found."
+
         raise HTTPException(status_code=404, detail=message)
 
     return cnpj_info
