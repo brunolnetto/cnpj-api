@@ -3,6 +3,12 @@ services:
     build: .
     ports:
       - "8000:8000"
+    networks:
+      - CNPJ_net
     volumes:
       - .:/app
     env_file: .env
+
+networks:
+  CNPJ_net:
+    driver: bridge
