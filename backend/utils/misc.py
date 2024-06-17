@@ -108,10 +108,6 @@ def humanize_string(s):
     # Step 4: Capitalize the first letter of each word
     s = s.title()
 
-    # Step 5: Add a dot at the end if not present
-    if not s.endswith("."):
-        s += "."
-
     return s
 
 
