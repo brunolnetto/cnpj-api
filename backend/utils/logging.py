@@ -27,8 +27,6 @@ def clear_folder_items(
     items_len = len(items)
     if items_len >= remaining_items:
         to_remove = items[0 : items_len - remaining_items]
-        print(to_remove)
-        print(items[items_len - remaining_items :])
 
         for item in to_remove:
             if path.isfile(item.path):
