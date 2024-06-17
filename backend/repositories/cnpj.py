@@ -378,18 +378,18 @@ class CNPJRepository:
 
             company_result = replace_invalid_fields_on_list_tuple(company_result)
             company_result = replace_spaces_on_list_tuple(company_result)
-            
+
             empty_df = pd.DataFrame(columns=columns)
             company_df = pd.DataFrame(company_result, columns=columns)
             company_df = empty_df if len(company_result) == 0 else company_df
-            
+
             company_dict = company_df.to_dict(orient="records")[0]
-            
+
             if len(company_df) == 0:
                 return []
 
             del company_dict["cnpj_basico"]
-            
+
             company_dict["efr"] = company_dict["ente_federativo_responsavel"]
             company_dict["nome"] = company_dict["razao_social"]
             del company_dict["razao_social"]
@@ -398,19 +398,19 @@ class CNPJRepository:
             capital_social = company_dict["capital_social"]
             capital_social = format_decimal(capital_social)
             company_dict["capital_social"] = capital_social
-            
+
             size_dict = {
                 "0": "NÃO INFORMADO",
                 "1": "MICRO EMPRESA",
                 "3": "EMPRESA DE PEQUENO PORTE",
                 "5": "DEMAIS",
             }
-            
-            porte = str(number_string_to_number(company_dict["porte_empresa"]))            
+
+            porte = str(number_string_to_number(company_dict["porte_empresa"]))
             company_dict["porte"] = size_dict[porte]
-            
+
             del company_dict["porte_empresa"]
-            
+
             return company_dict
 
     def __format_establishment(self, establishment_dict: Dict):
@@ -444,7 +444,9 @@ class CNPJRepository:
             "4": "INAPTA",
             "8": "BAIXADA",
         }
-        situacao_cadastral = str(number_string_to_number(establishment_dict["situacao_cadastral"]))
+        situacao_cadastral = str(
+            number_string_to_number(establishment_dict["situacao_cadastral"])
+        )
         establishment_dict["situacao"] = situacao_dict[situacao_cadastral]
         del establishment_dict["situacao_cadastral"]
 
@@ -481,12 +483,12 @@ class CNPJRepository:
         del establishment_dict["telefone_1"]
         del establishment_dict["ddd_2"]
         del establishment_dict["telefone_2"]
-        
+
         # Format address
         address_type = replace_spaces(establishment_dict["tipo_logradouro"]).strip()
         address_name = replace_spaces(establishment_dict["logradouro"]).strip()
-        address=humanize_string(address_type + " " + address_name)
-        
+        address = humanize_string(address_type + " " + address_name)
+
         establishment_dict["logradouro"] = address
         del establishment_dict["tipo_logradouro"]
 
@@ -552,10 +554,10 @@ class CNPJRepository:
                         est.cnpj_dv = '{cnpj.digitos_verificadores_int}'
                 """
             )
-            
+
             establishment_result = connection.execute(query)
             establishment_result = establishment_result.fetchall()
-            
+
             columns = [
                 "cnpj_basico",
                 "cnpj_ordem",
@@ -644,7 +646,9 @@ class CNPJRepository:
             establishment_result = connection.execute(query)
             establishment_result = establishment_result.fetchall()
 
-            establishment_result = replace_invalid_fields_on_list_tuple(establishment_result)
+            establishment_result = replace_invalid_fields_on_list_tuple(
+                establishment_result
+            )
             establishment_result = replace_spaces_on_list_tuple(establishment_result)
 
         columns = [
@@ -737,8 +741,8 @@ class CNPJRepository:
             empty_df = pd.DataFrame(columns=columns)
             partners_df = pd.DataFrame(partners_result, columns=columns)
             partners_df = empty_df if len(partners_df) == 0 else partners_df
-            
-            if(len(partners_df)==0):
+
+            if len(partners_df) == 0:
                 return []
 
             partners_dict = partners_df.to_dict(orient="records")[0]
@@ -818,7 +822,7 @@ class CNPJRepository:
 
             activities_result = connection.execute(query)
             activities_result = activities_result.fetchall()
-            
+
             activities_result = replace_invalid_fields_on_list_tuple(activities_result)
             activities_result = replace_spaces_on_list_tuple(activities_result)
 
@@ -972,7 +976,7 @@ class CNPJRepository:
 
             result = connection.execute(query)
             result = result.fetchall()
-            
+
             result = replace_invalid_fields_on_list_tuple(result)
             result = replace_spaces_on_list_tuple(result)
 
@@ -1003,23 +1007,22 @@ class CNPJRepository:
                         cnpj_basico in {this_estab_cnpj}
                 """
             )
-            
 
             comp_result = connection.execute(query)
             comp_result = comp_result.fetchall()
-            
+
             comp_result = replace_invalid_fields_on_list_tuple(comp_result)
             comp_result = replace_spaces_on_list_tuple(comp_result)
-            
+
             comp_df = pd.DataFrame(comp_result, columns=columns)
 
             df_comp = empty_df if len(comp_result) == 0 else comp_df
 
             df = pd.merge(df_est, df_comp, on="cnpj_basico", how="left")
-            records_dict=df.to_dict(orient="records")
-            
+            records_dict = df.to_dict(orient="records")
+
             records_dict = replace_invalid_fields_on_list_dict(records_dict)
 
             records_dict = list(map(self.__format_establishment, records_dict))
-    
+
             return records_dict
