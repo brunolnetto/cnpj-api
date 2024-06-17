@@ -120,15 +120,15 @@ async def get_establishments_by_cnae(
             cnae_code, limit=limit, offset=offset
         )
 
-        if len(establishments) == 0:
-            return {
-                "detail":f"There are no establishents with CNAE code {cnae_code}."
-            }
-        else: 
-            return establishments
-
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+    
+    if len(establishments) == 0:
+        return {
+            "detail":f"There are no establishents with CNAE code {cnae_code}."
+        }
+    else: 
+        return establishments
 
 
 @router.get("/cities")
@@ -313,8 +313,25 @@ async def get_activities(
     Returns:
     - A list of activities associated with the CNPJ.
     """
-    return cnpj
+    try:
+        if not is_number(cnpj):
+            raise ValueError(
+                f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
+            )
 
+        cnpj_list = parse_cnpj_str(cnpj)
+        cnpj_obj = CNPJ(*cnpj_list)
+        activities = cnpj_repository.get_activities(cnpj_obj)
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    
+    if not activities:
+        return {
+            "detail": f"There are no activities associated with CNPJ {cnpj}."
+        }
+    else:
+        return activities
 
 @router.get("/cnpj/{cnpj}/partners")
 async def get_partners(

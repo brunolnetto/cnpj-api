@@ -799,9 +799,9 @@ class CNPJRepository:
                                 string_to_array(
                                     est.cnae_fiscal_secundaria, ','
                                 )
-                            ) AS codigo_cnae
+                            )::integer AS codigo_cnae
                         FROM estabelecimento est
-                        where cnpj_basico::text = '{cnpj.basico_int}'
+                        where cnpj_basico = {cnpj.basico_int}
                     ),
                     nosso_cnae as (
                         select
@@ -812,7 +812,7 @@ class CNPJRepository:
                             cnae_unnest
                         inner join
                             cnae
-                        on cnae.codigo::text = cnae_unnest.codigo_cnae::text
+                        on cnae.codigo = cnae_unnest.codigo_cnae
                         group by cnpj_basico, codigo, descricao
                         order by cnpj_basico, codigo, descricao
                     ),
@@ -825,8 +825,8 @@ class CNPJRepository:
                             ) as atividade_principal
                         from estabelecimento est
                         inner join cnae
-                            on est.cnae_fiscal_principal::text = cnae.codigo::text
-                        where cnpj_basico::text = '{cnpj.basico_int}'
+                            on est.cnae_fiscal_principal = cnae.codigo
+                        where cnpj_basico = {cnpj.basico_int}
                     ),
                     atividades_secundarias as (
                         select
@@ -846,7 +846,7 @@ class CNPJRepository:
                         a_s.atividades_secundarias as atividades_secundarias
                     from atividades_secundarias a_s
                     inner join atividade_principal a_p
-                    on a_s.cnpj_basico::text = a_p.cnpj_basico::text
+                    on a_s.cnpj_basico = a_p.cnpj_basico
                 """
             )
             
@@ -855,7 +855,7 @@ class CNPJRepository:
             
             activities_result = replace_invalid_fields_on_list_tuple(activities_result)
             activities_result = replace_spaces_on_list_tuple(activities_result)
-            print(activities_result)
+            
             columns = ["cnpj_basico", "atividade_principal", "atividades_secundarias"]
             partners_df = pd.DataFrame(activities_result, columns=columns)
             empty_df = pd.DataFrame(columns=columns)
