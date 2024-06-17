@@ -66,6 +66,21 @@ def date_str():
     """
     return datetime.now().strftime("%Y-%m-%d")
 
+def number_string_to_number(number_string: str) -> int:
+    """
+    Converts a float string to an integer.
+
+    Args:
+        float_string (str): The float string to convert.
+
+    Returns:
+        int: The integer value.
+    """
+    int_value=int(float(number_string))
+    float_value=float(number_string)
+    remainder=float_value-int_value
+    
+    return int_value if remainder==0 else float_value
 
 def time_str():
     """
