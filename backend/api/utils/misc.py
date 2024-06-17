@@ -13,9 +13,9 @@ def check_limit_and_offset(limit: int, offset: int) -> None:
         ValueError: If the limit or offset are negative.
     """
     if not is_non_negative(offset):
-        explanation = "Offset must be non-negative. Offset value: {offset}"
+        explanation = f"Offset must be non-negative. Provided offset value: {offset}"
         raise ValueError(explanation)
 
     if not is_positive(limit):
-        explanation = "Limit must be positive. Limit value: {limit}"
+        explanation = f"Limit must be positive. Provided limit value: {limit}"
         raise ValueError(explanation)
