@@ -46,7 +46,7 @@ async def health_check():
 
 @router.get("/info")
 async def info():
-    with open("pyproject.toml", "r") as f:
+    with open("pyproject.toml", "r", encoding='latin-1') as f:
         config = toml.load(f)
 
     return {

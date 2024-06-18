@@ -1,15 +1,12 @@
-from typing import List, Tuple, Dict
+from typing import Union, List, Tuple, Dict, Any
 from os import makedirs, path
-from typing import Any
 from datetime import datetime
 import json
 import re
-from typing import Union
 
 from backend.setup.logging import logger
 
 NumberList = List[Union[int, float]]
-
 
 def are(args: List[Any], validation_map: callable) -> bool:
     """
@@ -365,7 +362,7 @@ def makedir(folder_name: str, is_verbose: bool = False):
         makedirs(folder_name)
 
         if is_verbose:
-            logger.info("Folder: " + repr(str(folder_name)))
+            logger.info(f"Folder {repr(str(folder_name))} created!")
 
     else:
         if is_verbose:

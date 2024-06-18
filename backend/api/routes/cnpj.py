@@ -84,8 +84,8 @@ async def get_cnae_description(
 
     if len(cnaes) == 0:
         return {"detail": f"CNAE code {cnae_code} not found."}
-    else:
-        return cnaes
+
+    return cnaes
 
 
 @router.get("/cnae/{cnae_code}/establishments")
@@ -123,8 +123,8 @@ async def get_establishments_by_cnae(
 
     if len(establishments) == 0:
         return {"detail": f"There are no establishents with CNAE code {cnae_code}."}
-    else:
-        return establishments
+
+    return establishments
 
 
 @router.get("/cities")
@@ -175,8 +175,8 @@ def get_city(
 
     if len(city) == 0:
         return {"detail": f"City code {city_code} not found."}
-    else:
-        return city
+
+    return city
 
 
 @router.get("/legal-natures")
@@ -227,8 +227,8 @@ async def get_legal_nature(
 
     if len(legal_nature) == 0:
         return {"detail": f"Legal nature code {legal_nature_code} not found."}
-    else:
-        return legal_nature
+
+    return legal_nature
 
 
 @router.get("/registration-status/{registration_status_code}")
@@ -262,8 +262,8 @@ async def get_registration_status(
         return {
             "detail": f"Registration status code {registration_status_code} not found."
         }
-    else:
-        return registration_status
+
+    return registration_status
 
 
 @router.get("/registration-statuses")
@@ -320,8 +320,8 @@ async def get_activities(
 
     if not activities:
         return {"detail": f"There are no activities associated with CNPJ {cnpj}."}
-    else:
-        return activities
+
+    return activities
 
 
 @router.get("/cnpj/{cnpj}/partners")
@@ -355,8 +355,8 @@ async def get_partners(
         explanation = "It is likely either a sole proprietorship or a legal entity."
         msg = f"{error}. {explanation}"
         return {"detail": msg}
-    else:
-        return cnpj_info
+
+    return cnpj_info
 
 
 @router.get("/cnpj/{cnpj}/company")
@@ -389,8 +389,8 @@ async def get_company(
     if not company_info:
         message = f"There is no company associated with CNPJ {cnpj}."
         return {"detail": message}
-    else:
-        return company_info
+
+    return company_info
 
 
 @router.get("/cnpj/{cnpj}/establishment")
@@ -434,7 +434,8 @@ async def get_establishments(
     cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
-    Get the establishments associated with a CNPJ base (First 8 digits). You must provide any full CNPJ number.
+    Get the establishments associated with a CNPJ base (First 8 digits).
+    You must provide any full CNPJ number.
 
     Parameters:
     - cnpj: The CNPJ number to search for.
@@ -461,8 +462,8 @@ async def get_establishments(
         return {
             "detail": f"There are no establishments associated with CNPJ base {cnpj_base}."
         }
-    else:
-        return est_info
+
+    return est_info
 
 
 @router.get("/cnpj/{cnpj}")
@@ -496,5 +497,5 @@ async def get_cnpj_info(
         message = f"CNPJ {formatted_cnpj} not found."
 
         return {"detail": message}
-    else:
-        return cnpj_info
+
+    return cnpj_info
