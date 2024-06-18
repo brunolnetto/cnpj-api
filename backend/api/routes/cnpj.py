@@ -83,9 +83,7 @@ async def get_cnae_description(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if len(cnaes) == 0:
-        return {
-            "detail": f"CNAE code {cnae_code} not found."
-        }
+        return {"detail": f"CNAE code {cnae_code} not found."}
     else:
         return cnaes
 
@@ -122,12 +120,10 @@ async def get_establishments_by_cnae(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
-    
+
     if len(establishments) == 0:
-        return {
-            "detail":f"There are no establishents with CNAE code {cnae_code}."
-        }
-    else: 
+        return {"detail": f"There are no establishents with CNAE code {cnae_code}."}
+    else:
         return establishments
 
 
@@ -152,8 +148,8 @@ def get_cities(
         return cnpj_repository.get_cities(limit=limit, offset=offset)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
-    
-    
+
+
 @router.get("/city/{city_code}")
 def get_city(
     city_code: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
@@ -167,20 +163,18 @@ def get_city(
     Returns:
     - A dictionary with the city name.
     """
-    
+
     try:
         if not is_number(city_code):
             raise ValueError(f"City code {city_code} is not a number.")
 
         city = cnpj_repository.get_city(city_code)
-        
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if len(city) == 0:
-        return {
-            "detail": f"City code {city_code} not found."
-        }
+        return {"detail": f"City code {city_code} not found."}
     else:
         return city
 
@@ -232,10 +226,8 @@ async def get_legal_nature(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if len(legal_nature) == 0:
-        return {
-            'detail': f"Legal nature code {legal_nature_code} not found."
-        }
-    else: 
+        return {"detail": f"Legal nature code {legal_nature_code} not found."}
+    else:
         return legal_nature
 
 
@@ -322,16 +314,15 @@ async def get_activities(
         cnpj_list = parse_cnpj_str(cnpj)
         cnpj_obj = CNPJ(*cnpj_list)
         activities = cnpj_repository.get_activities(cnpj_obj)
-        
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
-    
+
     if not activities:
-        return {
-            "detail": f"There are no activities associated with CNPJ {cnpj}."
-        }
+        return {"detail": f"There are no activities associated with CNPJ {cnpj}."}
     else:
         return activities
+
 
 @router.get("/cnpj/{cnpj}/partners")
 async def get_partners(
@@ -363,9 +354,7 @@ async def get_partners(
         error = f"There are no partners associated with CNPJ {cnpj}"
         explanation = "It is likely either a sole proprietorship or a legal entity."
         msg = f"{error}. {explanation}"
-        return {
-            "detail": msg
-        }
+        return {"detail": msg}
     else:
         return cnpj_info
 
@@ -391,7 +380,7 @@ async def get_company(
 
         cnpj_list = parse_cnpj_str(cnpj)
         cnpj_obj = CNPJ(*cnpj_list)
-        
+
         company_info = cnpj_repository.get_company(cnpj_obj)
 
     except Exception as e:
@@ -399,9 +388,7 @@ async def get_company(
 
     if not company_info:
         message = f"There is no company associated with CNPJ {cnpj}."
-        return {
-            "detail": message
-        }
+        return {"detail": message}
     else:
         return company_info
 
@@ -437,9 +424,7 @@ async def get_establishment(
         explanation = f"Try route /cnpj/{cnpj}/company to verify if the CNPJ exists."
         message = f"{base_msg}. {explanation}"
 
-        return {
-            "detail": message
-        }
+        return {"detail": message}
 
     return est_info
 
@@ -510,8 +495,6 @@ async def get_cnpj_info(
         formatted_cnpj = format_cnpj(cnpj)
         message = f"CNPJ {formatted_cnpj} not found."
 
-        return {
-            "detail": message
-        }
+        return {"detail": message}
     else:
         return cnpj_info
