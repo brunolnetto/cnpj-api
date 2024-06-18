@@ -1,5 +1,9 @@
+from pydantic import BaseModel
+
 from backend.api.utils.cnpj import is_cnpj_str_valid
 
+class CNPJList(BaseModel):
+    cnpjs: list[str]
 
 class CNPJ:
     def __init__(self, basico: str, ordem: str, digitos_verificadores: str):
