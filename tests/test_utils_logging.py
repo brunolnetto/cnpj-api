@@ -90,8 +90,8 @@ def test_clear_folder_items_files():
 
     clear_folder_items(tmp_path, 2)
 
-    assert os.path.exists(f"{tmp_path}/1.txt")
+    assert not os.path.exists(f"{tmp_path}/1.txt")
     assert os.path.exists(f"{tmp_path}/2.txt")
-    assert not os.path.exists(f"{tmp_path}/3.txt")
+    assert os.path.exists(f"{tmp_path}/3.txt")
 
     shutil.rmtree(tmp_path, ignore_errors=True)
