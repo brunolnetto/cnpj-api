@@ -302,31 +302,37 @@ def test_humanize_string_special_characters():
 
 
 def test_converts_valid_float_string_to_int():
-  """Tests conversion of a valid float string to an integer."""
-  assert number_string_to_number("10.0") == 10
+    """Tests conversion of a valid float string to an integer."""
+    assert number_string_to_number("10.0") == 10
+
 
 def test_converts_positive_float_string_to_int():
-  """Tests conversion of a positive float string to an integer."""
-  assert number_string_to_number("12.34") == 12.34
+    """Tests conversion of a positive float string to an integer."""
+    assert number_string_to_number("12.34") == 12.34
+
 
 def test_converts_negative_float_string_to_int():
-  """Tests conversion of a negative float string to an integer."""
-  assert number_string_to_number("-5") == -5
+    """Tests conversion of a negative float string to an integer."""
+    assert number_string_to_number("-5") == -5
+
 
 def test_handles_zero_float_string():
-  """Tests conversion of a zero float string."""
-  assert number_string_to_number("0.0") == 0
+    """Tests conversion of a zero float string."""
+    assert number_string_to_number("0.0") == 0
+
 
 def test_returns_float_for_non_zero_remainder():
-  """Tests that the function returns a float for non-zero remainders."""
-  assert number_string_to_number("12.5") == 12.5
+    """Tests that the function returns a float for non-zero remainders."""
+    assert number_string_to_number("12.5") == 12.5
+
 
 def test_raises_error_for_non_numeric_string():
-  """Tests that the function raises an error for non-numeric strings."""
-  with pytest.raises(ValueError):
-    number_string_to_number("abc")
+    """Tests that the function raises an error for non-numeric strings."""
+    with pytest.raises(ValueError):
+        number_string_to_number("abc")
+
 
 def test_raises_error_for_empty_string():
-  """Tests that the function raises an error for an empty string."""
-  with pytest.raises(ValueError):
-    number_string_to_number("")
+    """Tests that the function raises an error for an empty string."""
+    with pytest.raises(ValueError):
+        number_string_to_number("")
