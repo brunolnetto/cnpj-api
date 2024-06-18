@@ -6,7 +6,8 @@ from backend.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.api.models.cnpj import CNPJ
 from backend.api.utils.cnpj import parse_cnpj_str, format_cnpj, is_number
 from backend.api.utils.misc import check_limit_and_offset
-from backend.api.models.cnpj import CNPJList, CNPJ
+from backend.api.models.cnpj import CNPJBatch, CNPJ
+from backend.setup.config import settings
 
 router = APIRouter()
 
@@ -47,6 +48,77 @@ async def get_cnpjs(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+    
+
+@router.post("/cnpjs/partners")
+async def get_cnpjs_partners(
+    cnpj_batch: CNPJBatch,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+):
+    """
+    Get a list of CNPJ partners information from the database.
+
+    Parameters:
+    - limit: The maximum number of CNPJs to return.
+
+    Returns:
+    - A list of CNPJs as dictionaries.
+    """
+    try:
+        cnpj_objs=list(map(cnpj_str_to_obj, cnpj_batch.batch))
+        
+        return cnpj_repository.get_cnpjs_partners(cnpj_objs)
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@router.post("/cnpjs/company")
+async def get_cnpjs_company(
+    cnpj_batch: CNPJBatch,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+):
+    """
+    Get a list of CNPJ partners information from the database.
+
+    Parameters:
+    - limit: The maximum number of CNPJs to return.
+
+    Returns:
+    - A list of CNPJs as dictionaries.
+    """
+    try:
+        cnpj_objs=list(map(cnpj_str_to_obj, cnpj_batch.batch))
+        
+        return cnpj_repository.get_cnpjs_company(cnpj_objs)
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@router.post("/cnpjs/establishment")
+async def get_cnpjs_establishment(
+    cnpj_batch: CNPJBatch,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+):
+    """
+    Get a list of CNPJ partners information from the database.
+
+    Parameters:
+    - limit: The maximum number of CNPJs to return.
+
+    Returns:
+    - A list of CNPJs as dictionaries.
+    """
+    try:
+        cnpj_objs=list(map(cnpj_str_to_obj, cnpj_batch.batch))
+        est_objs=cnpj_repository.get_cnpjs_establishment(cnpj_objs)
+        print(est_objs)
+        return est_objs
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
 
 
 @router.get("/cnaes")
@@ -334,6 +406,7 @@ async def get_activities(
 
     return activities
 
+
 @router.get("/cnpj/{cnpj}/partners")
 async def get_cnpj_partners(
     cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
@@ -354,7 +427,8 @@ async def get_cnpj_partners(
             )
 
         cnpj_obj = cnpj_str_to_obj(cnpj)
-        cnpj_info = cnpj_repository.get_partners(cnpj_obj)
+        cnpj_list=[cnpj_obj]
+        cnpj_info = cnpj_repository.get_cnpjs_partners(cnpj_list)
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -365,11 +439,12 @@ async def get_cnpj_partners(
         msg = f"{error}. {explanation}"
         return {"detail": msg}
 
-    return cnpj_info
+    cnpj_base=cnpj_obj.basico_str
+    return cnpj_info[cnpj_base]
 
 
 @router.get("/cnpj/{cnpj}/company")
-async def get_company(
+async def get_cnpj_company(
     cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
@@ -388,9 +463,11 @@ async def get_company(
             )
 
         cnpj_obj = cnpj_str_to_obj(cnpj)
-
-        company_info = cnpj_repository.get_company(cnpj_obj)
-
+        cnpj_list=[cnpj_obj]
+        
+        company_info=cnpj_repository.get_cnpjs_company(cnpj_list)
+        
+        
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -398,12 +475,15 @@ async def get_company(
         message = f"There is no company associated with CNPJ {cnpj}."
         return {"detail": message}
 
-    return company_info
+    cnpj_base=cnpj_obj.basico_str
+    
+    return company_info[cnpj_base]
 
 
 @router.get("/cnpj/{cnpj}/establishment")
 async def get_establishment(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the establishment associated with a CNPJ number.
@@ -422,14 +502,14 @@ async def get_establishment(
 
         cnpj_obj = cnpj_str_to_obj(cnpj)
         
-        est_info = cnpj_repository.get_establishment(cnpj_obj)
+        est_info = cnpj_repository.get_cnpj_establishment(cnpj_obj)
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     if not est_info:
         base_msg = f"There is no establishment associated with CNPJ {cnpj_obj}"
-        explanation = f"Try route /cnpj/{cnpj}/company to verify if the CNPJ exists."
+        explanation = f"Try route {settings.API_V1_STR}/cnpj/{cnpj}/company to verify if the CNPJ exists."
         message = f"{base_msg}. {explanation}"
 
         return {"detail": message}
