@@ -1,16 +1,28 @@
 from fastapi import APIRouter, HTTPException
+from typing import List
 
 from backend.repositories.cnpj import CNPJRepository
 from backend.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.api.models.cnpj import CNPJ
-from backend.api.utils.cnpj import (
-    parse_cnpj_str,
-    format_cnpj,
-    is_number,
-)
+from backend.api.utils.cnpj import parse_cnpj_str, format_cnpj, is_number
 from backend.api.utils.misc import check_limit_and_offset
+from backend.api.models.cnpj import CNPJList, CNPJ
 
 router = APIRouter()
+
+def cnpj_str_to_obj(cnpj_str: str):
+    """
+    Converts a CNPJ string to a CNPJ object.
+
+    Args:
+        cnpj_str (str): The CNPJ string to convert.
+
+    Returns:
+        CNPJ: The CNPJ object.
+    """
+    
+    cnpj_list = parse_cnpj_str(cnpj_str)
+    return CNPJ(*cnpj_list)
 
 
 @router.get("/cnpjs")
@@ -311,8 +323,7 @@ async def get_activities(
                 f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
             )
 
-        cnpj_list = parse_cnpj_str(cnpj)
-        cnpj_obj = CNPJ(*cnpj_list)
+        cnpj_obj = cnpj_str_to_obj(cnpj)
         activities = cnpj_repository.get_activities(cnpj_obj)
 
     except Exception as e:
@@ -323,9 +334,8 @@ async def get_activities(
 
     return activities
 
-
 @router.get("/cnpj/{cnpj}/partners")
-async def get_partners(
+async def get_cnpj_partners(
     cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
@@ -343,8 +353,7 @@ async def get_partners(
                 f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
             )
 
-        cnpj_list = parse_cnpj_str(cnpj)
-        cnpj_obj = CNPJ(*cnpj_list)
+        cnpj_obj = cnpj_str_to_obj(cnpj)
         cnpj_info = cnpj_repository.get_partners(cnpj_obj)
 
     except Exception as e:
@@ -378,8 +387,7 @@ async def get_company(
                 f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
             )
 
-        cnpj_list = parse_cnpj_str(cnpj)
-        cnpj_obj = CNPJ(*cnpj_list)
+        cnpj_obj = cnpj_str_to_obj(cnpj)
 
         company_info = cnpj_repository.get_company(cnpj_obj)
 
@@ -412,8 +420,8 @@ async def get_establishment(
                 f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
             )
 
-        cnpj_list = parse_cnpj_str(cnpj)
-        cnpj_obj = CNPJ(*cnpj_list)
+        cnpj_obj = cnpj_str_to_obj(cnpj)
+        
         est_info = cnpj_repository.get_establishment(cnpj_obj)
 
     except Exception as e:
@@ -449,10 +457,9 @@ async def get_establishments(
                 f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
             )
 
-        cnpj_list = parse_cnpj_str(cnpj)
-        cnpj_base = cnpj_list[:8]
-        cnpj_obj = CNPJ(*cnpj_list)
-
+        cnpj_obj = cnpj_str_to_obj(cnpj)
+        cnpj_base=cnpj_obj.basico_str
+        
         est_info = cnpj_repository.get_establishments(cnpj_obj)
 
     except Exception as e:
@@ -485,8 +492,7 @@ async def get_cnpj_info(
                 f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
             )
 
-        cnpj_list = parse_cnpj_str(cnpj)
-        cnpj_obj = CNPJ(*cnpj_list)
+        cnpj_obj = cnpj_str_to_obj(cnpj)
         cnpj_info = cnpj_repository.get_cnpj_info(cnpj_obj)
 
     except Exception as e:
