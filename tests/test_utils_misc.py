@@ -187,7 +187,7 @@ def test_makedir(mocker):
     from backend.setup.logging import logger
 
     assert logger.info.call_count == 1
-    assert logger.info.call_args[0][0] == f"Folder: '{folder_name}'"
+    assert logger.info.call_args[0][0] == f"Folder '{folder_name}' created!"
 
     # Test case 2: Folder already exists (warning)
     folder_name = "existing_folder"
@@ -255,38 +255,38 @@ def test_string_to_json_empty_string():
 def test_humanize_string_basic():
     assert (
         humanize_string("QUADRA101 SALA03 SALA04 LOTE0016")
-        == "Quadra 101 Sala 3 Sala 4 Lote 16."
+        == "Quadra 101 Sala 3 Sala 4 Lote 16"
     )
 
 
 def test_humanize_string_no_numbers():
-    assert humanize_string("QUADRA SALA LOTE") == "Quadra Sala Lote."
+    assert humanize_string("QUADRA SALA LOTE") == "Quadra Sala Lote"
 
 
 def test_humanize_string_only_numbers():
-    assert humanize_string("101 03 04 0016") == "101 3 4 16."
+    assert humanize_string("101 03 04 0016") == "101 3 4 16"
 
 
 def test_humanize_string_mixed_case():
     assert (
         humanize_string("Quadra101 SaLa03 sala04 lotE0016")
-        == "Quadra 101 Sala 3 Sala 4 Lote 16."
+        == "Quadra 101 Sala 3 Sala 4 Lote 16"
     )
 
 
 def test_humanize_string_multiple_spaces():
     assert (
         humanize_string("QUADRA  101   SALA  03  SALA   04  LOTE  0016")
-        == "Quadra 101 Sala 3 Sala 4 Lote 16."
+        == "Quadra 101 Sala 3 Sala 4 Lote 16"
     )
 
 
 def test_humanize_string_leading_zeros():
-    assert humanize_string("LOTE00016") == "Lote 16."
+    assert humanize_string("LOTE00016") == "Lote 16"
 
 
 def test_humanize_string_no_trailing_dot():
-    assert humanize_string("Quadra101") == "Quadra 101."
+    assert humanize_string("Quadra101") == "Quadra 101"
 
 
 def test_humanize_string_already_has_dot():
@@ -294,11 +294,11 @@ def test_humanize_string_already_has_dot():
 
 
 def test_humanize_string_empty_string():
-    assert humanize_string("") == "."
+    assert humanize_string("") == ''
 
 
 def test_humanize_string_special_characters():
-    assert humanize_string("QUADRA#101") == "Quadra# 101."
+    assert humanize_string("QUADRA#101") == "Quadra# 101"
 
 
 def test_converts_valid_float_string_to_int():
