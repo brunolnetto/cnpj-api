@@ -101,8 +101,7 @@ class CNPJRepository:
             cnae_description = "" if len(cnae_result) == 0 else cnae_result[0][0]
 
             return (
-                {}
-                if len(cnae_description) == 0
+                {} if len(cnae_description) == 0
                 else {
                     "code": cnae_code,
                     "text": cnae_description,
@@ -179,20 +178,20 @@ class CNPJRepository:
             query = (
                 text(
                     f"""
-                    select
-                        codigo, descricao
-                    from natju
-                    limit {limit}
-                    offset {offset}
-                """
+                        select
+                            codigo, descricao
+                        from natju
+                        limit {limit}
+                        offset {offset}
+                    """
                 )
                 if not all
                 else text(
                     """
-                    select
-                        codigo, descricao
-                    from natju
-                """
+                        select
+                            codigo, descricao
+                        from natju
+                    """
                 )
             )
 
@@ -220,7 +219,14 @@ class CNPJRepository:
         """
         with self.database.engine.begin() as connection:
             query = text(
-                f"select distinct descricao from moti where codigo = '{registration_status_code}'"
+                f"""
+                    select 
+                        distinct descricao 
+                    from 
+                        moti 
+                    where 
+                        codigo = '{registration_status_code}'
+                """
             )
 
             registration_status_result = connection.execute(query).fetchall()
@@ -232,8 +238,7 @@ class CNPJRepository:
             )
 
             return (
-                {}
-                if len(legal_nature_description) == 0
+                {} if len(legal_nature_description) == 0
                 else {
                     "code": registration_status_code,
                     "text": legal_nature_description,
@@ -256,18 +261,18 @@ class CNPJRepository:
                     f"""
                     select
                         codigo, descricao
-                    from moti
+                    from 
+                        moti
                     limit {limit}
                     offset {offset}
                 """
-                )
-                if not all
+                ) if not all
                 else text(
                     """
-                    select
-                        codigo, descricao
-                    from moti
-                """
+                        select
+                            codigo, descricao
+                        from moti
+                    """
                 )
             )
 
@@ -296,7 +301,14 @@ class CNPJRepository:
 
         with self.database.engine.begin() as connection:
             query = text(
-                f"select distinct codigo, descricao from munic where codigo = '{city_code}'"
+                f"""
+                    select 
+                        distinct codigo, descricao 
+                    from 
+                        munic 
+                    where 
+                        codigo = '{city_code}'
+                """
             )
 
             city_result = connection.execute(query).fetchall()
@@ -327,7 +339,8 @@ class CNPJRepository:
                 f"""
                     select
                         codigo, descricao
-                    from munic
+                    from 
+                        munic
                     limit {limit}
                     offset {offset}
                 """
@@ -384,9 +397,9 @@ class CNPJRepository:
                     porte_empresa,
                     capital_social,
                     concat(natju.codigo, '-', natju.descricao) as natureza_juridica
-                from empresa_ emp
-                left join natju
-                    on natju.codigo = emp.natureza_juridica
+                from 
+                    empresa_ emp
+                left join natju on natju.codigo = emp.natureza_juridica
                 """
             )
 
@@ -596,7 +609,8 @@ class CNPJRepository:
                     select
                         distinct on (cnpj_basico) 
                         {columns_str}
-                    from estabelecimento est
+                    from 
+                        estabelecimento est
                     where
                         est.cnpj_basico = '{cnpj.basico_int}' AND
                         est.cnpj_ordem = '{cnpj.ordem_int}' AND
@@ -623,7 +637,8 @@ class CNPJRepository:
                 f"""
                     select
                         descricao
-                    from moti
+                    from 
+                        moti
                     where
                         codigo = '{registration_status}'
                 """
@@ -658,7 +673,7 @@ class CNPJRepository:
                         cnae_fiscal_principal, cnae_fiscal_secundaria, identificador_matriz_filial, 
                         situacao_especial, data_situacao_especial,
                         ddd_1, telefone_1, ddd_2, telefone_2
-                    from 
+                    from
                         estabelecimento est
                     where
                         est.cnpj_basico = '{cnpj.basico_int}'
@@ -734,9 +749,12 @@ class CNPJRepository:
                             cnpj_basico,
                             qualificacao_socio,
                             nome_socio_razao_social
-                        from socios
-                        where cnpj_basico = '{cnpj.basico_int}'
-                        group by 1, 2, 3
+                        from 
+                            socios
+                        where 
+                            cnpj_basico = '{cnpj.basico_int}'
+                        group by 
+                            1, 2, 3
                     )
                     SELECT 
                         cnpj_basico,
@@ -746,10 +764,12 @@ class CNPJRepository:
                                 'qual', concat(qualificacao_socio,'-', qual_socio.descricao)
                             )
                         ) AS qsa
-                    FROM socios_ soc
+                    FROM 
+                        socios_ soc
                     left join quals qual_socio
                         on qual_socio.codigo = soc.qualificacao_socio
-                    GROUP BY cnpj_basico
+                    GROUP BY 
+                        cnpj_basico
                 """
             )
 
@@ -928,9 +948,8 @@ class CNPJRepository:
 
         cnpj_info_dict = {**establishment_dict, **company_dict, **partners_dict}
 
-        cnpj_info_dict["ultima_atualizacao"] = datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        date_format="%Y-%m-%d %H:%M:%S"
+        cnpj_info_dict["ultima_atualizacao"] = datetime.now().strftime(date_format)
 
         return {key: cnpj_info_dict[key] for key in columns if key in cnpj_info_dict}
 
