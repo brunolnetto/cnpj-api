@@ -1,10 +1,10 @@
-# Description: This file initializes the FastAPI application and sets up the necessary configurations.
+# Description: This file initializes the FastAPI application and sets up configurations.
 
 from fastapi import FastAPI, status, Request, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
+from starlette.middleware.cors import CORSMiddleware
 
 import sentry_sdk
 
