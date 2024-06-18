@@ -75,7 +75,7 @@ lint: ## perform inplace lint fixes
 	@pylint $(shell git ls-files '*.py')
 
 pylint:
-	@pylint backend/ | awk -F':' '!/^$/ {print $4}' | grep -v '^$' | sort | uniq -c
+	@pylint backend/
 
 report: test ## Generate coverage report. Usage: make report
 	coverage report --omit=$(OMIT_PATHS) --show-missing
