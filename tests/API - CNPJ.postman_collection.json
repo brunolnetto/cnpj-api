@@ -1,16 +1,29 @@
 {
 	"info": {
-		"_postman_id": "ab148a25-87ea-417a-af16-70f34f2ff85c",
+		"_postman_id": "28e74cdb-59f5-40b0-b22b-59d664037084",
 		"name": "API - CNPJ",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "19774629"
+		"_exporter_id": "35014885",
+		"_collection_link": "https://projeto-cnpj.postman.co/workspace/Projeto-CNPJ-Workspace~7bfaecf7-c518-4b02-82bb-b19595b84d5a/collection/35014885-28e74cdb-59f5-40b0-b22b-59d664037084?action=share&source=collection_link&creator=35014885"
 	},
 	"item": [
 		{
 			"name": "cnpjs - default (limit, offset) = (10, 0)",
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/cnpjs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"cnpjs"
+					]
+				}
 			},
 			"response": []
 		},
@@ -50,7 +63,33 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/cnpjs?limit=9&offset=1",
+					"raw": "http://localhost:8000/api/cnpjs?offset=-1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"cnpjs"
+					],
+					"query": [
+						{
+							"key": "offset",
+							"value": "-1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpjs - Negative limit",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/cnpjs?limit=0",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -63,11 +102,7 @@
 					"query": [
 						{
 							"key": "limit",
-							"value": "9"
-						},
-						{
-							"key": "offset",
-							"value": "1"
+							"value": "0"
 						}
 					]
 				}
@@ -80,7 +115,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/cnpjs?limit=9&offset=1",
+					"raw": "http://localhost:8000/api/cnaes",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -88,17 +123,7 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"cnpjs"
-					],
-					"query": [
-						{
-							"key": "limit",
-							"value": "9"
-						},
-						{
-							"key": "offset",
-							"value": "1"
-						}
+						"cnaes"
 					]
 				}
 			},
@@ -110,7 +135,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/cnpjs?limit=9&offset=1",
+					"raw": "http://localhost:8000/api/cnaes?offset=1&limit=9",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -118,16 +143,16 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"cnpjs"
+						"cnaes"
 					],
 					"query": [
 						{
-							"key": "limit",
-							"value": "9"
-						},
-						{
 							"key": "offset",
 							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "9"
 						}
 					]
 				}
@@ -140,7 +165,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/cnpjs?limit=9&offset=1",
+					"raw": "http://localhost:8000/api/cnae/111302",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -148,17 +173,8 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"cnpjs"
-					],
-					"query": [
-						{
-							"key": "limit",
-							"value": "9"
-						},
-						{
-							"key": "offset",
-							"value": "1"
-						}
+						"cnae",
+						"111302"
 					]
 				}
 			},
@@ -170,7 +186,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/cnpjs?limit=9&offset=1",
+					"raw": "http://localhost:8000/api/cnae/999999",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -178,17 +194,30 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"cnpjs"
+						"cnae",
+						"999999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnae - establishments",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/cnae/111302/establishments",
+					"protocol": "http",
+					"host": [
+						"localhost"
 					],
-					"query": [
-						{
-							"key": "limit",
-							"value": "9"
-						},
-						{
-							"key": "offset",
-							"value": "1"
-						}
+					"port": "8000",
+					"path": [
+						"api",
+						"cnae",
+						"111302",
+						"establishments"
 					]
 				}
 			},
@@ -200,7 +229,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/cnpjs?limit=9&offset=1",
+					"raw": "http://localhost:8000/api/cities",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -208,7 +237,27 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"cnpjs"
+						"cities"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cities - limit=9, offset=1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/cities?limit=9&offset=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"cities"
 					],
 					"query": [
 						{
@@ -230,7 +279,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/cnpjs?limit=9&offset=1",
+					"raw": "http://localhost:8000/api/city/1",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -238,29 +287,20 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"cnpjs"
-					],
-					"query": [
-						{
-							"key": "limit",
-							"value": "9"
-						},
-						{
-							"key": "offset",
-							"value": "1"
-						}
+						"city",
+						"1"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "city - not found",
+			"name": "city - Not found",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/cnpjs?limit=9&offset=1",
+					"raw": "http://localhost:8000/api/city/99999",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -268,17 +308,8 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"cnpjs"
-					],
-					"query": [
-						{
-							"key": "limit",
-							"value": "9"
-						},
-						{
-							"key": "offset",
-							"value": "1"
-						}
+						"city",
+						"99999"
 					]
 				}
 			},
@@ -310,7 +341,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/legal-natures",
+					"raw": "http://localhost:8000/api/legal-nature/0",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -318,7 +349,29 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"legal-natures"
+						"legal-nature",
+						"0"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "legal nature - Not found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/legal-nature/0",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"legal-nature",
+						"0"
 					]
 				}
 			},
@@ -330,7 +383,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/legal-natures",
+					"raw": "http://localhost:8000/api/registration-statuses",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -338,27 +391,7 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"legal-natures"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Registration statuses - not found",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8000/api/legal-natures",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"legal-natures"
+						"registration-statuses"
 					]
 				}
 			},
@@ -370,7 +403,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/legal-natures",
+					"raw": "http://localhost:8000/api/cnpj/08479581000289",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -378,7 +411,29 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"legal-natures"
+						"cnpj",
+						"08479581000289"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Registration statuses - not found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/registration-status/9001",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"registration-status",
+						"9001"
 					]
 				}
 			},
@@ -390,7 +445,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/legal-natures",
+					"raw": "http://localhost:8000/api/cnpj/09236040000101",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -398,7 +453,29 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"legal-natures"
+						"cnpj",
+						"09236040000101"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpj - Not found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/cnpj/12345678901230",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"cnpj",
+						"12345678901230"
 					]
 				}
 			},
@@ -410,7 +487,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/legal-natures",
+					"raw": "http://localhost:8000/api/cnpj/09236040000101/activities",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -418,7 +495,9 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"legal-natures"
+						"cnpj",
+						"09236040000101",
+						"activities"
 					]
 				}
 			},
@@ -430,7 +509,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/legal-natures",
+					"raw": "http://localhost:8000/api/cnpj/09236040000101/partners",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -438,7 +517,9 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"legal-natures"
+						"cnpj",
+						"09236040000101",
+						"partners"
 					]
 				}
 			},
@@ -450,7 +531,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/legal-natures",
+					"raw": "http://localhost:8000/api/cnpj/09236040000101/company",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -458,7 +539,9 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"legal-natures"
+						"cnpj",
+						"09236040000101",
+						"company"
 					]
 				}
 			},
@@ -470,7 +553,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/legal-natures",
+					"raw": "http://localhost:8000/api/cnpj/09236040000101/establishment",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -478,7 +561,9 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"legal-natures"
+						"cnpj",
+						"09236040000101",
+						"establishment"
 					]
 				}
 			},
@@ -490,7 +575,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/api/cnpj/10573521000191/establishments",
+					"raw": "http://localhost:8000/api/cnae/09236040000101/establishments",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -498,8 +583,8 @@
 					"port": "8000",
 					"path": [
 						"api",
-						"cnpj",
-						"10573521000191",
+						"cnae",
+						"09236040000101",
 						"establishments"
 					]
 				}
