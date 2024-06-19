@@ -1,4 +1,4 @@
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Any
 from sqlalchemy import text
 import pandas as pd
 from datetime import datetime
@@ -45,13 +45,20 @@ EST_TYPE_DICT = {
     "2": "FILIAL"
 }
 
+# Types
+CNPJList=List[CNPJ]
+JSON=Dict[str, Any]
+CodeType=Union[str, int]
+CodeListType=List[CodeType]
 
 class CNPJRepository:
     def __init__(self, uri: str):
         self.uri = uri
         self.database = Database(uri)
 
-    def get_cnpjs(self, limit: int = 10, offset: int = 0):
+    def get_cnpjs(
+        self, limit: int = 10, offset: int = 0
+    ):
         """
         Get all CNPJs from the database.
 
@@ -112,7 +119,46 @@ class CNPJRepository:
                 }
             )
 
-    def get_cnaes(self, limit: int = 10, offset: int = 0, all: bool = False):
+    def get_cnae_list(self, cnae_code_list: CodeListType):
+        """
+        Get the CNAE for the code.
+
+        Parameters:
+        cnae_code (str, int): The code of the CNAE.
+
+        Returns:
+        str: The description of the CNAE.
+        """        
+        cnae_code_str=','.join([
+            str(cnae_code) for cnae_code in cnae_code_list
+        ])
+        
+        with self.database.engine.begin() as connection:
+            query = text(f"""
+                select 
+                    distinct 
+                    codigo,
+                    descricao 
+                from 
+                    cnae 
+                where 
+                    codigo in ({cnae_code_str})
+            """)
+
+            cnae_result = connection.execute(query).fetchall()
+            
+        wrap_values_map=lambda code_text: {
+            "code": code_text[0],
+            "text": code_text[1],
+        }
+        
+        cnae_dict=list(map(wrap_values_map, cnae_result))
+        
+        return cnae_dict
+
+    def get_cnaes(
+        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
+    ):
         """
         Get all CNAEs from the database.
 
@@ -121,14 +167,23 @@ class CNPJRepository:
         """
 
         with self.database.engine.begin() as connection:
-            query = text(
-                f"""
-                    select
-                        codigo, descricao
-                    from cnae
-                    limit {limit}
-                    offset {offset}
-                """
+            query = (
+                text(
+                    f"""
+                        select
+                            codigo, descricao
+                        from cnae
+                        limit {limit}
+                        offset {offset}
+                    """
+                ) if enable_pagination 
+                else text(
+                    f"""
+                        select
+                            codigo, descricao
+                        from cnae
+                    """
+                )
             )
 
             cnaes_result = connection.execute(query)
@@ -170,7 +225,48 @@ class CNPJRepository:
                 }
             )
 
-    def get_legal_natures(self, limit: int = 10, offset: int = 0, all: bool = False):
+    def get_legal_natures_list(self, legal_nature_list: CodeListType):
+        """
+        Get legal nature from the database.
+
+        Returns:
+        dict: The dictionary with the legal nature code and text.
+        """
+        legal_nature_str=','.join(
+            [
+                str(legal_nature_code) 
+                for legal_nature_code in legal_nature_list
+            ]
+        )
+
+        with self.database.engine.begin() as connection:
+            query = text(
+                f"""
+                    select 
+                        distinct
+                        codigo,
+                        descricao 
+                    from 
+                        natju 
+                    where 
+                        codigo in ({legal_nature_str})
+                """
+            )
+
+            legal_natures_result = connection.execute(query).fetchall()
+
+        wrap_values_map=lambda code_text: {
+            "code": code_text[0],
+            "text": code_text[1],
+        }
+        
+        registration_status_dict=list(map(wrap_values_map, legal_natures_result))
+        
+        return registration_status_dict
+
+    def get_legal_natures(
+        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
+    ):
         """
         Get all legal natures from the database.
 
@@ -189,7 +285,7 @@ class CNPJRepository:
                         offset {offset}
                     """
                 )
-                if not all
+                if enable_pagination
                 else text(
                     """
                         select
@@ -211,7 +307,7 @@ class CNPJRepository:
 
             return legal_natures_dict
 
-    def get_registration_status(self, registration_status_code: str):
+    def get_registration_status_list(self, registration_status_codes: CodeListType):
         """
         Get the reason for the signup situation.
 
@@ -221,36 +317,40 @@ class CNPJRepository:
         Returns:
         str: The reason for the signup situation.
         """
+        registration_status_str=','.join(
+            [
+                str(registration_status_code) 
+                for registration_status_code in registration_status_codes
+            ]
+        )
+        
         with self.database.engine.begin() as connection:
             query = text(
                 f"""
                     select 
-                        distinct descricao 
+                        distinct 
+                            codigo,
+                            descricao 
                     from 
                         moti 
                     where 
-                        codigo = '{registration_status_code}'
+                        codigo in ({registration_status_str})
                 """
             )
-
+            
             registration_status_result = connection.execute(query).fetchall()
-
-            legal_nature_description = (
-                ""
-                if not registration_status_result
-                else registration_status_result[0][0]
-            )
-
-            return (
-                {} if len(legal_nature_description) == 0
-                else {
-                    "code": registration_status_code,
-                    "text": legal_nature_description,
-                }
-            )
+            
+        wrap_values_map=lambda code_text: {
+            "code": code_text[0],
+            "text": code_text[1],
+        }
+        
+        registration_status_dict=list(map(wrap_values_map, registration_status_result))
+        
+        return registration_status_dict
 
     def get_registration_statuses(
-        self, limit: int = 10, offset: int = 0, all: bool = False
+        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
     ):
         """
         Get all registration statuses from the database.
@@ -270,7 +370,7 @@ class CNPJRepository:
                     limit {limit}
                     offset {offset}
                 """
-                ) if not all
+                ) if enable_pagination
                 else text(
                     """
                         select
@@ -362,8 +462,45 @@ class CNPJRepository:
             city_dict = city_df.to_dict(orient="records")
 
             return city_dict
+        
+    def get_cities_list(self, cities_code_list: CodeListType):
+        """
+        Get the list of city object by the code.
 
-    def get_cnpjs_company(self, cnpj_list: List[CNPJ]):
+        Parameters:
+        code (CodeListType): The code of the city.
+
+        Returns:
+        List[dict]: The name of the city.
+        """
+        cities_code_str=','.join([
+            str(city_code) for city_code in cities_code_list
+        ])
+
+        with self.database.engine.begin() as connection:
+            query = text(
+                f"""
+                    select
+                        codigo, descricao
+                    from 
+                        munic
+                    where 
+                        codigo in ({cities_code_str})
+                """
+            )
+
+            city_result = connection.execute(query).fetchall()
+
+        wrap_values_map=lambda code_text: {
+            "code": code_text[0],
+            "text": code_text[1],
+        }
+        
+        cities_dict=list(map(wrap_values_map, city_result))
+        
+        return cities_dict
+
+    def get_cnpjs_company(self, cnpj_list: CNPJList):
         """
         Get the company for the CNPJ.
 
@@ -453,32 +590,29 @@ class CNPJRepository:
         Returns:
             Dict: The formatted establishment dictionary.
         """
-        
         data_inicio_atividade = establishment_dict["data_inicio_atividade"]
         establishment_dict["abertura"] = format_database_date(data_inicio_atividade)
         del establishment_dict["data_inicio_atividade"]
-        
+
         establishment_dict["email"] = establishment_dict["correio_eletronico"].lower()
         del establishment_dict["correio_eletronico"]
-        
+
         basico = establishment_dict["cnpj_basico"].zfill(8)
         ordem = establishment_dict["cnpj_ordem"].zfill(4)
         dv = establishment_dict["cnpj_dv"].zfill(2)
         establishment_dict["cnpj"] = format_cnpj(f"{basico}{ordem}{dv}")
-        
+
         del establishment_dict["cnpj_basico"]
         del establishment_dict["cnpj_ordem"]
         del establishment_dict["cnpj_dv"]
 
         # Get the registration status
-        situacao_cadastral = str(
-            number_string_to_number(
-                establishment_dict["situacao_cadastral"]
-            )
-        )
+        registration_status=establishment_dict["situacao_cadastral"]
+        situacao_cadastral = str(number_string_to_number(registration_status))
+
         establishment_dict["situacao"] = SITUATION_DICT[situacao_cadastral]
         del establishment_dict["situacao_cadastral"]
-        
+
         establishment_dict["fantasia"] = humanize_string(
             establishment_dict["nome_fantasia"]
         )
@@ -489,13 +623,14 @@ class CNPJRepository:
             data_situacao_cadastral
         )
         del establishment_dict["data_situacao_cadastral"]
+
+        registration_reason=establishment_dict["motivo_situacao_cadastral"]
+        establishment_dict["motivo_situacao"] = registration_reason
         
-        establishment_dict["motivo_situacao"] = establishment_dict[
-            "motivo_situacao_cadastral"
-        ]
         del establishment_dict["motivo_situacao_cadastral"]
 
         # Format the phone number
+        
         # Check if the DDD columns are invalid
         ddd_1 = establishment_dict["ddd_1"]
         ddd_2 = establishment_dict["ddd_2"]
@@ -505,6 +640,7 @@ class CNPJRepository:
         is_1_invalid = is_field_valid(ddd_1)
         is_2_invalid = is_field_valid(ddd_2)
 
+        # Format the phone number
         telefone_1 = "" if is_1_invalid else format_phone(ddd_1, telefone_1)
         telefone_2 = "" if is_2_invalid else format_phone(ddd_2, telefone_2)
         delimiter = " / " if telefone_1 and telefone_1 else ""
@@ -516,21 +652,23 @@ class CNPJRepository:
         del establishment_dict["telefone_2"]
 
         # Format address
-        address_type = replace_spaces(establishment_dict["tipo_logradouro"]).strip()
-        address_name = replace_spaces(establishment_dict["logradouro"]).strip()
+        address_type=establishment_dict["tipo_logradouro"]
+        address_name=establishment_dict["logradouro"]
+        address_type = replace_spaces(address_type).strip()
+        address_name = replace_spaces(address_name).strip()
         address = humanize_string(address_type + " " + address_name)
 
         establishment_dict["logradouro"] = address
         del establishment_dict["tipo_logradouro"]
-        
+
         # Format UF
-        establishment_dict["complemento"] = humanize_string(
-            establishment_dict["complemento"]
-        )
+        complement=establishment_dict["complemento"]
+        establishment_dict["complemento"] = humanize_string(complement)
         establishment_dict["bairro"] = humanize_string(establishment_dict["bairro"])
 
         # Format CEP
-        establishment_dict["cep"] = format_cep(establishment_dict["cep"])
+        zip_code=establishment_dict["cep"]
+        establishment_dict["cep"] = format_cep(zip_code)
 
         # Get the company type
         identificador = establishment_dict["identificador_matriz_filial"]
@@ -541,36 +679,45 @@ class CNPJRepository:
         # Get city name
         city_code = establishment_dict["municipio"]
         city_dict = self.get_city(city_code)
+        city_label=city_dict["text"]
 
-        establishment_dict["municipio"] = humanize_string(city_dict["text"])
-        
+        establishment_dict["municipio"] = humanize_string(city_label)
+
         # Get the main CNAE
         atividade_principal = establishment_dict["cnae_fiscal_principal"]
 
         establishment_dict["atividade_principal"] = (
             self.get_cnae(atividade_principal) if atividade_principal else {}
         )
-        
+
         del establishment_dict["cnae_fiscal_principal"]
-        
+
         # Get the secondary CNAEs
         second_activities = establishment_dict["cnae_fiscal_secundaria"]
         if is_field_valid(second_activities):
-            atividade_principal_str = establishment_dict["cnae_fiscal_secundaria"]
+            side_activities_str = establishment_dict["cnae_fiscal_secundaria"]
 
-            second_activities = []
-            for atividade in atividade_principal_str.split(","):
-                second_activities.append(self.get_cnae(atividade))
-            
-            establishment_dict["atividades_secundarias"] = second_activities
+            side_activity_names = []
+            for side_activity in side_activities_str.split(","):
+                side_activity_code=side_activity.strip()
+
+                side_activity_name=self.get_cnae(side_activity_code)
+
+                side_activity_names.append(side_activity_name)
+
+            establishment_dict["atividades_secundarias"] = side_activity_names
         else:
             establishment_dict["atividades_secundarias"] = []
         
         del establishment_dict["cnae_fiscal_secundaria"]
         
+        list_dict=[establishment_dict]
+        list_dict=replace_invalid_fields_on_list_dict(list_dict)
+        establishment_dict=list_dict[0]
+        
         return establishment_dict
 
-    def get_cnpj_establishment(self, cnpj: CNPJ) -> Union[Dict[str, str], None]:
+    def get_cnpj_establishment(self, cnpj: CNPJ) -> JSON:
         """
         Get the establishment for the CNPJ.
 
@@ -610,7 +757,7 @@ class CNPJRepository:
                 "ddd_2",
                 "telefone_2",
             ]
-            columns_str = ", ".join(columns)
+            columns_str = ",".join(columns)
 
             # Create the table if it does not exist
             query = text(
@@ -666,10 +813,9 @@ class CNPJRepository:
         establishment_dict["motivo_situacao_cadastral"] = registration_status_descrip
 
         # Normalize data
-
         return self.__format_establishment(establishment_dict)
 
-    def get_cnpjs_establishment(self, cnpj_list: List[CNPJ]):
+    def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
         cnpjs_basicos=[str(cnpj.basico_int) for cnpj in cnpj_list]
         cnpjs_ordem=[str(cnpj.ordem_int) for cnpj in cnpj_list]
         cnpjs_dv=[str(cnpj.digitos_verificadores_int) for cnpj in cnpj_list]
@@ -766,7 +912,10 @@ class CNPJRepository:
         establishment_df["motivo_situacao_cadastral"]=registration_status
         
         # Normalize data
-        establishment_df['cnpj_basico_']=establishment_df['cnpj_basico']
+        cnpj_base_series=establishment_df['cnpj_basico']
+        zfill_map=lambda value: value.zfill(8)
+        
+        establishment_df['cnpj_basico_']=cnpj_base_series.apply(zfill_map)
         establishment_dict=dataframe_to_nested_dict(establishment_df, 'cnpj_basico_')
         
         establishment_items=list(establishment_dict.items())
@@ -776,7 +925,7 @@ class CNPJRepository:
         
         return establishment_dict
     
-    def get_establishments(self, cnpj: CNPJ):
+    def get_cnpj_establishments(self, cnpj: CNPJ) -> List:
         with self.database.engine.begin() as connection:
             # Create the table if it does not exist
             query = text(
@@ -798,7 +947,7 @@ class CNPJRepository:
 
             establishment_result = connection.execute(query)
             establishment_result = establishment_result.fetchall()
-
+            
             establishment_result = replace_invalid_fields_on_list_tuple(
                 establishment_result
             )
@@ -808,7 +957,7 @@ class CNPJRepository:
             "cnpj_basico",
             "cnpj_ordem",
             "cnpj_dv",
-            "email",
+            "correio_eletronico",
             "data_inicio_atividade",
             "data_situacao_cadastral",
             "situacao_cadastral",
@@ -835,18 +984,19 @@ class CNPJRepository:
         empty_df = pd.DataFrame(columns=columns)
         establishment_df = pd.DataFrame(establishment_result, columns=columns)
         establishment_df = (
-            empty_df 
-            if len(establishment_result) == 0 else establishment_df
+            empty_df if len(establishment_result) == 0 else establishment_df
         )
+
+        establishment_df=establishment_df.sort_values(by=['cnpj_basico', 'cnpj_ordem'])
         establishment_list = establishment_df.to_dict(orient="records")
 
         est_is_empty = len(establishment_df) == 0
+        format_map=self.__format_establishment
         return (
-            []
-            if est_is_empty else list(map(self.__format_establishment, establishment_list))
+            [] if est_is_empty else list(map(format_map, establishment_list))
         )
 
-    def get_cnpjs_partners(self, cnpj_list: List[CNPJ]):
+    def get_cnpjs_partners(self, cnpj_list: CNPJList) -> List:
         """
         Get the partners for the CNPJ.
 
@@ -1012,7 +1162,7 @@ class CNPJRepository:
                 "atividades_secundarias": atividades_secundarias,
             }
 
-    def get_cnpj_info(self, cnpj: CNPJ) -> Dict[str, str]:
+    def get_cnpj_info(self, cnpj: CNPJ) -> JSON:
         """
         Get the information for the CNPJ.
 
@@ -1022,6 +1172,8 @@ class CNPJRepository:
         Returns:
         dict: The dictionary with the CNPJ information.
         """
+        cnpj_base, cnpj_order, cnpj_digits = cnpj.to_tuple()
+
         columns = [
             "cnpj",
             "abertura",
@@ -1053,17 +1205,23 @@ class CNPJRepository:
         ]
         empty_df = pd.DataFrame(columns=columns)
 
-        # Get the establishment
-        establishment_dict = self.get_establishment(cnpj)
+        cnpj_list=[cnpj]
+
+        # Get the establishment        
+        establishment_dict = self.get_cnpjs_establishment(cnpj_list)
+
+        establishment_dict=establishment_dict[cnpj_base]
 
         if not establishment_dict:
             return empty_df.to_dict(orient="records")
 
         # Get company info
-        company_dict = self.get_company(cnpj)
+        company_dict = self.get_cnpjs_company(cnpj_list)
+        company_dict=company_dict[cnpj_base]
 
         # Get partners
-        partners_dict = self.get_partners(cnpj)
+        partners_dict = self.get_cnpjs_partners(cnpj_list)
+        partners_dict=partners_dict[cnpj_base]
 
         cnpj_info_dict = {**establishment_dict, **company_dict, **partners_dict}
 
