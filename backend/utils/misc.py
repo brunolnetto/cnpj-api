@@ -8,6 +8,7 @@ from backend.setup.logging import logger
 
 NumberList = List[Union[int, float]]
 
+
 def are(args: List[Any], validation_map: callable) -> bool:
     """
     Checks if a field is equal to any of the given values.
@@ -131,9 +132,7 @@ def is_number(text: str) -> bool:
     return bool(re.match(pattern, text))
 
 
-def are_numbers(
-    lst: List[Union[str, int, float]], is_strict: bool = False
-) -> bool:
+def are_numbers(lst: List[Union[str, int, float]], is_strict: bool = False) -> bool:
     """
     Checks if all elements in a list are numbers.
 
