@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
 from backend.api.utils.cnpj import is_cnpj_str_valid
+from backend.api.models.base import BatchModel
 
-class CNPJBatch(BaseModel):
-    batch: list[str]
+class CNPJBatch(BatchModel):
+    pass
 
 class CNPJ:
     def __init__(self, basico: str, ordem: str, digitos_verificadores: str):
@@ -56,6 +57,13 @@ class CNPJ:
             "is_valid": is_valid_dict["is_valid"],
             "reason": is_valid_dict["reason"],
         }
+
+    def to_tuple(self):
+        return (
+            self.basico_str,
+            self.ordem_str,
+            self.digitos_verificadores_str,
+        )
 
     def to_raw(self):
         return f"{self.basico_str}{self.ordem_str}{self.digitos_verificadores_str}"
