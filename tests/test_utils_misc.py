@@ -15,6 +15,7 @@ from backend.utils.misc import (
     replace_spaces,
     remove_leading_zeros,
     is_number,
+    are_numbers,
     format_decimal,
     string_to_json,
     humanize_string,
@@ -336,3 +337,68 @@ def test_raises_error_for_empty_string():
     """Tests that the function raises an error for an empty string."""
     with pytest.raises(ValueError):
         number_string_to_number("")
+
+
+def test_empty_list_all_numbers_strict():
+    """Tests if an empty list returns True with strict type checking."""
+    assert are_numbers([], is_strict=True)
+
+def test_empty_list_all_numbers_non_strict():
+    """Tests if an empty list returns True with non-strict type checking."""
+    assert are_numbers([])
+
+def test_list_of_integers_strict():
+    """Tests if a list of integers returns True with strict type checking."""
+    assert are_numbers([1, 2, 3], is_strict=True)
+
+def test_list_of_integers_non_strict():
+    """Tests if a list of integers returns True with non-strict type checking."""
+    assert are_numbers([1, 2, 3])
+
+def test_list_of_floats_strict():
+    """Tests if a list of floats returns True with strict type checking."""
+    assert are_numbers([1.5, 2.25, 3.14], is_strict=True)
+
+def test_list_of_floats_non_strict():
+    """Tests if a list of floats returns True with non-strict type checking."""
+    assert are_numbers([1.5, 2.25, 3.14])
+
+def test_list_of_mixed_numbers_strict():
+    """Tests if a list of mixed numbers returns True with strict type checking."""
+    assert are_numbers([1, 2.5, 3], is_strict=True)
+
+def test_list_of_mixed_numbers_non_strict():
+    """Tests if a list of mixed numbers returns True with non-strict type checking."""
+    assert are_numbers([1, 2.5, 3])
+
+def test_list_with_strings_strict():
+    """Tests if a list with strings returns False with strict type checking."""
+    assert not are_numbers(["abc", "def", "ghi"], is_strict=True)
+
+def test_list_with_strings_non_strict():
+    """Tests if a list with strings returns False with non-strict type checking (for non-numeric strings)."""
+    assert not are_numbers(["abc", "123", "def"], is_strict=False)
+
+def test_list_with_empty_strings_non_strict():
+    """Tests if a list with empty strings returns False with non-strict type checking."""
+    assert not are_numbers(["", "123", ""], is_strict=False)
+
+def test_list_with_non_numeric_strings_non_strict():
+    """Tests if a list with non-numeric strings returns False with non-strict type checking."""
+    assert not are_numbers(["abc", "def", "xyz"], is_strict=False)
+
+def test_list_with_numeric_strings_non_strict():
+    """Tests if a list with numeric strings returns True with non-strict type checking."""
+    assert are_numbers(["123", "456", "789"], is_strict=False)
+
+def test_list_with_none_values():
+    """Tests if a list with None values returns False."""
+    assert not are_numbers([1, None, 3], is_strict=True)
+    assert not are_numbers([1, None, 3], is_strict=False)
+
+def test_list_with_booleans():
+    """Tests if a list with booleans returns False."""
+    assert not are_numbers([True, False, 1], is_strict=True)
+    assert not are_numbers([True, False, 1], is_strict=False)
+
+

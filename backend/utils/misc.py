@@ -131,6 +131,25 @@ def is_number(text: str) -> bool:
     return bool(re.match(pattern, text))
 
 
+def are_numbers(
+    lst: List[Union[str, int, float]], is_strict: bool = False
+) -> bool:
+    """
+    Checks if all elements in a list are numbers.
+
+    Args:
+        lst (List): The list to check.
+        is_strict (bool, optional): Whether to check for strict numbers. Defaults to False.
+
+    Returns:
+        bool: Whether all elements in the list are numbers.
+    """
+    if is_strict:
+        return all(map(lambda x: is_number(str(x)), lst))
+    else:
+        return all(map(lambda x: is_number(str(x).replace(".", "")), lst))
+
+
 def format_decimal(float_string: str, num_decimal_places: int = 2) -> str:
     """
     Formats a decimal number to a string with a fixed number of decimal places.
