@@ -1,5 +1,3 @@
-CONTAINER_NAME := api-backend-1
-
 .PHONY: build run stop ps host
 
 OMIT_PATHS := "*/__init__.py,tests/*"
