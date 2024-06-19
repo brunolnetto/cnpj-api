@@ -297,7 +297,7 @@ async def get_legal_natures(
 
 
 @router.post("/legal-natures")
-async def get_legal_natures(
+async def get_legal_natures_list(
     legal_natures_code_batch: BatchModel,
     cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
