@@ -28,9 +28,9 @@ def cnpj_str_to_obj(cnpj_str: str):
 
 @router.get("/cnpjs")
 async def get_cnpjs(
-    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10,
     offset: int = 0,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get a list of CNPJs from the database.
@@ -123,10 +123,10 @@ async def get_cnpjs_establishment(
 
 @router.get("/cnaes")
 async def get_cnaes(
-    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10,
     offset: int = 0,
     all: bool = False,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
 ):
     """
     Get a list of CNAEs from the database.
@@ -150,7 +150,8 @@ async def get_cnaes(
 
 @router.get("/cnae/{cnae_code}")
 async def get_cnae_description(
-    cnae_code: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnae_code: str,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the description of a CNAE code.
@@ -175,9 +176,9 @@ async def get_cnae_description(
 @router.get("/cnae/{cnae_code}/establishments")
 async def get_establishments_by_cnae(
     cnae_code: str,
-    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10,
     offset: int = 0,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get a list of establishments with a given CNAE code.
@@ -213,9 +214,9 @@ async def get_establishments_by_cnae(
 
 @router.get("/cities")
 def get_cities(
-    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10,
     offset: int = 0,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get a list of cities from the database.
@@ -236,7 +237,8 @@ def get_cities(
 
 @router.get("/city/{city_code}")
 def get_city(
-    city_code: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    city_code: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the name of a city code.
@@ -265,10 +267,10 @@ def get_city(
 
 @router.get("/legal-natures")
 async def get_legal_natures(
-    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10,
     offset: int = 0,
     all: bool = False,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get a list of legal natures from the database.
@@ -289,7 +291,8 @@ async def get_legal_natures(
 
 @router.get("/legal-nature/{legal_nature_code}")
 async def get_legal_nature(
-    legal_nature_code: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    legal_nature_code: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get a list of legal natures from the database.
@@ -318,7 +321,7 @@ async def get_legal_nature(
 @router.get("/registration-status/{registration_status_code}")
 async def get_registration_status(
     registration_status_code: str,
-    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get a registration status from the database.
@@ -352,10 +355,10 @@ async def get_registration_status(
 
 @router.get("/registration-statuses")
 async def get_registration_statuses(
-    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
     limit: int = 10,
     offset: int = 0,
     all: bool = False,
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get a list of registration statuses from the database.
@@ -378,7 +381,8 @@ async def get_registration_statuses(
 
 @router.get("/cnpj/{cnpj}/activities")
 async def get_activities(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the activities of a CNPJ number.
@@ -409,7 +413,8 @@ async def get_activities(
 
 @router.get("/cnpj/{cnpj}/partners")
 async def get_cnpj_partners(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the partners of a CNPJ number.
@@ -445,7 +450,8 @@ async def get_cnpj_partners(
 
 @router.get("/cnpj/{cnpj}/company")
 async def get_cnpj_company(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the company associated with a CNPJ number.
@@ -519,7 +525,8 @@ async def get_establishment(
 
 @router.get("/cnpj/{cnpj}/establishments")
 async def get_establishments(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get the establishments associated with a CNPJ base (First 8 digits).
@@ -555,7 +562,8 @@ async def get_establishments(
 
 @router.get("/cnpj/{cnpj}")
 async def get_cnpj_info(
-    cnpj: str, cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj: str, 
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
 ):
     """
     Get information about a CNPJ number.
