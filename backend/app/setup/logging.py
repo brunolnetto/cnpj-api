@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from os import getenv, makedirs, path
 from pythonjsonlogger import jsonlogger
 
-from backend.utils.logging import clear_folder_items
+from backend.app.utils.logging import clear_folder_items
 
 
 # Use the logger

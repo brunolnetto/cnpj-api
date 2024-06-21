@@ -4,7 +4,7 @@ from sqlalchemy.exc import (
     ArgumentError,
 )
 
-from backend.database.base import (
+from backend.app.database.base import (
     get_db_uri,
     Database,
 )

@@ -8,8 +8,8 @@ from starlette.middleware.cors import CORSMiddleware
 
 import sentry_sdk
 
-from backend.setup.config import settings
-from backend.api.routes.router_bundler import api_router
+from backend.app.setup.config import settings
+from backend.app.api.routes.router_bundler import api_router
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:

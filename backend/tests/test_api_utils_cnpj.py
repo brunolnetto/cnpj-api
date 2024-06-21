@@ -1,6 +1,6 @@
 import pytest
 
-from backend.api.utils.cnpj import (
+from backend.app.api.utils.cnpj import (
     is_cnpj_str_valid,
     parse_cnpj_str,
     format_cnpj,

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from backend.utils.dataframe import dataframe_to_nested_dict
+from backend.app.utils.dataframe import dataframe_to_nested_dict
 
 
 def test_converts_dataframe_with_existing_index():

@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 import re
 
-from backend.setup.logging import logger
+from backend.app.setup.logging import logger
 
 NumberList = List[Union[int, float]]
 

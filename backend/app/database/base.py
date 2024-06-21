@@ -6,8 +6,8 @@ from sqlalchemy import pool, text
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from backend.setup.logging import logger
-from backend.database.schemas import Base
+from backend.app.setup.logging import logger
+from backend.app.database.schemas import Base
 
 
 def get_db_uri():

@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import patch
 from json import JSONDecodeError
 
-from backend.utils.misc import (
+from backend.app.utils.misc import (
     is_field_valid,
     format_database_date,
     format_cep,
@@ -63,14 +63,14 @@ def test_are_non_positive():
 
 def test_date_str():
     """Tests the date_str function."""
-    with patch("backend.utils.misc.datetime") as mock_datetime:
+    with patch("backend.app.utils.misc.datetime") as mock_datetime:
         mock_datetime.now().strftime.return_value = "2024-06-13"
         assert date_str() == "2024-06-13"
 
 
 def test_time_str():
     """Tests the time_str function."""
-    with patch("backend.utils.misc.datetime") as mock_datetime:
+    with patch("backend.app.utils.misc.datetime") as mock_datetime:
         mock_datetime.now().strftime.return_value = "12:34:56"
         assert time_str() == "12:34:56"
 
@@ -176,8 +176,8 @@ def test_replace_nan_on_list_tuple():
 # Test with pytest.mock
 def test_makedir(mocker):
     # Mock logger methods
-    mocker.patch("backend.setup.logging.logger.info")
-    mocker.patch("backend.setup.logging.logger.warning")
+    mocker.patch("backend.app.setup.logging.logger.info")
+    mocker.patch("backend.app.setup.logging.logger.warning")
 
     # Test case 1: Folder created (no warning)
     folder_name = "new_folder"
@@ -185,7 +185,7 @@ def test_makedir(mocker):
     rmdir(folder_name)
 
     # Assert logger.info was called with the correct message
-    from backend.setup.logging import logger
+    from backend.app.setup.logging import logger
 
     assert logger.info.call_count == 1
     assert logger.info.call_args[0][0] == f"Folder '{folder_name}' created!"

@@ -1,4 +1,4 @@
-from backend.repositories.cnpj import CNPJ
+from backend.app.repositories.cnpj import CNPJ
 
 
 def error_message(cnpj: CNPJ, nome_tabela):
