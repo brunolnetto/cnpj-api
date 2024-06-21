@@ -1,4 +1,4 @@
-from backend.utils.misc import is_positive, is_non_negative
+from backend.app.utils.misc import is_positive, is_non_negative
 
 
 def check_limit_and_offset(limit: int, offset: int) -> None:

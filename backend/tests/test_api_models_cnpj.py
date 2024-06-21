@@ -1,6 +1,6 @@
 import pytest
 
-from backend.api.models.cnpj import CNPJ
+from backend.app.api.models.cnpj import CNPJ
 
 
 def test_valid_cnpj():
@@ -11,6 +11,27 @@ def test_valid_cnpj():
     validation_result = valid_cnpj.is_valid_dict()
     assert validation_result["is_valid"] is True
     assert validation_result["reason"] == ""
+    
+def test_cnpj_to_tuple():
+    """
+    Tests if a valid CNPJ number is correctly identified.
+    """
+    valid_cnpj = CNPJ(12345678, 9012, 30)
+    base, order, digits = valid_cnpj.to_tuple()
+    
+    assert base == '12345678'
+    assert order == '9012'
+    assert digits == '30'
+
+
+def test_cnpj_to_raw():
+    """
+    Tests if a valid CNPJ number is correctly identified.
+    """
+    valid_cnpj = CNPJ(12345678, 9012, 30)
+    raw_cnpj = valid_cnpj.to_raw()
+    
+    assert raw_cnpj == '12345678901230'
 
 
 def test_invalid_length_cnpj():

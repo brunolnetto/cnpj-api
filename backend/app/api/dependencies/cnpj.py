@@ -1,7 +1,7 @@
 from fastapi import Depends
 
-from backend.database.base import Database, get_db
-from backend.repositories.cnpj import CNPJRepository
+from backend.app.database.base import Database, get_db
+from backend.app.repositories.cnpj import CNPJRepository
 
 
 # Define a dependency to create a CNPJRepository instance

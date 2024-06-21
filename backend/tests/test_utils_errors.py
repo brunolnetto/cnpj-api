@@ -1,4 +1,4 @@
-from backend.utils.errors import error_message
+from backend.app.utils.errors import error_message
 
 
 def test_error_message():

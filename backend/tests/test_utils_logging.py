@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from backend.utils.logging import clear_folder_items
+from backend.app.utils.logging import clear_folder_items
 
 
 def test_clear_folder_items_success():

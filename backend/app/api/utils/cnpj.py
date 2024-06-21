@@ -1,6 +1,6 @@
 from typing import Dict, List, Union, Tuple
 
-from backend.utils.misc import is_number
+from backend.app.utils.misc import is_number
 
 
 def calculate_cnpj_verification_digits(cnpj: str) -> Tuple[int, int]:

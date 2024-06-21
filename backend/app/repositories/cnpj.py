@@ -3,10 +3,10 @@ from sqlalchemy import text
 import pandas as pd
 from datetime import datetime
 
-from backend.utils.misc import string_to_json
-from backend.api.models.cnpj import CNPJ
-from backend.database.base import Database
-from backend.utils.misc import (
+from backend.app.utils.misc import string_to_json
+from backend.app.api.models.cnpj import CNPJ
+from backend.app.database.base import Database
+from backend.app.utils.misc import (
     replace_invalid_fields_on_list_tuple,
     replace_invalid_fields_on_list_dict,
     replace_spaces_on_list_tuple,
@@ -20,9 +20,8 @@ from backend.utils.misc import (
     number_string_to_number,
     humanize_string,
 )
-from backend.utils.dataframe import dataframe_to_nested_dict
-
-from backend.api.utils.cnpj import format_cnpj
+from backend.app.utils.dataframe import dataframe_to_nested_dict
+from backend.app.api.utils.cnpj import format_cnpj
 
 # Maps for
 SIZE_DICT = {

@@ -1,5 +1,5 @@
-from backend.api.utils.cnpj import is_cnpj_str_valid
-from backend.api.models.base import BatchModel
+from backend.app.api.utils.cnpj import is_cnpj_str_valid
+from backend.app.api.models.base import BatchModel
 
 
 class CNPJBatch(BatchModel):
