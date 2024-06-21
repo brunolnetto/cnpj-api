@@ -1,6 +1,6 @@
 .PHONY: build run stop ps host
 
-OMIT_PATHS := "*/__init__.py,tests/*"
+OMIT_PATHS := "*/__init__.py,backend/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py"
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
@@ -43,7 +43,7 @@ install: ## Installs the python requirements. Usage: make install
 	uv pip install -r requirements.txt
 
 run: ## Run the application. Usage: make run
-	uvicorn backend.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+	uvicorn backend.app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
 
 search: ## Searchs for a token in the code. Usage: make search token=your_token
 	grep -rnw . \
