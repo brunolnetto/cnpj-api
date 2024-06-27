@@ -2,7 +2,7 @@ from os import getenv, path, getcwd
 from dotenv import load_dotenv
 from psycopg2 import OperationalError
 from sqlalchemy_utils import database_exists, create_database
-from sqlalchemy import pool, text
+from sqlalchemy import pool, text, inspect
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -38,10 +38,10 @@ class Database:
         self.uri = uri
         self.engine = create_engine(
             uri,
-            poolclass=pool.QueuePool,  # Use connection pooling
-            pool_size=20,  # Adjust pool size based on your workload
-            max_overflow=10,  # Adjust maximum overflow connections
-            pool_recycle=3600,  # Periodically recycle connections (optional)
+            poolclass=pool.QueuePool,   # Use connection pooling
+            pool_size=20,               # Adjust pool size based on your workload
+            max_overflow=10,            # Adjust maximum overflow connections
+            pool_recycle=3600,          # Periodically recycle connections (optional)
         )
         self.session_maker = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
@@ -89,6 +89,18 @@ class Database:
         except Exception as e:
             logger.error(f"Error creating tables in the database: {str(e)}")
 
+    def print_tables(self):
+        """
+        Print the available tables in the database.
+        """
+        try:
+            inspector = inspect(self.engine)
+            tables = inspector.get_table_names()
+            logger.info(f"Available tables: {tables}")
+        except Exception as e:
+            logger.error(f"Error fetching table names: {str(e)}")
+
+
     def init(self):
         """
         Initializes the database connection and creates the tables.
@@ -115,6 +127,12 @@ class Database:
             self.create_tables()
         except Exception as e:
             logger.error(f"Error creating tables: {e}")
+        
+        try:
+            self.print_tables()
+        except Exception as e:
+            logger.error(f"Error print available tables: {e}")
+            
 
 
 async def get_db():

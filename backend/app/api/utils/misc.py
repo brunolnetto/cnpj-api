@@ -1,5 +1,7 @@
 from backend.app.utils.misc import is_positive, is_non_negative
 
+# The maximum limit value that can be provided.
+MAX_LIMIT = 100
 
 def check_limit_and_offset(limit: int, offset: int) -> None:
     """
@@ -19,3 +21,5 @@ def check_limit_and_offset(limit: int, offset: int) -> None:
     if not is_positive(limit):
         explanation = f"Limit must be positive. Provided limit value: {limit}"
         raise ValueError(explanation)
+
+    return min(limit, MAX_LIMIT), offset
