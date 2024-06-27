@@ -10,7 +10,20 @@ from backend.app.api.utils.misc import check_limit_and_offset
 from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
 from backend.app.setup.config import settings
-from backend.app.api.utils.cnpj import cnpj_str_to_obj
+
+def cnpj_str_to_obj(cnpj_str: str):
+    """
+    Converts a CNPJ string to a CNPJ object.
+
+    Args:
+        cnpj_str (str): The CNPJ string to convert.
+
+    Returns:
+        CNPJ: The CNPJ object.
+    """
+
+    cnpj_list = parse_cnpj_str(cnpj_str)
+    return CNPJ(*cnpj_list)
 
 # Types
 CodeType = Union[str, int]

@@ -1,22 +1,6 @@
 from typing import Dict, List, Union, Tuple
 
 from backend.app.utils.misc import is_number
-from backend.app.api.models.cnpj import CNPJ
-
-def cnpj_str_to_obj(cnpj_str: str):
-    """
-    Converts a CNPJ string to a CNPJ object.
-
-    Args:
-        cnpj_str (str): The CNPJ string to convert.
-
-    Returns:
-        CNPJ: The CNPJ object.
-    """
-
-    cnpj_list = parse_cnpj_str(cnpj_str)
-    return CNPJ(*cnpj_list)
-
 
 
 def calculate_cnpj_verification_digits(cnpj: str) -> Tuple[int, int]:
