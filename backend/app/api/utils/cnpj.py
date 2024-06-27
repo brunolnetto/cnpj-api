@@ -1,6 +1,7 @@
 from typing import Dict, List, Union, Tuple
 
 from backend.app.utils.misc import is_number
+from backend.app.api.models.cnpj import CNPJ
 
 def cnpj_str_to_obj(cnpj_str: str):
     """
