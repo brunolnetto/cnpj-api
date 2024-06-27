@@ -2,6 +2,8 @@
 
 OMIT_PATHS := "*/__init__.py,backend/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py"
 
+DEFAULT_APP_PORT := $(shell source .env && echo $$APP_PORT)
+
 define PRINT_HELP_PYSCRIPT
 import re, sys
 
@@ -43,14 +45,10 @@ install: ## Installs the python requirements. Usage: make install
 	uv pip install -r requirements.txt
 
 run: ## Run the application. Usage: make run
-	uvicorn backend.app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+	uvicorn backend.app.main:app --reload --workers 4 --host 0.0.0.0 --port 8000
 
 search: ## Searchs for a token in the code. Usage: make search token=your_token
-	grep -rnw . \
-	--exclude-dir=venv \
-	--exclude-dir=.git \
-	--exclude=poetry.lock \
-	-e "$(token)"
+	grep -rnw . --exclude-dir=venv --exclude-dir=.git --exclude=poetry.lock -e "$(token)"
 
 replace: ## Replaces a token in the code. Usage: make replace token=your_token
 	sed -i 's/$(token)/$(new_token)/g' $$(grep -rl "$(token)" . \
@@ -70,7 +68,6 @@ minimal-requirements: ## Generates minimal requirements. Usage: make requirement
 lint: ## perform inplace lint fixes
 	@ruff check --unsafe-fixes --fix .
 	@black $(shell git ls-files '*.py')
-	@pylint $(shell git ls-files '*.py')
 
 pylint:
 	@pylint backend/
