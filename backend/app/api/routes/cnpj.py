@@ -14,7 +14,6 @@ from backend.app.api.utils.misc import check_limit_and_offset
 from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
 from backend.app.setup.config import settings
-from backend.app.api.utils.cnpj import cnpj_str_to_obj
 
 # Types
 CodeType = Union[str, int]
