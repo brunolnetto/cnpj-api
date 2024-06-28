@@ -149,9 +149,7 @@ class CNPJService:
         return establishments
 
 
-    async def get_city(
-        self, city_code: CodeType
-    ):
+    async def get_city(self, city_code: CodeType):
         """
         Get the name of a city code.
 
@@ -195,9 +193,7 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-    async def get_cities_list(
-        self, cities_code_batch: BatchModel
-    ):
+    async def get_cities_list(self, cities_code_batch: BatchModel):
         try:
             cities_code_list = list(set(cities_code_batch.batch))
 
@@ -219,9 +215,7 @@ class CNPJService:
         return cities_objs
 
 
-    async def get_legal_nature(
-        self, legal_nature_code: CodeType
-    ):
+    async def get_legal_nature(self, legal_nature_code: CodeType):
         """
         Get a list of legal natures from the database.
 
@@ -249,9 +243,7 @@ class CNPJService:
         return legal_nature_obj_list[0]
 
 
-    async def get_legal_natures(
-        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
-    ):
+    async def get_legal_natures(self, limit: int = 10, offset: int = 0, enable_pagination: bool = True):
         """
         Get a list of legal natures from the database.
 
@@ -392,37 +384,6 @@ class CNPJService:
             )
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-
-
-    async def get_cnpj_info(self, cnpj: str):
-        """
-        Get information about a CNPJ number.
-
-        Parameters:
-        - cnpj: The CNPJ number to search for.
-
-        Returns:
-        - A dictionary with information about the CNPJ.
-        """
-        try:
-            if not is_number(cnpj):
-                raise ValueError(
-                    f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
-                )
-
-            cnpj_obj = cnpj_str_to_obj(cnpj)
-            cnpj_info = self.repository.get_cnpj_info(cnpj_obj)
-
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e)) from e
-
-        if not cnpj_info:
-            formatted_cnpj = format_cnpj(cnpj)
-            message = f"CNPJ {formatted_cnpj} not found."
-
-            return {"detail": message}
-
-        return cnpj_info
 
 
     async def get_activities(self, cnpj: str):
@@ -598,7 +559,9 @@ class CNPJService:
         try:
             limit, offset = check_limit_and_offset(limit, offset)
 
-            return self.repository.get_cnpjs(limit=limit, offset=offset)
+            cnpjs=self.repository.get_cnpjs(limit=limit, offset=offset)
+            
+            return cnpjs
 
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -661,6 +624,36 @@ class CNPJService:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
+    
+    async def get_cnpj_info(self, cnpj: str):
+        """
+        Get information about a CNPJ number.
+
+        Parameters:
+        - cnpj: The CNPJ number to search for.
+
+        Returns:
+        - A dictionary with information about the CNPJ.
+        """
+        try:
+            if not is_number(cnpj):
+                raise ValueError(
+                    f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
+                )
+
+            cnpj_obj = cnpj_str_to_obj(cnpj)
+            cnpj_info = self.repository.get_cnpj_info(cnpj_obj)
+
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not cnpj_info:
+            formatted_cnpj = format_cnpj(cnpj)
+            message = f"CNPJ {formatted_cnpj} not found."
+
+            return {"detail": message}
+
+        return cnpj_info
 
 def get_cnpj_service(repository: CNPJRepository = CNPJRepositoryDependency):
     return CNPJService(repository)
