@@ -2,14 +2,15 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import Union
 
 from backend.app.repositories.cnpj import CNPJRepository
+from backend.app.utils.misc import is_number, are_numbers
+from backend.app.setup.config import settings
+
 from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.app.api.models.cnpj import CNPJ
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
-from backend.app.utils.misc import is_number, are_numbers
 from backend.app.api.utils.misc import check_limit_and_offset
 from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
-from backend.app.setup.config import settings
 
 def cnpj_str_to_obj(cnpj_str: str):
     """
@@ -409,7 +410,7 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not activities:
-            return {"detail": f"There are no activities associated with CNPJ {cnpj}."}
+            return f"There are no activities associated with CNPJ {cnpj}."
 
         return activities
 
@@ -441,7 +442,7 @@ class CNPJService:
             error = f"There are no partners associated with CNPJ {cnpj}"
             explanation = "It is likely either a sole proprietorship or a legal entity."
             msg = f"{error}. {explanation}"
-            return {"detail": msg}
+            return msg
 
         cnpj_base = cnpj_obj.basico_str
         return cnpj_info[cnpj_base]
@@ -473,7 +474,7 @@ class CNPJService:
 
         if not company_info:
             message = f"There is no company associated with CNPJ {cnpj}."
-            return {"detail": message}
+            return message
 
         cnpj_base = cnpj_obj.basico_str
 
@@ -508,7 +509,7 @@ class CNPJService:
             explanation = f"Try route {settings.API_V1_STR}/cnpj/{cnpj}/company to verify if the CNPJ exists."
             message = f"{base_msg}. {explanation}"
 
-            return {"detail": message}
+            return message
 
         return est_info
 
@@ -539,9 +540,7 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not est_info:
-            return {
-                "detail": f"There are no establishments associated with CNPJ base {cnpj_base}."
-            }
+            return f"There are no establishments associated with CNPJ base {cnpj_base}."
 
         return est_info
 
@@ -637,9 +636,7 @@ class CNPJService:
         """
         try:
             if not is_number(cnpj):
-                raise ValueError(
-                    f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
-                )
+                raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
 
             cnpj_obj = cnpj_str_to_obj(cnpj)
             cnpj_info = self.repository.get_cnpj_info(cnpj_obj)
@@ -651,7 +648,7 @@ class CNPJService:
             formatted_cnpj = format_cnpj(cnpj)
             message = f"CNPJ {formatted_cnpj} not found."
 
-            return {"detail": message}
+            return message
 
         return cnpj_info
 
