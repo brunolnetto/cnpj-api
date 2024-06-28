@@ -28,7 +28,7 @@ clean-test: # Remove test and coverage artifacts
 	rm -fr .tox/ .testmondata* .coverage coverage.* htmlcov/ .pytest_cache
 
 clean-cache: # remove test and coverage artifacts
-	find . -name '*cache*' -exec rm -rf {} +
+	find . -name '*pycache*' -exec rm -rf {} +
 
 sanitize: # Remove dangling images and volumes
 	docker system prune --volumes -f
