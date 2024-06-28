@@ -1,4 +1,5 @@
-# Maps for
+# Maps for the values of the fields in the database
+
 SIZE_DICT = {
     "0": "NÃO INFORMADO",
     "1": "MICRO EMPRESA",
@@ -14,4 +15,7 @@ SITUATION_DICT = {
     "8": "BAIXADA",
 }
 
-EST_TYPE_DICT = {"1": "MATRIZ", "2": "FILIAL"}
+EST_TYPE_DICT = {
+    "1": "MATRIZ", 
+    "2": "FILIAL"
+}
