@@ -78,7 +78,7 @@ class CNPJRepository:
             
             cnpjs_list=list(cnpjs_df['cnpj'])
 
-            return cnpjs_list
+            return self.get_
 
     def get_cnae(self, cnae_code: CodeType):
         """
@@ -1256,11 +1256,6 @@ class CNPJRepository:
         Returns:
         dict: The dictionary with the CNPJ information.
         """
-        [
-            cnpj.to_tuple() for cnpj in cnpjs
-        ]
-        cnpj_base, cnpj_order, cnpj_digits = cnpj.to_tuple()
-
         columns = [
             "cnpj", "abertura", 
             "situacao", "data_situacao", "motivo_situacao", "situacao_especial", "data_situacao_especial",
@@ -1279,26 +1274,34 @@ class CNPJRepository:
         if not establishment_dict:
             return empty_df.to_dict(orient="records")
 
-        
-
-        establishment_dict = establishment_dict[cnpj_base]        
-
         # Get company info
         company_dict = self.get_cnpjs_company(cnpj_list)
-        company_dict = company_dict[cnpj_base]
-
+        
         # Get partners
         partners_dict = self.get_cnpjs_partners(cnpj_list)
-        partners_dict = partners_dict[cnpj_base]
-
-        cnpj_info_dict = {**establishment_dict, **company_dict, **partners_dict}
+        
+        establ_list = list(establishment_dict)
+        companies_list = list(company_dict)
+        partners_list = list(partners_dict)
+        
+        common_keys=list(set(establ_list).intersection(companies_list).intersection(partners_list))
+        
+        cnpj_info_dict = {
+            common_key: {
+                **establishment_dict,
+                **company_dict,
+                **partners_dict,
+            }
+            for common_key in common_keys
+        }
 
         date_format = "%Y-%m-%d %H:%M:%S"
-        cnpj_info_dict["ultima_atualizacao"] = datetime.now().strftime(date_format)
-
         return {
-            key: cnpj_info_dict[key] 
-            for key in columns if key in cnpj_info_dict
+            cnpj_key: {
+                "ultima_atualizacao": datetime.now().strftime(date_format),
+                **cnpj_info
+            }
+            for cnpj_key, cnpj_info in cnpj_info_dict.items()
         }
 
     def get_establishments_by_cnae(

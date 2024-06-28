@@ -713,7 +713,7 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         return {
-            "success": valid_cnpjs,
+            "success": self.repository.get_cnpjs_info(valid_cnpjs),
             "fail": invalid_cnpjs
         }
 
