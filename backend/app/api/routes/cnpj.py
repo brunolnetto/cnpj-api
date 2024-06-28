@@ -17,7 +17,7 @@ from backend.app.setup.config import settings
 # Types
 CodeType = Union[str, int]
 
-router = APIRouter()
+router = APIRouter(tags=["CNPJ"])
 
 
 @router.get("/cnaes")

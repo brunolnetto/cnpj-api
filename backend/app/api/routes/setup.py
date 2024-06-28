@@ -4,7 +4,9 @@ import toml
 
 from backend.app.setup.config import settings
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Setup"]
+)
 
 
 @router.get("/request-info")
