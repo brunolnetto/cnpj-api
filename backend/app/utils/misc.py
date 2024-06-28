@@ -93,6 +93,22 @@ def time_str():
 
 
 def humanize_string(s):
+    """
+    Humanizes a string by separating letters and special characters from numbers,
+    removing leading zeros from numbers, replacing multiple spaces with a single space,
+    and capitalizing the first letter of each word.
+
+    Args:
+        s (str): The input string to be humanized.
+
+    Returns:
+        str: The humanized string.
+
+    Example:
+        >>> humanize_string("hello123world")
+        'Hello 123 World'
+    """
+    
     # Step 1: Separate letters and special characters from numbers
     s = re.sub(r"(\W+)(\d+)", r"\1 \2", s)
     s = re.sub(r"([A-Za-z]+)(\d+)", r"\1 \2", s)
@@ -110,6 +126,15 @@ def humanize_string(s):
 
 
 def string_to_json(string: str) -> dict:
+    """
+    Converts a string representation of a JSON object to a Python dictionary.
+
+    Args:
+        string (str): The string representation of the JSON object.
+
+    Returns:
+        dict: The Python dictionary representation of the JSON object.
+    """
     string = string.replace("'", '"')
     string = re.sub(r"\bNone\b", "null", string)
 
@@ -215,94 +240,6 @@ def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
         return "" if not is_field_valid(el) else el
 
     return operate_on_list_dict(lst, clean_field_map)
-
-
-# Define a function to format the date
-DELIMITER = "/"
-
-
-def format_database_date(date_str_: str, delimiter: str = DELIMITER) -> str:
-    """
-    Formats a date string to the database format.
-
-    Args:
-        date_str (str): The date string to format.
-        delimiter (str): The delimiter to use.
-
-    Returns:
-        str: The formatted date string.
-    """
-    date_str_ = str(date_str_)
-    if not is_field_valid(date_str) or not is_number(date_str_) or len(date_str_) != 8:
-        return None
-
-    return f"{date_str_[6:]}{delimiter}{date_str_[4:6]}{delimiter}{date_str_[:4]}"
-
-
-def format_cep(cep_str: str):
-    """
-    Formats a CEP string.
-
-    Args:
-        cep_str (str): The CEP string to format.
-
-    Returns:
-        str: The formatted CEP string
-    """
-    cep_str = str(cep_str)
-    is_valid_cep = is_field_valid(cep_str) and is_number(cep_str)
-
-    if not is_valid_cep:
-        return ""
-
-    # Remove decimal part if it exists
-    cep_str = str(int(float(cep_str)))
-    cep_str = cep_str.zfill(8)
-
-    return f"{cep_str[0:2]}.{cep_str[2:5]}-{cep_str[5:8]}"
-
-
-# Define a function to format the phone number
-def format_phone(
-    ddd_num: str,
-    phone_num: str,
-    ddd_ldelimiter: tuple = "(",
-    ddd_rdelimiter: tuple = ")",
-    phone_delimiter="-",
-):
-    """
-    Formats a phone number.
-
-    Args:
-        ddd (str): The DDD part of the phone number.
-        phone_num (str): The phone number.
-        ddd_ldelimiter (tuple, optional): The left delimiter for the DDD. Defaults to '('.
-        ddd_rdelimiter (tuple, optional): The right delimiter for the DDD. Defaults to ')'.
-        phone_delimiter (str, optional): The delimiter for the phone number. Defaults to '-'.
-
-    Returns:
-        str: The formatted phone number.
-    """
-
-    def is_phone_valid(phone_):
-        return is_number(phone_) and is_field_valid(phone_) and len(phone_) in (8, 9)
-
-    def is_ddd_valid(ddd_):
-        return is_number(ddd_) and is_field_valid(ddd_) and len(ddd_) in (1, 2)
-
-    are_fields_valid = is_phone_valid(phone_num) and is_ddd_valid(ddd_num)
-
-    if not are_fields_valid:
-        return ""
-
-    ddd_num = str(int(float(ddd_num)))
-    phone_num = str(int(float(phone_num)))
-    phone_num = phone_num.zfill(8)
-
-    formated_ddd = f"{ddd_ldelimiter}{ddd_num}{ddd_rdelimiter}"
-    formatted_phone = f"{phone_num[:4]}{phone_delimiter}{phone_num[4:]}"
-
-    return f"{formated_ddd} {formatted_phone}"
 
 
 def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:
