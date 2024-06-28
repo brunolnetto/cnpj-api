@@ -22,24 +22,9 @@ from backend.app.utils.misc import (
 )
 from backend.app.utils.dataframe import dataframe_to_nested_dict
 from backend.app.api.utils.cnpj import format_cnpj
-
-# Maps for
-SIZE_DICT = {
-    "0": "NÃO INFORMADO",
-    "1": "MICRO EMPRESA",
-    "3": "EMPRESA DE PEQUENO PORTE",
-    "5": "DEMAIS",
-}
-
-SITUATION_DICT = {
-    "1": "NULA",
-    "2": "ATIVA",
-    "3": "SUSPENSA",
-    "4": "INAPTA",
-    "8": "BAIXADA",
-}
-
-EST_TYPE_DICT = {"1": "MATRIZ", "2": "FILIAL"}
+from backend.app.repositories.constants import (
+    SIZE_DICT, SITUATION_DICT, EST_TYPE_DICT,
+)
 
 # Types
 CNPJList = List[CNPJ]
@@ -86,7 +71,7 @@ class CNPJRepository:
 
             return list(cnpjs_df.to_dict().values())[0]
 
-    def get_cnae(self, cnae_code: str):
+    def get_cnae(self, cnae_code: CodeType):
         """
         Get the CNAE for the code.
 
@@ -150,9 +135,7 @@ class CNPJRepository:
 
         return cnae_dict
 
-    def get_cnaes(
-        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
-    ):
+    def get_cnaes(self, limit: int = 10, offset: int = 0, enable_pagination: bool = True):
         """
         Get all CNAEs from the database.
 
@@ -189,7 +172,7 @@ class CNPJRepository:
 
             return cnae_df.to_dict(orient="records")
 
-    def get_legal_nature(self, legal_nature_code: str):
+    def get_legal_nature(self, legal_nature_code: CodeType):
         """
         Get legal nature from the database.
 
@@ -353,13 +336,13 @@ class CNPJRepository:
             query = (
                 text(
                     f"""
-                    select
-                        codigo, descricao
-                    from 
-                        moti
-                    limit {limit}
-                    offset {offset}
-                """
+                        select
+                            codigo, descricao
+                        from 
+                            moti
+                        limit {limit}
+                        offset {offset}
+                    """
                 )
                 if enable_pagination
                 else text(
