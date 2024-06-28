@@ -85,7 +85,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(cnaes) == 0:
-            return {"detail": f"CNAE codes {cnae_code_list} not found."}
+            return {
+                "message": f"CNAE codes {cnae_code_list} not found."
+            }
 
         return cnaes
 
@@ -110,7 +112,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(cnaes) == 0:
-            return {"detail": f"CNAE code {cnae_code} not found."}
+            return {
+                "message": f"CNAE code {cnae_code} not found."
+            }
 
         return cnaes[0]
 
@@ -145,7 +149,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(establishments) == 0:
-            return {"detail": f"There are no establishents with CNAE code {cnae_code}."}
+            return {
+                "message": f"There are no establishents with CNAE code {cnae_code}."
+            }
 
         return establishments
 
@@ -171,7 +177,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(city) == 0:
-            return {"detail": f"City code {city_code} not found."}
+            return {
+                "message": f"City code {city_code} not found."
+            }
 
         return city
 
@@ -211,7 +219,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(cities_objs) == 0:
-            return {"detail": f"Cities codes {cities_code_list} not found."}
+            return {
+                "message": f"Cities codes {cities_code_list} not found."
+            }
 
         return cities_objs
 
@@ -239,7 +249,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(legal_nature_obj_list) != 1:
-            return {"detail": f"Legal nature code {legal_nature_code} not found."}
+            return {
+                "message": f"Legal nature code {legal_nature_code} not found."
+            }
 
         return legal_nature_obj_list[0]
 
@@ -292,7 +304,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(legal_natures_objs) == 0:
-            return {"detail": f"Legal nature codes {legal_natures_code_list} not found."}
+            return {
+                "message": f"Legal nature codes {legal_natures_code_list} not found."
+            }
 
         return legal_natures_objs
 
@@ -324,7 +338,7 @@ class CNPJService:
 
         if len(registration_status) == 0:
             return {
-                "detail": f"Registration status code {registration_status_code} not found."
+                "message": f"Registration status code {registration_status_code} not found."
             }
 
         return registration_status[0]
@@ -361,7 +375,7 @@ class CNPJService:
 
         if len(registration_status) == 0:
             return {
-                "detail": f"Registration status codes {registration_code_list} not found."
+                "message": f"Registration status codes {registration_code_list} not found."
             }
 
         return registration_status
@@ -410,7 +424,10 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not activities:
-            return f"There are no activities associated with CNPJ {cnpj}."
+            return {
+                "message": f"There are no activities associated with CNPJ {cnpj}."
+            }
+        
 
         return activities
 
@@ -427,9 +444,7 @@ class CNPJService:
         """
         try:
             if not is_number(cnpj):
-                raise ValueError(
-                    f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
-                )
+                raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
 
             cnpj_obj = cnpj_str_to_obj(cnpj)
             cnpj_list = [cnpj_obj]
@@ -441,8 +456,9 @@ class CNPJService:
         if not cnpj_info:
             error = f"There are no partners associated with CNPJ {cnpj}"
             explanation = "It is likely either a sole proprietorship or a legal entity."
-            msg = f"{error}. {explanation}"
-            return msg
+            return {
+                "message": f"{error}. {explanation}"
+            }
 
         cnpj_base = cnpj_obj.basico_str
         return cnpj_info[cnpj_base]
@@ -460,9 +476,7 @@ class CNPJService:
         """
         try:
             if not is_number(cnpj):
-                raise ValueError(
-                    f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
-                )
+                raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
 
             cnpj_obj = cnpj_str_to_obj(cnpj)
             cnpj_list = [cnpj_obj]
@@ -473,8 +487,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not company_info:
-            message = f"There is no company associated with CNPJ {cnpj}."
-            return message
+            return {
+                "message": f"There is no company associated with CNPJ {cnpj}."
+            }
 
         cnpj_base = cnpj_obj.basico_str
 
@@ -493,9 +508,7 @@ class CNPJService:
         """
         try:
             if not is_number(cnpj):
-                raise ValueError(
-                    f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
-                )
+                raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
 
             cnpj_obj = cnpj_str_to_obj(cnpj)
 
@@ -509,7 +522,9 @@ class CNPJService:
             explanation = f"Try route {settings.API_V1_STR}/cnpj/{cnpj}/company to verify if the CNPJ exists."
             message = f"{base_msg}. {explanation}"
 
-            return message
+            return {
+                "message": message
+            }
 
         return est_info
 
@@ -527,9 +542,7 @@ class CNPJService:
         """
         try:
             if not is_number(cnpj):
-                raise ValueError(
-                    f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
-                )
+                raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
 
             cnpj_obj = cnpj_str_to_obj(cnpj)
             cnpj_base = cnpj_obj.basico_str
@@ -540,7 +553,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not est_info:
-            return f"There are no establishments associated with CNPJ base {cnpj_base}."
+            return {
+                "message": f"There are no establishments associated with CNPJ base {cnpj_base}."
+            }
 
         return est_info
 
@@ -645,10 +660,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not cnpj_info:
-            formatted_cnpj = format_cnpj(cnpj)
-            message = f"CNPJ {formatted_cnpj} not found."
-
-            return message
+            return {
+                "message": f"CNPJ {format_cnpj(cnpj)} not found."
+            }
 
         return cnpj_info
 
