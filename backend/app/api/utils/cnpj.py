@@ -71,6 +71,21 @@ def is_cnpj_str_valid(cnpj: str) -> Dict[str, Union[bool, str]]:
     return {"is_valid": True, "reason": ""}
 
 
+from typing import List
+
+def are_cnpj_str_valid(cnpjs: List[str]):
+    """
+    Check if a list of CNPJ strings are valid.
+
+    Args:
+        cnpjs (List[str]): A list of CNPJ strings to be validated.
+
+    Returns:
+        List[bool]: A list of boolean values indicating whether each CNPJ string is valid or not.
+    """
+    return list(map(is_cnpj_str_valid, cnpjs))
+
+
 def parse_cnpj_str(cnpj: str) -> List[str]:
     """
     Parses a CNPJ string by removing all non-numeric characters.
