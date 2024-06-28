@@ -3,7 +3,10 @@ from typing import Union
 
 from backend.app.repositories.cnpj import CNPJRepository
 from backend.app.utils.misc import is_number, are_numbers
+from backend.app.api.utils.cnpj import are_cnpj_str_valid
+
 from backend.app.setup.config import settings
+
 
 from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.app.api.models.cnpj import CNPJ
@@ -43,6 +46,8 @@ class CNPJService:
 
         Parameters:
         - limit: The maximum number of CNAEs to return.
+        - offset: The number of cnaes to skip.
+        - enable_pagination: Flag to allow pagination
 
         Returns:
         - A list of CNAEs as dictionaries.
@@ -65,13 +70,13 @@ class CNPJService:
         Get CNAE objects from a list of codes.
 
         Parameters:
-        - cnae: The CNAE code to search for.
+        - cnae_code_batch: The CNAE code batch to search for.
 
         Returns:
         - A list with the CNAE objects.
         """
         try:
-            cnae_code_list = cnae_code_batch.batch
+            cnae_code_list = set(list(cnae_code_batch.batch))
 
             if not are_numbers(cnae_code_list):
 
@@ -98,7 +103,7 @@ class CNPJService:
         Get the description of a CNAE code.
 
         Parameters:
-        - cnae: The CNAE code to search for.
+        - cnae_code: The CNAE code to search for.
 
         Returns:
         - A dictionary with the CNAE description.
@@ -204,6 +209,8 @@ class CNPJService:
 
 
     async def get_cities_list(self, cities_code_batch: BatchModel):
+        
+        
         try:
             cities_code_list = list(set(cities_code_batch.batch))
 
@@ -232,7 +239,7 @@ class CNPJService:
         Get a list of legal natures from the database.
 
         Parameters:
-        - limit: The maximum number of legal natures to return.
+        - legal_nature_code: Code of the legal nature to search for.
 
         Returns:
         - A list of legal natures as dictionaries.
@@ -263,6 +270,8 @@ class CNPJService:
 
         Parameters:
         - limit: The maximum number of legal natures to return.
+        - offset: The number of legal natures to skip.
+        - enable_pagination: Flag to allow pagination
 
         Returns:
         - A list of legal natures as dictionaries.
@@ -282,7 +291,7 @@ class CNPJService:
         Get a list of legal natures from the database.
 
         Parameters:
-        - limit: The maximum number of legal natures to return.
+        - legal_natures_code_batch: The list of legal nature codes to search for.
 
         Returns:
         - A list of legal natures as dictionaries.
@@ -350,13 +359,13 @@ class CNPJService:
         Get a list of registration statuses from the database.
 
         Parameters:
-        - code_list: The list of registration status codes to search for.
+        - registration_code_batch: The list of registration status codes to search for.
 
         Returns:
         - A list of registration statuses as dictionaries.
         """
         try:
-            registration_code_list = registration_code_batch.batch
+            registration_code_list = list(set(registration_code_batch.batch))
 
             if not are_numbers(registration_code_list):
 
@@ -382,12 +391,16 @@ class CNPJService:
         return registration_status
 
 
-    async def get_registration_statuses(self, limit: int = 10, offset: int = 0, enable_pagination: bool = True):
+    async def get_registration_statuses(
+        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
+    ):
         """
         Get a list of registration statuses from the database.
 
         Parameters:
         - limit: The maximum number of registration statuses to return.
+        - offset: The number of registration statuses to skip.
+        - enable_pagination: Enable pagination.
 
         Returns:
         - A list of registration statuses as dictionaries.
@@ -414,9 +427,7 @@ class CNPJService:
         """
         try:
             if not is_number(cnpj):
-                raise ValueError(
-                    f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
-                )
+                raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
 
             cnpj_obj = cnpj_str_to_obj(cnpj)
             activities = self.repository.get_cnpj_activities(cnpj_obj)
@@ -531,7 +542,7 @@ class CNPJService:
         return est_info
 
 
-    async def get_establishments(self, cnpj: str):
+    async def get_cnpj_establishments(self, cnpj: str):
         """
         Get the establishments associated with a CNPJ base (First 8 digits).
         You must provide any full CNPJ number.
@@ -567,7 +578,7 @@ class CNPJService:
         Get a list of CNPJs from the database.
 
         Parameters:
-        - limit: The maximum number of CNPJs to return.
+        - cnpj_batch: The batch of CNPJs to search for.
 
         Returns:
         - A list of CNPJs as dictionaries.
@@ -588,7 +599,7 @@ class CNPJService:
         Get a list of CNPJ partners information from the database.
 
         Parameters:
-        - limit: The maximum number of CNPJs to return.
+        - cnpj_batch: The batch of CNPJs to search for.
 
         Returns:
         - A list of CNPJs as dictionaries.
@@ -596,7 +607,7 @@ class CNPJService:
         try:
             
             cnpj_objs = set(map(cnpj_str_to_obj, cnpj_batch.batch))
-            
+
             return self.repository.get_cnpjs_partners(cnpj_objs)
 
         except Exception as e:
@@ -608,14 +619,14 @@ class CNPJService:
         Get a list of CNPJ partners information from the database.
 
         Parameters:
-        - limit: The maximum number of CNPJs to return.
+        - cnpj_batch: The batch of CNPJs to search for.
 
         Returns:
         - A list of CNPJs as dictionaries.
         """
         try:
             cnpj_objs = set(map(cnpj_str_to_obj, cnpj_batch.batch))
-
+            
             return self.repository.get_cnpjs_company(cnpj_objs)
 
         except Exception as e:
@@ -627,7 +638,7 @@ class CNPJService:
         Get a list of CNPJ partners information from the database.
 
         Parameters:
-        - limit: The maximum number of CNPJs to return.
+        - cnpj_batch: The batch of CNPJs to search for.
 
         Returns:
         - A list of CNPJs as dictionaries.
@@ -641,7 +652,7 @@ class CNPJService:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-    
+
     async def get_cnpj_info(self, cnpj: str):
         """
         Get information about a CNPJ number.
@@ -658,7 +669,6 @@ class CNPJService:
 
             cnpj_obj = cnpj_str_to_obj(cnpj)
             
-            
             cnpj_info = self.repository.get_cnpj_info(cnpj_obj)
 
         except Exception as e:
@@ -670,6 +680,42 @@ class CNPJService:
             }
 
         return cnpj_info
+    
+    async def get_cnpjs_info(self, cnpj_batch: BatchModel):
+        """
+        Get information about a CNPJ number.
+
+        Parameters:
+        - cnpj_batch: The CNPJ batch to search for.
+
+        Returns:
+        - A dictionary with information about the CNPJ.
+        """
+        try:
+            cnpj_list = list(set(cnpj_batch.batch))
+            cnpj_validity_list = are_cnpj_str_valid(cnpj_list)
+            
+            cnpj_validity_dict = dict(zip(cnpj_list, cnpj_validity_list))
+
+            valid_cnpjs = [
+                cnpj_str
+                for cnpj_str, cnpj_validity_dict in cnpj_validity_dict.items()
+                if cnpj_validity_dict['is_valid']
+            ]
+            
+            invalid_cnpjs = {
+                cnpj_str: cnpj_validity_dict
+                for cnpj_str, cnpj_validity_dict in cnpj_validity_dict.items()
+                if not cnpj_validity_dict['is_valid']
+            }
+    
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        return {
+            "success": valid_cnpjs,
+            "fail": invalid_cnpjs
+        }
 
 def get_cnpj_service(repository: CNPJRepository = CNPJRepositoryDependency):
     return CNPJService(repository)
