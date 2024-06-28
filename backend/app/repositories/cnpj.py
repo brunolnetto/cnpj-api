@@ -6,16 +6,18 @@ from datetime import datetime
 from backend.app.utils.misc import string_to_json
 from backend.app.api.models.cnpj import CNPJ
 from backend.app.database.base import Database
+from backend.app.utils.repositories import (
+    format_database_date,
+    format_cep,
+    format_phone,
+)
 from backend.app.utils.misc import (
     replace_invalid_fields_on_list_tuple,
     replace_invalid_fields_on_list_dict,
     replace_spaces_on_list_tuple,
     format_decimal,
     replace_spaces,
-    format_database_date,
     is_field_valid,
-    format_cep,
-    format_phone,
     is_number,
     number_string_to_number,
     humanize_string,
@@ -85,7 +87,16 @@ class CNPJRepository:
             return {}
 
         with self.database.engine.begin() as connection:
-            query = text(f"select descricao from cnae where codigo = '{cnae_code}'")
+            query = text(
+                f"""
+                    select 
+                        descricao 
+                    from 
+                        cnae 
+                    where 
+                        codigo = '{cnae_code}'             
+                """
+            )
 
             cnae_result = connection.execute(query).fetchall()
 
@@ -110,8 +121,7 @@ class CNPJRepository:
         Returns:
         str: The description of the CNAE.
         """
-        cnae_code_str = ",".join([str(cnae_code) for cnae_code in cnae_code_list])
-
+        cnae_code_str = ",".join([f'\'{str(cnae_code)}\'' for cnae_code in cnae_code_list])
         with self.database.engine.begin() as connection:
             query = text(
                 f"""
@@ -185,7 +195,14 @@ class CNPJRepository:
 
         with self.database.engine.begin() as connection:
             query = text(
-                f"select descricao from natju where codigo = '{legal_nature_code}'"
+                f"""
+                select 
+                    descricao 
+                from 
+                    natju 
+                where 
+                    codigo = '{legal_nature_code}'
+                """
             )
 
             legal_natures_result = connection.execute(query).fetchall()
@@ -211,7 +228,7 @@ class CNPJRepository:
         dict: The dictionary with the legal nature code and text.
         """
         legal_nature_str = ",".join(
-            [str(legal_nature_code) for legal_nature_code in legal_nature_list]
+            [f"\'{str(legal_nature_code)}\'" for legal_nature_code in legal_nature_list]
         )
 
         with self.database.engine.begin() as connection:
@@ -231,7 +248,10 @@ class CNPJRepository:
             legal_natures_result = connection.execute(query).fetchall()
 
         def wrap_values_map(code_text):
-            return {"code": code_text[0], "text": code_text[1]}
+            return {
+                "code": code_text[0], 
+                "text": code_text[1]
+            }
 
         registration_status_dict = list(map(wrap_values_map, legal_natures_result))
 
@@ -292,7 +312,7 @@ class CNPJRepository:
         """
         registration_status_str = ",".join(
             [
-                str(registration_status_code)
+                f"\'{str(registration_status_code)}\'"
                 for registration_status_code in registration_status_codes
             ]
         )
@@ -447,7 +467,9 @@ class CNPJRepository:
         Returns:
         List[dict]: The name of the city.
         """
-        cities_code_str = ",".join([str(city_code) for city_code in cities_code_list])
+        cities_code_str = ",".join([
+            f"\'{str(city_code)}\'" for city_code in cities_code_list
+        ])
 
         with self.database.engine.begin() as connection:
             query = text(
@@ -480,7 +502,10 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the company.
         """
-        cnpj_basicos = [str(cnpj_obj.basico_int) for cnpj_obj in cnpj_list]
+        cnpj_basicos = [
+            f"\'{str(cnpj_obj.basico_int)}\'" 
+            for cnpj_obj in cnpj_list
+        ]
         cnpj_basicos_str = ",".join(cnpj_basicos)
 
         with self.database.engine.begin() as connection:
@@ -793,7 +818,7 @@ class CNPJRepository:
         return self.__format_establishment(establishment_dict)
 
     def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
-        cnpjs_basicos = [f"'{str(cnpj.basico_int)}'" for cnpj in cnpj_list]
+        cnpjs_basicos = [f"\'{str(cnpj.basico_int)}\'" for cnpj in cnpj_list]
         cnpjs_ordem = [f"'{str(cnpj.ordem_int)}'" for cnpj in cnpj_list]
         cnpjs_dv = [f"'{str(cnpj.digitos_verificadores_int)}'" for cnpj in cnpj_list]
 
@@ -868,6 +893,10 @@ class CNPJRepository:
             registration_status = tuple(
                 set(establishment_df["motivo_situacao_cadastral"])
             )
+            registration_status=[
+                f"'{str(registration_status_code)}'"
+                for registration_status_code in registration_status
+            ]
             registration_status_str = ",".join(registration_status)
 
             query = text(
@@ -971,7 +1000,7 @@ class CNPJRepository:
         )
 
         establishment_df = establishment_df.sort_values(
-            by=["cnpj_basico", "cnpj_ordem"]
+            by=["cnpj_ordem"]
         )
         establishment_list = establishment_df.to_dict(orient="records")
 
@@ -989,7 +1018,7 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the partners.
         """
-        cnpj_basicos = [str(cnpj_obj.basico_int) for cnpj_obj in cnpj_list]
+        cnpj_basicos = [f'\'{str(cnpj_obj.basico_int)}\'' for cnpj_obj in cnpj_list]
 
         cnpj_basicos_str = ",".join(cnpj_basicos)
 
@@ -1019,7 +1048,7 @@ class CNPJRepository:
                     FROM 
                         socios_ soc
                     left join quals qual_socio
-                        on qual_socio.codigo = soc.qualificacao_socio
+                        on qual_socio.codigo::text = soc.qualificacao_socio::text
                     GROUP BY 
                         cnpj_basico
                 """
@@ -1050,7 +1079,7 @@ class CNPJRepository:
 
             return partners_dict
 
-    def get_activities(self, cnpj: CNPJ):
+    def get_cnpj_activities(self, cnpj: CNPJ):
         """
         Get the activities for the CNPJ.
 
@@ -1060,7 +1089,6 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the activities.
         """
-
         with self.database.engine.begin() as connection:
             query = text(
                 f"""
@@ -1073,7 +1101,7 @@ class CNPJRepository:
                                 )
                             )::integer AS codigo_cnae
                         FROM estabelecimento est
-                        where cnpj_basico = {cnpj.basico_int}
+                        where cnpj_basico = \'{cnpj.basico_int}\'
                     ),
                     nosso_cnae as (
                         select
@@ -1084,7 +1112,7 @@ class CNPJRepository:
                             cnae_unnest
                         inner join
                             cnae
-                        on cnae.codigo = cnae_unnest.codigo_cnae
+                        on cnae.codigo::text = cnae_unnest.codigo_cnae::text
                         group by cnpj_basico, codigo, descricao
                         order by cnpj_basico, codigo, descricao
                     ),
@@ -1097,8 +1125,8 @@ class CNPJRepository:
                             ) as atividade_principal
                         from estabelecimento est
                         inner join cnae
-                            on est.cnae_fiscal_principal = cnae.codigo
-                        where cnpj_basico = {cnpj.basico_int}
+                            on est.cnae_fiscal_principal::text = cnae.codigo::text
+                        where cnpj_basico = \'{cnpj.basico_int}\'
                     ),
                     atividades_secundarias as (
                         select
@@ -1118,7 +1146,7 @@ class CNPJRepository:
                         a_s.atividades_secundarias as atividades_secundarias
                     from atividades_secundarias a_s
                     inner join atividade_principal a_p
-                    on a_s.cnpj_basico = a_p.cnpj_basico
+                    on a_s.cnpj_basico::text = a_p.cnpj_basico::text
                 """
             )
 
@@ -1196,11 +1224,11 @@ class CNPJRepository:
 
         # Get the establishment
         establishment_dict = self.get_cnpjs_establishment(cnpj_list)
-
-        establishment_dict = establishment_dict[cnpj_base]
-
+        
         if not establishment_dict:
             return empty_df.to_dict(orient="records")
+
+        establishment_dict = establishment_dict[cnpj_base]
 
         # Get company info
         company_dict = self.get_cnpjs_company(cnpj_list)

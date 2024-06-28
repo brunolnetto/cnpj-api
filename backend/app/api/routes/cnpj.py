@@ -7,11 +7,10 @@ from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.app.api.services.cnpj import CNPJService
 from backend.app.api.services.cnpj import CNPJServiceDependency
 
-from backend.app.api.models.cnpj import CNPJ
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
 from backend.app.utils.misc import is_number, are_numbers
 from backend.app.api.utils.misc import check_limit_and_offset
-from backend.app.api.models.cnpj import CNPJBatch
+from backend.app.api.models.cnpj import CNPJBatch, CNPJ
 from backend.app.api.models.base import BatchModel
 from backend.app.setup.config import settings
 
@@ -255,7 +254,7 @@ async def get_cnpj_info(
 
 
 @router.get("/cnpj/{cnpj}/activities")
-async def get_activities(
+async def get_cnpj_activities(
     cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
@@ -267,7 +266,7 @@ async def get_activities(
     Returns:
     - A list of activities associated with the CNPJ.
     """
-    return await cnpj_service.get_activities(cnpj)
+    return await cnpj_service.get_cnpj_activities(cnpj)
 
 @router.get("/cnpj/{cnpj}/partners")
 async def get_cnpj_partners(
@@ -302,7 +301,7 @@ async def get_cnpj_company(
 
 
 @router.get("/cnpj/{cnpj}/establishment")
-async def get_establishment(
+async def get_cnpj_establishment(
     cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
@@ -314,27 +313,7 @@ async def get_establishment(
     Returns:
     - A dictionary with information about the establishment.
     """
-    try:
-        if not is_number(cnpj):
-            raise ValueError(
-                f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
-            )
-
-        cnpj_obj = cnpj_str_to_obj(cnpj)
-
-        est_info = cnpj_service.get_establishment(cnpj_obj)
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
-
-    if not est_info:
-        base_msg = f"There is no establishment associated with CNPJ {cnpj_obj}"
-        explanation = f"Try route {settings.API_V1_STR}/cnpj/{cnpj}/company to verify if the CNPJ exists."
-        message = f"{base_msg}. {explanation}"
-
-        return {"detail": message}
-
-    return est_info
+    return await cnpj_service.get_cnpj_establishment(cnpj)
 
 
 @router.get("/cnpj/{cnpj}/establishments")
@@ -384,7 +363,8 @@ async def get_cnpjs_partners(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return await cnpj_service.get_cnpj_partners(cnpj_batch)
+    
+    return await cnpj_service.get_cnpjs_partners(cnpj_batch)
 
 
 @router.post("/cnpjs/company")
@@ -400,7 +380,7 @@ async def get_cnpjs_company(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return await cnpj_service.get_cnpj_company(cnpj_batch)
+    return await cnpj_service.get_cnpjs_company(cnpj_batch)
 
 
 @router.post("/cnpjs/establishment")

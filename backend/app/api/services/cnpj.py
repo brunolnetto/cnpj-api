@@ -12,6 +12,13 @@ from backend.app.api.utils.misc import check_limit_and_offset
 from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
 
+
+# Types
+CodeType = Union[str, int]
+
+router = APIRouter()
+
+
 def cnpj_str_to_obj(cnpj_str: str):
     """
     Converts a CNPJ string to a CNPJ object.
@@ -25,12 +32,6 @@ def cnpj_str_to_obj(cnpj_str: str):
 
     cnpj_list = parse_cnpj_str(cnpj_str)
     return CNPJ(*cnpj_list)
-
-# Types
-CodeType = Union[str, int]
-
-router = APIRouter()
-
 
 class CNPJService:
     def __init__(self, cnpj_repository: CNPJRepository):
@@ -401,7 +402,7 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-    async def get_activities(self, cnpj: str):
+    async def get_cnpj_activities(self, cnpj: str):
         """
         Get the activities of a CNPJ number.
 
@@ -418,7 +419,7 @@ class CNPJService:
                 )
 
             cnpj_obj = cnpj_str_to_obj(cnpj)
-            activities = self.repository.get_activities(cnpj_obj)
+            activities = self.repository.get_cnpj_activities(cnpj_obj)
 
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -496,7 +497,7 @@ class CNPJService:
         return company_info[cnpj_base]
 
 
-    async def get_establishment(self, cnpj: str):
+    async def get_cnpj_establishment(self, cnpj: str):
         """
         Get the establishment associated with a CNPJ number.
 
@@ -506,6 +507,7 @@ class CNPJService:
         Returns:
         - A dictionary with information about the establishment.
         """
+        
         try:
             if not is_number(cnpj):
                 raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
@@ -592,8 +594,9 @@ class CNPJService:
         - A list of CNPJs as dictionaries.
         """
         try:
+            
             cnpj_objs = set(map(cnpj_str_to_obj, cnpj_batch.batch))
-
+            
             return self.repository.get_cnpjs_partners(cnpj_objs)
 
         except Exception as e:
@@ -654,6 +657,8 @@ class CNPJService:
                 raise ValueError(f"CNPJ {cnpj} is not a number. Provide only the 14 digits.")
 
             cnpj_obj = cnpj_str_to_obj(cnpj)
+            
+            
             cnpj_info = self.repository.get_cnpj_info(cnpj_obj)
 
         except Exception as e:
