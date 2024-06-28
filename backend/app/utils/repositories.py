@@ -5,8 +5,7 @@ from backend.app.utils.misc import are, is_number, is_field_valid
 
 
 # Define a function to format the date
-DELIMITER = "/"
-def format_database_date(date_str_: str, delimiter: str = DELIMITER) -> str:
+def format_database_date(date_str_: str, delimiter: str = "/") -> str:
     """
     Formats a date string to the database format.
 
@@ -18,7 +17,7 @@ def format_database_date(date_str_: str, delimiter: str = DELIMITER) -> str:
         str: The formatted date string.
     """
     date_str_ = str(date_str_)
-    if not is_field_valid(date_str) or not is_number(date_str_) or len(date_str_) != 8:
+    if not is_field_valid(date_str_) or not is_number(date_str_) or len(date_str_) != 8:
         return None
 
     return f"{date_str_[6:]}{delimiter}{date_str_[4:6]}{delimiter}{date_str_[:4]}"
@@ -49,8 +48,7 @@ def format_cep(cep_str: str):
 
 # Define a function to format the phone number
 def format_phone(
-    ddd_num: str, phone_num: str,
-    ddd_ldelimiter: tuple = "(", ddd_rdelimiter: tuple = ")",
+    ddd_num: str, phone_num: str, ddd_ldelimiter: tuple = "(", ddd_rdelimiter: tuple = ")",
     phone_delimiter="-",
 ):
     """
