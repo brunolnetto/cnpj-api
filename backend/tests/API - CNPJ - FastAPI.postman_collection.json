@@ -1,0 +1,797 @@
+{
+	"info": {
+		"_postman_id": "28e74cdb-59f5-40b0-b22b-59d664037084",
+		"name": "API - CNPJ - FastAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35014885",
+		"_collection_link": "https://projeto-cnpj.postman.co/workspace/Projeto-CNPJ-Workspace~7bfaecf7-c518-4b02-82bb-b19595b84d5a/collection/35014885-28e74cdb-59f5-40b0-b22b-59d664037084?action=share&source=collection_link&creator=35014885"
+	},
+	"item": [
+		{
+			"name": "cnpj - Not found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpj/12345678901230",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpj",
+						"12345678901230"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpj - specific",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpj/09236040000101",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpj",
+						"09236040000101"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpj - activities",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpj/09236040000101/activities",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpj",
+						"09236040000101",
+						"activities"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpj - partners",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpj/09236040000101/partners",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpj",
+						"09236040000101",
+						"partners"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpj - company",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpj/09236040000101/company",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpj",
+						"09236040000101",
+						"company"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpj - establishment",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpj/09236040000101/establishment",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpj",
+						"09236040000101",
+						"establishment"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpj - establishments",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpj/02558157040032/establishments",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpj",
+						"02558157040032",
+						"establishments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpjs - default (limit, offset) = (10, 0)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpjs",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpjs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpjs - limit=9, offset=1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpjs?limit=9&offset=1",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpjs"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "9"
+						},
+						{
+							"key": "offset",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpjs - list of partners",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [\"09236040000101\", \"10573521000191\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpjs/partners",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpjs",
+						"partners"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpjs - list of companies",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [\"09236040000101\", \"10573521000191\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpjs/company",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpjs",
+						"company"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpjs - list of establishments",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [\"09236040000101\", \"10573521000191\", \"02558157040032\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpjs/establishment",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpjs",
+						"establishment"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpjs - Negative offset",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpjs?offset=-1 ",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpjs"
+					],
+					"query": [
+						{
+							"key": "offset",
+							"value": "-1 "
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpjs - Negative limit",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpjs?limit=0",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpjs"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnae - Not found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnae/999999",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnae",
+						"999999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnae - specific",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnae/111302",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnae",
+						"111302"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnae - establishments",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnae/111302/establishments",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnae",
+						"111302",
+						"establishments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnaes - default (limit, offset)=(10, 0)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnaes",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnaes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnaes - limit=9, offset=1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cnaes?offset=1&limit=9",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnaes"
+					],
+					"query": [
+						{
+							"key": "offset",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "9"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnaes - list of objects",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [111301, 111302, 111303]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/cnaes",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnaes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "city - Not found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/city/99999",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"city",
+						"99999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "city - specific",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/city/1",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"city",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cities - limit=9, offset=1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cities?limit=9&offset=1",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cities"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "9"
+						},
+						{
+							"key": "offset",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cities - default (limit, offset)=(10, 0)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/cities",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cities"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cities - default (limit, offset)=(10, 0) Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [1, 2, 3, 4]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/cities",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cities"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "legal nature - Not found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/legal-nature/99999",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"legal-nature",
+						"99999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "legal nature - specific",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/legal-nature/0",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"legal-nature",
+						"0"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "legal natures",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/legal-natures",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"legal-natures"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "legal natures - list of objects",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [3107, 2054, 3271]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/legal-natures",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"legal-natures"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Registration statuses - not found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/registration-status/9001",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"registration-status",
+						"9001"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Registration statuses - default (limit, offset)=(10, 0)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/registration-statuses",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"registration-statuses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Registration statuses - specific",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host_url}}/api/registration-status/15",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"registration-status",
+						"15"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Registration statuses - code list",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [\"15\", \"71\", \"53\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/registration-statuses",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"registration-statuses"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host_url",
+			"value": "85.239.243.178:8000",
+			"type": "string"
+		}
+	]
+}
