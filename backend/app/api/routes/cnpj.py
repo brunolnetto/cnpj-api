@@ -1,11 +1,14 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from typing import Union
 
-from backend.app.repositories.cnpj import CNPJRepository
-from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
-
-from backend.app.api.services.cnpj import CNPJService
-from backend.app.api.services.cnpj import CNPJServiceDependency
+from backend.app.api.services.cnpj import (
+    CNPJService, 
+    CNPJServiceDependency,
+)
+from backend.app.api.services.scrapper import (
+    CNPJScrapService, 
+    CNPJScrapServiceDependency,
+)
 
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
 from backend.app.utils.misc import is_number, are_numbers
@@ -72,8 +75,8 @@ async def get_cnae_description(
     return await cnpj_service.get_cnae_description(cnae_code)
 
 
-@router.get("/cnae/{cnae_code}/establishments")
-async def get_establishments_by_cnae(
+@router.get("/cnae/{cnae_code}/cnpjs")
+async def get_cnpjs_with_cnae(
     cnae_code: CodeType,
     limit: int = 10,
     offset: int = 0,
@@ -90,7 +93,46 @@ async def get_establishments_by_cnae(
     Returns:
     - A list of establishments as dictionaries.
     """
-    return await cnpj_service.get_establishments_by_cnae(cnae_code, limit, offset)
+    return await cnpj_service.get_cnpjs_with_cnae(cnae_code, limit, offset)
+
+
+@router.get("/company/sizes")
+async def get_sizes(
+    cnpj_service: CNPJService = CNPJServiceDependency,
+):
+    """
+    Get a dictionary with the company sizes.
+
+    Returns:
+    - A dictionary with the company sizes.
+    """
+    return await cnpj_service.get_company_size_dict()
+
+
+@router.get("/company/situation")
+async def get_situations(
+    cnpj_service: CNPJService = CNPJServiceDependency,
+):
+    """
+    Get a dictionary with the company situations.
+
+    Returns:
+    - A dictionary with the company situations.
+    """
+    return await cnpj_service.get_company_situation_dict()
+
+
+@router.get("/establishment/types")
+async def get_sizes(
+    cnpj_service: CNPJService = CNPJServiceDependency,
+):
+    """
+    Get a dictionary with the company sizes.
+
+    Returns:
+    - A dictionary with the company sizes.
+    """
+    return await cnpj_service.get_establishment_type_dict()
 
 
 @router.get("/city/{city_code}")
@@ -107,6 +149,7 @@ async def get_city(
     - A dictionary with the city name.
     """
     return await cnpj_service.get_city(city_code)
+
 
 @router.get("/cities")
 async def get_cities(
@@ -198,23 +241,6 @@ async def get_registration_status(
     return await cnpj_service.get_registration_status(registration_status_code)
 
 
-@router.post("/registration-statuses")
-async def get_registration_statuses_list(
-    registration_code_batch: BatchModel, cnpj_service: CNPJService = CNPJServiceDependency,
-):
-    """
-    Get a list of registration statuses from the database.
-
-    Parameters:
-    - code_list: The list of registration status codes to search for.
-
-    Returns:
-    - A list of registration statuses as dictionaries.
-    """
-    
-    return await cnpj_service.get_registration_statuses_list(registration_code_batch)
-
-
 @router.get("/registration-statuses")
 async def get_registration_statuses(
     limit: int = 10, offset: int = 0, enable_pagination: bool = True,
@@ -230,6 +256,23 @@ async def get_registration_statuses(
     - A list of registration statuses as dictionaries.
     """
     return await cnpj_service.get_registration_statuses(limit, offset, enable_pagination)
+
+
+@router.post("/registration-statuses")
+async def get_registration_statuses_list(
+    registration_code_batch: BatchModel, cnpj_service: CNPJService = CNPJServiceDependency,
+):
+    """
+    Get a list of registration statuses from the database.
+
+    Parameters:
+    - code_list: The list of registration status codes to search for.
+
+    Returns:
+    - A list of registration statuses as dictionaries.
+    """
+    
+    return await cnpj_service.get_registration_statuses_list(registration_code_batch)
 
 
 @router.get("/cnpj/{cnpj}")
@@ -262,6 +305,7 @@ async def get_cnpj_activities(
     - A list of activities associated with the CNPJ.
     """
     return await cnpj_service.get_cnpj_activities(cnpj)
+
 
 @router.get("/cnpj/{cnpj}/partners")
 async def get_cnpj_partners(
