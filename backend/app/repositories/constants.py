@@ -1,5 +1,6 @@
 # Maps for the values of the fields in the database
 
+# Company Size
 SIZE_DICT = {
     "0": "NÃO INFORMADO",
     "1": "MICRO EMPRESA",
@@ -7,6 +8,7 @@ SIZE_DICT = {
     "5": "DEMAIS",
 }
 
+# Company Situation
 SITUATION_DICT = {
     "1": "NULA",
     "2": "ATIVA",
@@ -15,13 +17,9 @@ SITUATION_DICT = {
     "8": "BAIXADA",
 }
 
+# Company Type
 EST_TYPE_DICT = {
     "1": "MATRIZ", 
     "2": "FILIAL"
 }
 
-STATES_BRAZIL = [
-    "AC","AL","AM","AP","BA","BR","CE","DF","ES","GO",
-    "MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ",
-    "RN","RO","RR","RS","SC","SE","SP","TO","EX",
-]
