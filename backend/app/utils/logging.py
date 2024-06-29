@@ -4,7 +4,7 @@ from shutil import rmtree
 
 # Function to clear the latest 'n' items (files or folders)
 def clear_folder_items(
-    path_, remaining_items: int, key=lambda item: item.stat().st_mtime
+    path_, remaining_items: int, key=lambda item: item.stat().st_ctime
 ):
     """
     Clears the latest 'n' items (files or folders) in the specified path.
