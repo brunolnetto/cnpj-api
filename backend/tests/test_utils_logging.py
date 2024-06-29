@@ -88,7 +88,7 @@ def test_clear_folder_items_files():
     with open(f"{tmp_path}/3.txt", "w") as f:
         f.write("test")
 
-    clear_folder_items(tmp_path, 2)
+    clear_folder_items(tmp_path, 2, key=lambda item: item.name)
 
     assert not os.path.exists(f"{tmp_path}/1.txt")
     assert os.path.exists(f"{tmp_path}/2.txt")
