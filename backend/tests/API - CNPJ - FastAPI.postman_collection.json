@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "28e74cdb-59f5-40b0-b22b-59d664037084",
+		"_postman_id": "910b4e46-021a-44dd-82b5-355a03ad028a",
 		"name": "API - CNPJ - FastAPI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "35014885",
-		"_collection_link": "https://projeto-cnpj.postman.co/workspace/Projeto-CNPJ-Workspace~7bfaecf7-c518-4b02-82bb-b19595b84d5a/collection/35014885-28e74cdb-59f5-40b0-b22b-59d664037084?action=share&source=collection_link&creator=35014885"
+		"_exporter_id": "19774629"
 	},
 	"item": [
 		{
@@ -201,6 +200,34 @@
 			"response": []
 		},
 		{
+			"name": "cnpjs",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [\"09236040000101\", \"10573521000191\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/cnpjs",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnpjs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "cnpjs - list of partners",
 			"request": {
 				"method": "POST",
@@ -282,6 +309,35 @@
 						"api",
 						"cnpjs",
 						"establishment"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnpjs - UFs",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [\"GO\", \"SP\", \"RJ\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/states/cnpjs",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"states",
+						"cnpjs"
 					]
 				}
 			},
@@ -378,12 +434,12 @@
 			"response": []
 		},
 		{
-			"name": "cnae - establishments",
+			"name": "cnae - cnpjs",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://{{host_url}}/api/cnae/111302/establishments",
+					"raw": "http://{{host_url}}/api/cnae/111302/cnpjs",
 					"protocol": "http",
 					"host": [
 						"{{host_url}}"
@@ -392,7 +448,7 @@
 						"api",
 						"cnae",
 						"111302",
-						"establishments"
+						"cnpjs"
 					]
 				}
 			},
@@ -469,6 +525,35 @@
 					"path": [
 						"api",
 						"cnaes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cnaes - CNPJs with cnae list",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [111301, 111302, 111303]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/cnaes/cnpjs",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cnaes",
+						"cnpjs"
 					]
 				}
 			},
@@ -585,6 +670,35 @@
 					"path": [
 						"api",
 						"cities"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cities - most likely",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"batch\": [\r\n        \"GUAJARA-MIRIM\", \r\n        \"ALTO ALEGRE DOS PARECIS\", \r\n        \"PORTO VELHO\", \r\n        \"BURITIS\", \r\n        \"JI-PARANA\", \r\n        \"CHUPINGUAIA\", \r\n        \"ARIQUEMES\", \r\n        \"CUJUBIM\", \r\n        \"NOVA UNIAO\", \r\n        \"CACOAL\"\r\n    ]    \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host_url}}/api/cities/infer",
+					"protocol": "http",
+					"host": [
+						"{{host_url}}"
+					],
+					"path": [
+						"api",
+						"cities",
+						"infer"
 					]
 				}
 			},
@@ -770,7 +884,6 @@
 			"listen": "prerequest",
 			"script": {
 				"type": "text/javascript",
-				"packages": {},
 				"exec": [
 					""
 				]
@@ -780,7 +893,6 @@
 			"listen": "test",
 			"script": {
 				"type": "text/javascript",
-				"packages": {},
 				"exec": [
 					""
 				]
@@ -790,7 +902,7 @@
 	"variable": [
 		{
 			"key": "host_url",
-			"value": "85.239.243.178:8000",
+			"value": "localhost:8000",
 			"type": "string"
 		}
 	]
