@@ -2,8 +2,6 @@
 
 OMIT_PATHS := "*/__init__.py,backend/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py"
 
-DEFAULT_APP_PORT := $(shell source .env && echo $$APP_PORT)
-
 define PRINT_HELP_PYSCRIPT
 import re, sys
 
