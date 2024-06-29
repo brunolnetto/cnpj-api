@@ -57,7 +57,29 @@ async def get_cnae_objects(
     - A list with the CNAE objects.
     """
     return await cnpj_service.get_cnae_objects(cnae_code_batch)
-    
+
+
+@router.post("/cnaes/cnpjs")
+async def get_cnpjs_by_cnaes(
+    cnae_batch: BatchModel,
+    limit: int = 10,
+    offset: int = 0,
+    cnpj_service: CNPJService = CNPJServiceDependency,
+):
+    """
+    Get a list of establishments by CNAE code.
+
+    Parameters:
+    - cnae_code: The CNAE code to search for.
+    - limit: The maximum number of establishments to return.
+    - offset: The number of establishments to skip.
+
+    Returns:
+    - A list of establishments as dictionaries.
+    """
+    return await cnpj_service.get_cnpjs_by_cnaes(cnae_batch, limit, offset)
+
+
 
 @router.get("/cnae/{cnae_code}")
 async def get_cnae_description(
@@ -94,6 +116,27 @@ async def get_cnpjs_with_cnae(
     - A list of establishments as dictionaries.
     """
     return await cnpj_service.get_cnpjs_with_cnae(cnae_code, limit, offset)
+
+
+@router.post("/states/cnpjs")
+async def get_cnpjs_by_state(
+    state_batch: BatchModel,
+    limit: int = 10,
+    offset: int = 0,
+    cnpj_service: CNPJService = CNPJServiceDependency,
+):
+    """
+    Get a list of establishments by state code.
+
+    Parameters:
+    - state_code: The state code to search for.
+    - limit: The maximum number of establishments to return.
+    - offset: The number of establishments to skip.
+
+    Returns:
+    - A list of establishments as dictionaries.
+    """
+    return await cnpj_service.get_cnpjs_by_states(state_batch, limit, offset)
 
 
 @router.get("/company/sizes")
@@ -175,10 +218,17 @@ async def get_cities_list(
 ):
     return await cnpj_service.get_cities_list(cities_code_batch)
 
+@router.post("/cities/infer")
+async def infer_city(
+    city_name_batch: BatchModel, 
+    cnpj_service: CNPJService = CNPJServiceDependency,
+):
+    return await cnpj_service.get_city_candidates(city_name_batch)
 
 @router.get("/legal-nature/{legal_nature_code}")
 async def get_legal_nature(
-    legal_nature_code: CodeType, cnpj_service: CNPJService = CNPJServiceDependency,
+    legal_nature_code: CodeType, 
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of legal natures from the database.
