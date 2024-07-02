@@ -3,6 +3,7 @@ from typing import Union
 from datetime import datetime, timezone
 
 from backend.app.repositories.cnpj import CNPJRepository
+from backend.app.api.utils.misc import debug_print
 from backend.app.utils.misc import is_number, are_numbers
 from backend.app.api.utils.cnpj import are_cnpj_str_valid
 from backend.app.setup.config import settings
@@ -830,9 +831,7 @@ class CNPJService:
             
             cnpj_objs = [cnpj_obj]
             
-            msg = 'At service: '
-            tmp = datetime.now(timezone.utc)
-            print(f"{msg}{tmp}")
+            debug_print('service')
             
             cnpj_info = self.repository.get_cnpjs_info(cnpj_objs)
             
