@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from backend.app.utils.misc import is_positive, is_non_negative
 from backend.app.api.constants import UNIT_MULTIPLIER
 
@@ -47,4 +49,10 @@ def convert_to_bytes(size_str):
             return None  # Handle invalid units
     except ValueError:
         return None 
-        
+
+
+def debug_print(on_message: str):
+    msg = f'On {on_message}: '
+    tmp = datetime.now(timezone.utc)
+    print(f"{msg}{tmp}")
+

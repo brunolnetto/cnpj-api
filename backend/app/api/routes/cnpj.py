@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from typing import Union
+from datetime import datetime, timezone
 
 from backend.app.api.services.cnpj import (
     CNPJService, 
@@ -9,7 +10,6 @@ from backend.app.api.services.scrapper import (
     CNPJScrapService, 
     CNPJScrapServiceDependency,
 )
-
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
 from backend.app.utils.misc import is_number, are_numbers
 from backend.app.api.utils.misc import check_limit_and_offset
@@ -339,7 +339,6 @@ async def get_cnpj_info(
     - A dictionary with information about the CNPJ.
     """
     
-    from datetime import datetime, timezone
     msg = 'At route: '
     tmp = datetime.now(timezone.utc)
     print(f"{msg}{tmp}")
