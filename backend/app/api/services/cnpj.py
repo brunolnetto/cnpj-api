@@ -1,13 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Union
+from datetime import datetime, timezone
 
 from backend.app.repositories.cnpj import CNPJRepository
 from backend.app.utils.misc import is_number, are_numbers
 from backend.app.api.utils.cnpj import are_cnpj_str_valid
-
 from backend.app.setup.config import settings
-
-
 from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.app.api.models.cnpj import CNPJ
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
@@ -832,7 +830,6 @@ class CNPJService:
             
             cnpj_objs = [cnpj_obj]
             
-            from datetime import datetime, timezone
             msg = 'At service: '
             tmp = datetime.now(timezone.utc)
             print(f"{msg}{tmp}")
