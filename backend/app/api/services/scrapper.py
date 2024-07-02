@@ -5,13 +5,33 @@ import pytz
 import re
 from functools import reduce
 from fastapi import Depends
+from datetime import datetime
 
 from backend.app.setup.logging import logger
-from backend.app.api.models.scrapper import FileInfo
+from backend.app.api.models.base import BaseModel
 from backend.app.api.utils.misc import convert_to_bytes
 from backend.app.api.constants import UNIT_MULTIPLIER
 
 DATA_URL = 'http://200.152.38.155/CNPJ'
+
+class FileInfo(BaseModel):
+    """
+    Pydantic model representing a CNPJ file.
+
+    Attributes:
+        filename (str): The name of the CNPJ file.
+        updated_at (datetime): The date and time when the CNPJ file was last updated.
+    """
+    filename: str
+    updated_at: datetime
+    file_size_bytes: int = 0
+    
+    def __dict__(self):
+        return {
+            "filename": self.filename,
+            "updated_at": self.updated_at,
+            "file_size_bytes": self.file_size_bytes
+        }
 
 class CNPJScrapService:
 
