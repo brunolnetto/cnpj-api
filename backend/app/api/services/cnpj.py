@@ -833,7 +833,9 @@ class CNPJService:
             cnpj_objs = [cnpj_obj]
             
             from datetime import datetime, timezone
-            print(datetime.now(timezone.utc))
+            msg = 'At service: '
+            tmp = datetime.now(timezone.utc)
+            print(f"{msg}{tmp}")
             
             cnpj_info = self.repository.get_cnpjs_info(cnpj_objs)
             

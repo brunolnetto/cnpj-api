@@ -1196,19 +1196,25 @@ class CNPJRepository:
         ]
 
         from datetime import datetime, timezone
-        print(datetime.now(timezone.utc))
+        msg = 'Before establishment: '
+        tmp = datetime.now(timezone.utc)
+        print(f"{msg}{tmp}")
     
         # Get the establishment
         establishment_dict = self.get_cnpjs_establishment(cnpj_list)
 
         from datetime import datetime, timezone
-        print(datetime.now(timezone.utc))
+        msg = 'Before Company: '
+        tmp = datetime.now(timezone.utc)
+        print(f"{msg}{tmp}")
         
         # Get company info
         company_dict = self.get_cnpjs_company(cnpj_list)
 
         from datetime import datetime, timezone
-        print(datetime.now(timezone.utc))
+        msg = 'Before partners: '
+        tmp = datetime.now(timezone.utc)
+        print(f"{msg}{tmp}")
         
         # Get partners
         partners_dict = self.get_cnpjs_partners(cnpj_list)
@@ -1230,6 +1236,11 @@ class CNPJRepository:
             }
             for common_key in common_keys
         }
+        
+        from datetime import datetime, timezone
+        msg = 'Before scrap: '
+        tmp = datetime.now(timezone.utc)
+        print(f"{msg}{tmp}")
 
         cnpj_scrap_service=get_cnpj_scrap_service()
         update_at=cnpj_scrap_service.max_update_at()
