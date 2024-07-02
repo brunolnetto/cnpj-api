@@ -1192,7 +1192,7 @@ class CNPJRepository:
             "situacao", "data_situacao", "motivo_situacao", 
             "situacao_especial", "data_situacao_especial",
             "atividade_principal", "atividades_secundarias",
-             "efr", "qsa", 
+            "efr", "qsa", 
         ]
 
         # Get the establishment
