@@ -140,7 +140,7 @@ async def get_cnpjs_by_state(
 
 
 @router.get("/company/sizes")
-async def get_sizes(
+async def get_company_sizes(
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -166,7 +166,7 @@ async def get_situations(
 
 
 @router.get("/establishment/types")
-async def get_sizes(
+async def get_establishment_sizes(
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -439,7 +439,7 @@ async def get_cnpjs(
 
 
 @router.post("/cnpjs")
-async def get_cnpjs(
+async def get_cnpjs_info(
     cnpj_batch: BatchModel, cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
