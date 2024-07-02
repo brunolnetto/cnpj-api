@@ -1,6 +1,6 @@
 .PHONY: build run stop ps host
 
-OMIT_PATHS := "*/__init__.py,backend/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py"
+OMIT_PATHS := "*/__init__.py,backend/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py,backend/app/api/services/scrapper.py"
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
@@ -41,6 +41,7 @@ env: ## Creates a virtual environment. Usage: make env
 install: ## Installs the python requirements. Usage: make install
 	pip install uv
 	uv pip install -r requirements.txt
+	uv pip install -r requirements_dev.txt
 
 run: ## Run the application. Usage: make run
 	uvicorn backend.app.main:app --reload --workers 4 --host 0.0.0.0 --port 8000
