@@ -823,9 +823,9 @@ class CNPJRepository:
         return establishment_dict
 
     def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
-        cnpjs_basicos = [f"{str(cnpj.basico_int)}" for cnpj in cnpj_list]
-        cnpjs_ordem = [f"{str(cnpj.ordem_int)}" for cnpj in cnpj_list]
-        cnpjs_dv = [f"{str(cnpj.digitos_verificadores_int)}" for cnpj in cnpj_list]
+        cnpjs_basicos = [f"\'{str(cnpj.basico_int)}\'" for cnpj in cnpj_list]
+        cnpjs_ordem = [f"\'{str(cnpj.ordem_int)}\'" for cnpj in cnpj_list]
+        cnpjs_dv = [f"\'{str(cnpj.digitos_verificadores_int)}\'" for cnpj in cnpj_list]
 
         cnpjs_basicos_str = ",".join(cnpjs_basicos)
         cnpjs_ordem_str = ",".join(cnpjs_ordem)
