@@ -3,6 +3,8 @@ from sqlalchemy import text
 import pandas as pd
 from datetime import datetime, timezone
 
+
+
 from backend.app.utils.misc import string_to_json
 from backend.app.api.utils.misc import debug_print
 from backend.app.api.models.cnpj import CNPJ
@@ -595,8 +597,8 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the company.
         """
-        cnpj_basicos = [f"\'{str(cnpj_obj.basico_int)}\'" for cnpj_obj in cnpj_list]
-        cnpj_basicos_str = ",".join(cnpj_basicos)
+        cnpj_basicos = [cnpj_obj.basico_int for cnpj_obj in cnpj_list]
+        cnpj_basicos_str = ",".join([str(cnpj_basico) for cnpj_basico in cnpj_basicos])
 
         with self.database.engine.begin() as connection:
             columns = [
@@ -615,7 +617,7 @@ class CNPJRepository:
                     select
                         {columns_str}
                     from empresa emp
-                        where emp.cnpj_basico::text in ({cnpj_basicos_str})
+                        where emp.cnpj_basico in ({cnpj_basicos_str})
                 )
                 select
                     distinct on (cnpj_basico)
@@ -821,9 +823,9 @@ class CNPJRepository:
         return establishment_dict
 
     def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
-        cnpjs_basicos = [f"\'{str(cnpj.basico_int)}\'" for cnpj in cnpj_list]
-        cnpjs_ordem = [f"\'{str(cnpj.ordem_int)}\'" for cnpj in cnpj_list]
-        cnpjs_dv = [f"\'{str(cnpj.digitos_verificadores_int)}\'" for cnpj in cnpj_list]
+        cnpjs_basicos = [f"{str(cnpj.basico_int)}" for cnpj in cnpj_list]
+        cnpjs_ordem = [f"{str(cnpj.ordem_int)}" for cnpj in cnpj_list]
+        cnpjs_dv = [f"{str(cnpj.digitos_verificadores_int)}" for cnpj in cnpj_list]
 
         cnpjs_basicos_str = ",".join(cnpjs_basicos)
         cnpjs_ordem_str = ",".join(cnpjs_ordem)
@@ -953,7 +955,7 @@ class CNPJRepository:
                     from
                         estabelecimento est
                     where
-                        est.cnpj_basico::text = '{cnpj.basico_int}'
+                        est.cnpj_basico = '{cnpj.basico_int}'
                     order by 
                         1, 2
                 """
@@ -1003,7 +1005,7 @@ class CNPJRepository:
         DataFrame: The DataFrame with the partners.
         """
         cnpj_basicos = [
-            f"\'{str(cnpj_obj.basico_int)}\'" 
+            f"{str(cnpj_obj.basico_int)}" 
             for cnpj_obj in cnpj_list
         ]
 
@@ -1020,7 +1022,7 @@ class CNPJRepository:
                         from 
                             socios
                         where 
-                            cnpj_basico::text IN ({cnpj_basicos_str})
+                            cnpj_basico IN ({cnpj_basicos_str})
                         group by 
                             1, 2, 3
                     )
