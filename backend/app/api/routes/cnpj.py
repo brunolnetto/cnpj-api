@@ -338,6 +338,9 @@ async def get_cnpj_info(
     Returns:
     - A dictionary with information about the CNPJ.
     """
+    from datetime import datetime, timezone
+    print(datetime.now(timezone.utc))
+    
     return await cnpj_service.get_cnpj_info(cnpj)
 
 
