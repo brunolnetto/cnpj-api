@@ -1195,12 +1195,21 @@ class CNPJRepository:
             "efr", "qsa", 
         ]
 
+        from datetime import datetime, timezone
+        print(datetime.now(timezone.utc))
+    
         # Get the establishment
         establishment_dict = self.get_cnpjs_establishment(cnpj_list)
 
+        from datetime import datetime, timezone
+        print(datetime.now(timezone.utc))
+        
         # Get company info
         company_dict = self.get_cnpjs_company(cnpj_list)
 
+        from datetime import datetime, timezone
+        print(datetime.now(timezone.utc))
+        
         # Get partners
         partners_dict = self.get_cnpjs_partners(cnpj_list)
         
@@ -1266,9 +1275,6 @@ class CNPJRepository:
 
         cnpj_list = [cnpj]
 
-        from datetime import datetime, timezone
-        print(datetime.now(timezone.utc))
-        
         # Get the establishment
         establishment_dict = self.get_cnpjs_establishment(cnpj_list)
         
@@ -1277,22 +1283,13 @@ class CNPJRepository:
 
         establishment_dict = establishment_dict[cnpj_base]        
 
-        from datetime import datetime, timezone
-        print(datetime.now(timezone.utc))
-
         # Get company info
         company_dict = self.get_cnpjs_company(cnpj_list)
         company_dict = company_dict[cnpj_base]
-
-        from datetime import datetime, timezone
-        print(datetime.now(timezone.utc))
         
         # Get partners
         partners_dict = self.get_cnpjs_partners(cnpj_list)
         partners_dict = partners_dict[cnpj_base]
-        
-        from datetime import datetime, timezone
-        print(datetime.now(timezone.utc))
 
         cnpj_info_dict = {**company_dict, **establishment_dict, **partners_dict}
 

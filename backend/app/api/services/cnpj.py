@@ -831,6 +831,10 @@ class CNPJService:
             cnpj_obj = cnpj_str_to_obj(cnpj)
             
             cnpj_objs = [cnpj_obj]
+            
+            from datetime import datetime, timezone
+            print(datetime.now(timezone.utc))
+            
             cnpj_info = self.repository.get_cnpjs_info(cnpj_objs)
             
         except Exception as e:
