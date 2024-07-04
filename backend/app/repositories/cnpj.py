@@ -598,7 +598,7 @@ class CNPJRepository:
         DataFrame: The DataFrame with the company.
         """
         cnpj_basicos = [cnpj_obj.basico_int for cnpj_obj in cnpj_list]
-        cnpj_basicos_str = ",".join([str(cnpj_basico) for cnpj_basico in cnpj_basicos])
+        cnpj_basicos_str = ",".join([f"\'{str(cnpj_basico)}\'" for cnpj_basico in cnpj_basicos])
 
         with self.database.engine.begin() as connection:
             columns = [
@@ -1005,7 +1005,7 @@ class CNPJRepository:
         DataFrame: The DataFrame with the partners.
         """
         cnpj_basicos = [
-            f"{str(cnpj_obj.basico_int)}" 
+            f"\'{str(cnpj_obj.basico_int)}\'" 
             for cnpj_obj in cnpj_list
         ]
 
@@ -1207,9 +1207,8 @@ class CNPJRepository:
             "efr", "qsa", 
         ]
 
-        
         debug_print('before establishment')
-    
+
         # Get the establishment
         establishment_dict = self.get_cnpjs_establishment(cnpj_list)
 

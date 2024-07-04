@@ -50,7 +50,6 @@ def convert_to_bytes(size_str):
     except ValueError:
         return None 
 
-
 def debug_print(on_message: str):
     msg = f'On {on_message}: '
     tmp = datetime.now(timezone.utc)
