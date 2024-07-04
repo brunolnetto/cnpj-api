@@ -108,7 +108,7 @@ class CNPJRepository:
                 {}
                 if len(cnae_description) == 0
                 else {
-                    "code": cnae_code,
+                    "code": int(cnae_code),
                     "text": cnae_description,
                 }
             )
@@ -1168,7 +1168,7 @@ class CNPJRepository:
 
             is_empty = len(side_activities) == 1 and side_activities[0] == {}
             side_activities = [] if is_empty else side_activities
-
+            
             return {
                 "atividade_principal": main_activities,
                 "atividades_secundarias": side_activities,
