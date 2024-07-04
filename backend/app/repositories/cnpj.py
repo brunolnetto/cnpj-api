@@ -3,10 +3,7 @@ from sqlalchemy import text
 import pandas as pd
 from datetime import datetime, timezone
 
-
-
 from backend.app.utils.misc import string_to_json
-from backend.app.api.utils.misc import debug_print
 from backend.app.api.models.cnpj import CNPJ
 from backend.app.database.base import Database
 from backend.app.api.services.scrapper import get_cnpj_scrap_service
@@ -633,11 +630,9 @@ class CNPJRepository:
                 """
             )
 
-            debug_print('before company query')
             company_result = connection.execute(query)
             company_result = company_result.fetchall()
-            debug_print('after company query')
-
+            
             company_result = replace_invalid_fields_on_list_tuple(company_result)
             company_result = replace_spaces_on_list_tuple(company_result)
 
@@ -681,8 +676,6 @@ class CNPJRepository:
                 cnpj.to_raw(): company_dict[cnpj_base]
                 for cnpj_base, cnpj in zip(cnpjs_base, cnpj_list)
             }
-            
-            debug_print('after company transform')
             
             return companies_dict
 
@@ -1045,13 +1038,9 @@ class CNPJRepository:
                 """
             )
 
-            debug_print('before partners query')
-            
             partners_result = connection.execute(query)
             partners_result = partners_result.fetchall()
 
-            debug_print('after partners query')
-            
             partners_result = replace_invalid_fields_on_list_tuple(partners_result)
             partners_result = replace_spaces_on_list_tuple(partners_result)
 
@@ -1080,8 +1069,7 @@ class CNPJRepository:
                 cnpj_raw: cnpj_map(cnpj_base)
                 for cnpj_raw, cnpj_base in cnpjs_raw_base
             }
-            debug_print('after partners transform')
-            
+
             return partners_dict
 
     def get_cnpj_activities(self, cnpj: CNPJ):
@@ -1125,7 +1113,7 @@ class CNPJRepository:
                         select
                             cnpj_basico,
                             json_build_object(
-                                'code', cnae.codigo,
+                                'code', cnae.codigo::integer,
                                 'text', cnae.descricao
                             ) as atividade_principal
                         from estabelecimento est
@@ -1207,18 +1195,12 @@ class CNPJRepository:
             "efr", "qsa", 
         ]
 
-        debug_print('before establishment')
-
         # Get the establishment
         establishment_dict = self.get_cnpjs_establishment(cnpj_list)
 
-        debug_print('before company')
-        
         # Get company info
         company_dict = self.get_cnpjs_company(cnpj_list)
 
-        debug_print('before partners')
-        
         # Get partners
         partners_dict = self.get_cnpjs_partners(cnpj_list)
         
@@ -1239,14 +1221,10 @@ class CNPJRepository:
             }
             for common_key in common_keys
         }
-        
-        debug_print('before scrap')
 
         cnpj_scrap_service=get_cnpj_scrap_service()
         update_at=cnpj_scrap_service.max_update_at()
 
-        debug_print('after scrap')
-        
         date_format = "%Y-%m-%d %H:%M:%S"
         cnpj_infos={
             cnpj_key: {
