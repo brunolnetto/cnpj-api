@@ -12,7 +12,7 @@ from backend.app.api.services.scrapper import (
 )
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
 from backend.app.utils.misc import is_number, are_numbers
-from backend.app.api.utils.misc import check_limit_and_offset, debug_print
+from backend.app.api.utils.misc import check_limit_and_offset
 from backend.app.api.models.cnpj import CNPJBatch, CNPJ
 from backend.app.api.models.base import BatchModel
 from backend.app.setup.config import settings
@@ -338,7 +338,6 @@ async def get_cnpj_info(
     Returns:
     - A dictionary with information about the CNPJ.
     """
-    debug_print('route')
     
     return await cnpj_service.get_cnpj_info(cnpj)
 
