@@ -43,7 +43,7 @@ class CNPJRepository:
         self.session = session
 
     def get_cnpjs_raw(
-        self, state_abbrev: str = '', city_code: str  = '', cnae_code: str = '', 
+        self, state_abbrev: str = '', city_code: str  = '', cnae_code: str = '', is_all: bool = False, 
         limit: int = 10, offset: int = 0
     ):
         """
@@ -54,12 +54,22 @@ class CNPJRepository:
         """
         state_condition = f"uf=\'{state_abbrev}\'" if state_abbrev else "1=1"
         city_condition = f"municipio=\'{city_code}\'" if city_code else "1=1"
-        cnae_condition = f"""(
+        
+        if cnae_code:
+            cnae_condition = f"""(
             (
                 cnae_fiscal_principal = '{cnae_code}' or
-                cnae_fiscal_secundaria like '%,{cnae_code},%' 
+                cnae_fiscal_secundaria @> Array[{cnae_code}] 
             ) and situacao_cadastral = '2'
-        ) -- ATIVA""" if cnae_code else "1=1"
+        ) -- ATIVA""" if is_all else f"""(
+            (
+                cnae_fiscal_principal = '{cnae_code}'
+            ) and situacao_cadastral = '2'
+        ) -- ATIVA"""
+        else:
+            cnae_condition = '1=1'
+        
+        
         condition = f"{state_condition} and {city_condition} and {cnae_condition}"
 
         query = text(f"""
