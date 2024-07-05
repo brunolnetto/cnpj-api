@@ -426,7 +426,7 @@ async def get_cnpj_establishments(
 
 @router.get("/cnpjs")
 async def get_cnpjs(
-    state_abbrev: str = '', city_name: str  = '', cnae_code: str = '', 
+    state_abbrev: str = '', city_name: str  = '', cnae_code: str = '', is_all: bool = False,
     limit: int = 10, offset: int = 0, cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -439,7 +439,7 @@ async def get_cnpjs(
     - A list of CNPJs as dictionaries.
     """
     return await cnpj_service.get_cnpjs(
-        state_abbrev, city_name, cnae_code, limit, offset
+        state_abbrev, city_name, cnae_code, is_all, limit, offset
     )
 
 

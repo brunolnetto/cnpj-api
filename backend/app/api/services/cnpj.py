@@ -725,7 +725,8 @@ class CNPJService:
 
 
     async def get_cnpjs(
-        self, state_abbrev: str = '', city_name: str  = '', cnae_code: str = '', limit: int = 10, offset: int = 0
+        self, state_abbrev: str = '', city_name: str  = '', cnae_code: str = '', is_all: bool = False, 
+        limit: int = 10, offset: int = 0
     ):
         """
         Get a list of CNPJs from the database.
@@ -763,7 +764,7 @@ class CNPJService:
 
             
             cnpjs_raw_list=self.repository.get_cnpjs_raw(
-                state_abbrev=state_abbrev, city_code=city_code, cnae_code=cnae_code, 
+                state_abbrev=state_abbrev, city_code=city_code, cnae_code=cnae_code, is_all=is_all,
                 limit=limit, offset=offset
             )
             cnpj_objs = list(map(cnpj_str_to_obj, cnpjs_raw_list))
