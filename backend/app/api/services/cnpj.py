@@ -768,9 +768,12 @@ class CNPJService:
             )
             cnpj_objs = list(map(cnpj_str_to_obj, cnpjs_raw_list))
 
-            cnpjs_info = self.repository.get_cnpjs_info(cnpj_objs)
+            if len(cnpj_objs)!=0:
+                cnpjs_info = self.repository.get_cnpjs_info(cnpj_objs)
 
-            return cnpjs_info
+                return cnpjs_info
+            else:
+                return {}
 
         except Exception as e:
             logger.error(f"Error getting CNPJs: {e}")
