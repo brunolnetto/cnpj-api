@@ -4,6 +4,13 @@ from collections import Counter
 
 from nltk.metrics import edit_distance
 
+def init_nltk():
+  """
+    This function initializes the NLTK library.
+  """
+  nltk.download('stopwords')
+  nltk.download('punkt')
+
 def find_most_possible_tokens(
     eligible_tokens: list[str], token: str, limit_count: int
 ) -> list[str]:
@@ -19,11 +26,6 @@ def find_most_possible_tokens(
     Returns:
         list[str]: The list of the most possible city names.
   """
-
-  # Download nltk resources if not already downloaded
-  nltk.download('punkt', quiet=True)
-  nltk.download('stopwords', quiet=True)
-
   # Preprocess data
   stop_words = stopwords.words('english')
 

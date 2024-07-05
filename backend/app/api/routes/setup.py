@@ -3,38 +3,17 @@ from fastapi import APIRouter, Request
 import toml
 
 from backend.app.setup.config import settings
+from backend.app.utils.security import create_token
 
 router = APIRouter(
     tags=["Setup"]
 )
 
-
-@router.get("/request-info")
-async def get_request_info(request: Request):
-    """
-    Get information about the incoming request.
-
-    Parameters:
-    - request: The incoming request object.
-
-    Returns:
-    - A dictionary with information about the request.
-    """
-    headers = request.headers
-
-    # Access other request attributes as needed (e.g., headers, body)
+@router.get('/token')
+async def get_token():
     return {
-        "client": request.client,
-        "base_url": request.base_url,
-        "url": request.url,
-        "method": request.method,
-        "query_params": request.query_params,
-        "path_params": request.path_params,
-        "headers": headers,
-        "cookies": request.cookies,
-        "body": await request.body(),
+        "access_token": create_token({}),
     }
-
 
 @router.get("/health")
 async def health_check():

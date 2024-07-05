@@ -5,25 +5,11 @@ from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import pool, text, inspect
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
+
 
 from backend.app.setup.logging import logger
 from backend.app.database.schemas import Base
-
-
-def get_db_uri():
-    env_path = path.join(getcwd(), ".env")
-    load_dotenv(env_path)
-
-    # Get environment variables
-    host = getenv("POSTGRES_HOST", "localhost")
-    port = int(getenv("POSTGRES_PORT", "5432"))
-    user = getenv("POSTGRES_USER", "postgres")
-    passw = getenv("POSTGRES_PASSWORD", "postgres")
-    database_name = getenv("POSTGRES_DBNAME")
-
-    # Connect to the database
-    return f"postgresql://{user}:{passw}@{host}:{port}/{database_name}"
-
 
 class Database:
     """
@@ -132,7 +118,32 @@ class Database:
             self.print_tables()
         except Exception as e:
             logger.error(f"Error print available tables: {e}")
-            
+
+
+def get_db_uri():
+    env_path = path.join(getcwd(), ".env")
+    load_dotenv(env_path)
+
+    # Get environment variables
+    host = getenv("POSTGRES_HOST", "localhost")
+    port = int(getenv("POSTGRES_PORT", "5432"))
+    user = getenv("POSTGRES_USER", "postgres")
+    passw = getenv("POSTGRES_PASSWORD", "postgres")
+    database_name = getenv("POSTGRES_DBNAME")
+
+    # Connect to the database
+    return f"postgresql://{user}:{passw}@{host}:{port}/{database_name}"
+
+
+# Load environment variables from the .env file
+database = None
+
+def init_database():
+    global database
+    uri = get_db_uri()
+
+    database = Database(uri)
+    database.init()
 
 
 async def get_db():
@@ -146,13 +157,26 @@ async def get_db():
 
     uri = get_db_uri()
 
-    if uri is None:
-        # Handle the case where URI is not available (raise exception, log error, etc.)
-        error_message = f"Database URI {uri} not found"
-        logger.error(error_message)
-        raise Exception(error_message)
-
     database = Database(uri)
     database.init()
 
     yield database
+
+
+async def get_session():
+    """
+    Define a dependency to create a database session asynchronously.
+
+    Returns:
+        Database: A NamedTuple with engine and conn attributes for the database connection.
+        None: If there was an error connecting to the database.
+    """
+    # Ensure database is initialized before getting a session
+    if database is None:
+        init_database()
+
+    with database.session_maker() as session:
+        try:
+            yield session
+        finally:
+            session.close()

@@ -16,11 +16,12 @@ from backend.app.api.utils.misc import check_limit_and_offset
 from backend.app.api.models.cnpj import CNPJBatch, CNPJ
 from backend.app.api.models.base import BatchModel
 from backend.app.setup.config import settings
+from backend.app.api.dependencies.auth import JWTDependency
 
 # Types
 CodeType = Union[str, int]
 
-router = APIRouter(tags=["CNPJ"])
+router = APIRouter(tags=["CNPJ"], dependencies=[JWTDependency])
 
 
 @router.get("/cnaes")
@@ -425,6 +426,7 @@ async def get_cnpj_establishments(
 
 @router.get("/cnpjs")
 async def get_cnpjs(
+    state_abbrev: str = '', city_name: str  = '', cnae_code: str = '', 
     limit: int = 10, offset: int = 0, cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -436,7 +438,9 @@ async def get_cnpjs(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return await cnpj_service.get_cnpjs(limit, offset)
+    return await cnpj_service.get_cnpjs(
+        state_abbrev, city_name, cnae_code, limit, offset
+    )
 
 
 @router.post("/cnpjs")

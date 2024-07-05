@@ -12,8 +12,8 @@ from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
 from backend.app.api.utils.misc import check_limit_and_offset
 from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
-from .constants import STATES_BRAZIL
 from backend.app.setup.logging import logger
+from .constants import STATES_BRAZIL
 
 # Types
 CodeType = Union[str, int]
@@ -38,7 +38,6 @@ def cnpj_str_to_obj(cnpj_str: str):
 class CNPJService:
     def __init__(self, cnpj_repository: CNPJRepository):
         self.repository: CNPJRepository = cnpj_repository
-
 
     async def get_cnaes(self, limit: int = 10, offset: int = 0, enable_pagination: bool = True):
         """
@@ -725,7 +724,9 @@ class CNPJService:
         return est_info
 
 
-    async def get_cnpjs(self, limit: int = 10, offset: int = 0):
+    async def get_cnpjs(
+        self, state_abbrev: str = '', city_name: str  = '', cnae_code: str = '', limit: int = 10, offset: int = 0
+    ):
         """
         Get a list of CNPJs from the database.
 
@@ -735,12 +736,38 @@ class CNPJService:
         Returns:
         - A list of CNPJs as dictionaries.
         """
+        city_name = city_name.replace("'", "").replace('"', '')
+        cnae_code = cnae_code.replace("'", "").replace('"', '')
+        state_abbrev = state_abbrev.replace("'", "").replace('"', '')
+        
         try:
             limit, offset = check_limit_and_offset(limit, offset)
 
-            cnpjs_raw_list=self.repository.get_cnpjs_raw(limit=limit, offset=offset)
-            cnpj_objs = list(map(cnpj_str_to_obj, cnpjs_raw_list))
+            if city_name:
+                has_city, city_obj = self.repository.city_exists(city_name)
+                
+                if not has_city:
+                    raise ValueError(f"City {city_name} not found.")
+                else:
+                    city_code = city_obj['code']
+            else: 
+                city_code = ''
+                
+            if state_abbrev:
+                if state_abbrev not in STATES_BRAZIL:
+                    raise ValueError(f"State {state_abbrev} not found.")
+
+            if cnae_code:
+                if not self.repository.get_cnae(cnae_code):
+                    raise ValueError(f"CNAE code {cnae_code} not found.")
+
             
+            cnpjs_raw_list=self.repository.get_cnpjs_raw(
+                state_abbrev=state_abbrev, city_code=city_code, cnae_code=cnae_code, 
+                limit=limit, offset=offset
+            )
+            cnpj_objs = list(map(cnpj_str_to_obj, cnpjs_raw_list))
+
             cnpjs_info = self.repository.get_cnpjs_info(cnpj_objs)
 
             return cnpjs_info

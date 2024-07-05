@@ -5,12 +5,15 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 import sentry_sdk
 
 from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 from backend.app.api.routes.router_bundler import api_router
+from backend.app.database.base import init_database
+from backend.app.api.utils.ml import init_nltk
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -19,6 +22,13 @@ def custom_generate_unique_id(route: APIRoute) -> str:
     route_label = f"{tag}-{name}" if tag else name
 
     return route_label
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_database()
+    init_nltk()
+    yield
 
 
 def create_app():
@@ -31,6 +41,7 @@ def create_app():
         openapi_url=f"{settings.API_V1_STR}/openapi.json",
         redoc_url=f"{settings.API_V1_STR}/redoc",
         generate_unique_id_function=custom_generate_unique_id,
+        lifespan=lifespan,
     )
 
     return app_
@@ -90,19 +101,6 @@ def setup_app(app_):
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
-        )
-
-    # Sentry configuration
-    if settings.SENTRY_DSN:
-        sentry_sdk.init(
-            dsn=settings.SENTRY_DSN,
-            # Set traces_sample_rate to 1.0 to capture 100%
-            # of transactions for performance monitoring.
-            traces_sample_rate=1.0,
-            # Set profiles_sample_rate to 1.0 to profile 100%
-            # of sampled transactions.
-            # We recommend adjusting this value in production.
-            profiles_sample_rate=1.0,
         )
 
     return app_
