@@ -7,8 +7,6 @@ from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-import sentry_sdk
-
 from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 from backend.app.api.routes.router_bundler import api_router
