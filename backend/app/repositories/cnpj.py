@@ -94,6 +94,10 @@ class CNPJRepository:
                 from estabelecimento_uf_cidade
                 where
                     {cnae_condition}
+                limit 
+                    {limit}
+                offset
+                    {offset}
         """)
 
         cnpjs_result = self.session.execute(query)
