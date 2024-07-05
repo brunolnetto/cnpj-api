@@ -56,7 +56,8 @@ class CNPJRepository:
         city_condition = f"municipio=\'{city_code}\'" if city_code else "1=1"
         cnae_condition = f"""(
             (
-                cnae_fiscal_principal = '{cnae_code}'
+                cnae_fiscal_principal = '{cnae_code}' and
+                cnae_fiscal_secundaria like '%,{cnae_code},%' 
             ) and situacao_cadastral = '2'
         ) -- ATIVA""" if cnae_code else "1=1"
         condition = f"{state_condition} and {city_condition} and {cnae_condition}"
