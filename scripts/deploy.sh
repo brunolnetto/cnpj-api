@@ -14,11 +14,11 @@ git -C "$SCRIPT_DIR" pull origin main || { log "Failed to pull from main branch"
 
 # Step 2: Bring the container down
 log "Bringing down existing containers..."
-docker-compose -f "$SCRIPT_DIR/../docker-compose.yaml" down || { log "Failed to bring down containers"; exit 1; }
+docker compose -f "$SCRIPT_DIR/../docker-compose.yaml" down || { log "Failed to bring down containers"; exit 1; }
 
 # Step 3: Build the new image
 log "Building new image..."
-docker-compose -f "$SCRIPT_DIR/../docker-compose.yaml" build || { log "Failed to build new image"; exit 1; }
+docker compose -f "$SCRIPT_DIR/../docker-compose.yaml" build || { log "Failed to build new image"; exit 1; }
 
 # Step 4: Sanitize (remove) old images
 log "Sanitizing old images..."
@@ -26,6 +26,6 @@ docker image prune -f || { log "Failed to prune old images"; exit 1; }
 
 # Step 5: Bring up the new container
 log "Bringing up new container..."
-docker-compose -f "$SCRIPT_DIR/../docker-compose.yaml" up -d || { log "Failed to bring up new container"; exit 1; }
+docker compose -f "$SCRIPT_DIR/../docker-compose.yaml" up -d || { log "Failed to bring up new container"; exit 1; }
 
 log "Deployment completed successfully."
