@@ -2,17 +2,16 @@ from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from os import getenv
-from time import time
 
-from backend.app.exceptions import ExpiredTokenException
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-JWT_SECRET_KEY = getenv("JWT_SECRET_KEY") 
+JWT_SECRET_KEY = getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = getenv("JWT_ALGORITHM")
 
 # Set the expiration time for the JWT
 ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(days=7)
+
 
 def create_token(
     data: dict, expires_delta: timedelta | None = ACCESS_TOKEN_EXPIRE_MINUTES
@@ -40,4 +39,3 @@ def create_token(
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
     return encoded_jwt
-

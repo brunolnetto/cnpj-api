@@ -4,6 +4,7 @@ from backend.app.utils.repositories import (
     format_cep,
 )
 
+
 def test_format_database_date():
     """Tests the format_database_date function."""
 

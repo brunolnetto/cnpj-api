@@ -6,6 +6,7 @@ from backend.app.api.constants import UNIT_MULTIPLIER
 # The maximum limit value that can be provided.
 MAX_LIMIT = 100
 
+
 def check_limit_and_offset(limit: int, offset: int) -> None:
     """
     Checks if the limit and offset are non-negative.
@@ -43,15 +44,15 @@ def convert_to_bytes(size_str):
         size_unit = size_str[-1].upper()  # Get the unit (K, M, G, ...)
 
         if size_unit in UNIT_MULTIPLIER:
-            multiplier=UNIT_MULTIPLIER[size_unit]
+            multiplier = UNIT_MULTIPLIER[size_unit]
             return int(size_value * multiplier)
         else:
             return None  # Handle invalid units
     except ValueError:
-        return None 
+        return None
+
 
 def debug_print(on_message: str):
-    msg = f'On {on_message}: '
+    msg = f"On {on_message}: "
     tmp = datetime.now(timezone.utc)
     print(f"{msg}{tmp}")
-

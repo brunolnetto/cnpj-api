@@ -1,21 +1,12 @@
 from fastapi import APIRouter
 from typing import Union
-from datetime import datetime, timezone
 
 from backend.app.api.services.cnpj import (
-    CNPJService, 
+    CNPJService,
     CNPJServiceDependency,
 )
-from backend.app.api.services.scrapper import (
-    CNPJScrapService, 
-    CNPJScrapServiceDependency,
-)
-from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
-from backend.app.utils.misc import is_number, are_numbers
-from backend.app.api.utils.misc import check_limit_and_offset
-from backend.app.api.models.cnpj import CNPJBatch, CNPJ
+from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
-from backend.app.setup.config import settings
 from backend.app.api.dependencies.auth import JWTDependency
 
 # Types
@@ -79,7 +70,6 @@ async def get_cnpjs_by_cnaes(
     - A list of establishments as dictionaries.
     """
     return await cnpj_service.get_cnpjs_by_cnaes(cnae_batch, limit, offset)
-
 
 
 @router.get("/cnae/{cnae_code}")
@@ -215,20 +205,23 @@ async def get_cities(
 
 @router.post("/cities")
 async def get_cities_list(
-    cities_code_batch: BatchModel, cnpj_service: CNPJService = CNPJServiceDependency,
+    cities_code_batch: BatchModel,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     return await cnpj_service.get_cities_list(cities_code_batch)
 
+
 @router.post("/cities/infer")
 async def infer_city(
-    city_name_batch: BatchModel, 
+    city_name_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     return await cnpj_service.get_city_candidates(city_name_batch)
 
+
 @router.get("/legal-nature/{legal_nature_code}")
 async def get_legal_nature(
-    legal_nature_code: CodeType, 
+    legal_nature_code: CodeType,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -245,7 +238,9 @@ async def get_legal_nature(
 
 @router.get("/legal-natures")
 async def get_legal_natures(
-    limit: int = 10, offset: int = 0, enable_pagination: bool = True,
+    limit: int = 10,
+    offset: int = 0,
+    enable_pagination: bool = True,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -262,7 +257,8 @@ async def get_legal_natures(
 
 @router.post("/legal-natures")
 async def get_legal_natures_list(
-    legal_natures_code_batch: BatchModel, cnpj_service: CNPJService = CNPJServiceDependency,
+    legal_natures_code_batch: BatchModel,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of legal natures from the database.
@@ -278,7 +274,8 @@ async def get_legal_natures_list(
 
 @router.get("/registration-status/{registration_status_code}")
 async def get_registration_status(
-    registration_status_code: CodeType, cnpj_service: CNPJService = CNPJServiceDependency,
+    registration_status_code: CodeType,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a registration status from the database.
@@ -294,7 +291,9 @@ async def get_registration_status(
 
 @router.get("/registration-statuses")
 async def get_registration_statuses(
-    limit: int = 10, offset: int = 0, enable_pagination: bool = True,
+    limit: int = 10,
+    offset: int = 0,
+    enable_pagination: bool = True,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -306,12 +305,15 @@ async def get_registration_statuses(
     Returns:
     - A list of registration statuses as dictionaries.
     """
-    return await cnpj_service.get_registration_statuses(limit, offset, enable_pagination)
+    return await cnpj_service.get_registration_statuses(
+        limit, offset, enable_pagination
+    )
 
 
 @router.post("/registration-statuses")
 async def get_registration_statuses_list(
-    registration_code_batch: BatchModel, cnpj_service: CNPJService = CNPJServiceDependency,
+    registration_code_batch: BatchModel,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of registration statuses from the database.
@@ -322,14 +324,12 @@ async def get_registration_statuses_list(
     Returns:
     - A list of registration statuses as dictionaries.
     """
-    
+
     return await cnpj_service.get_registration_statuses_list(registration_code_batch)
 
 
 @router.get("/cnpj/{cnpj}")
-async def get_cnpj_info(
-    cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
-):
+async def get_cnpj_info(cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency):
     """
     Get information about a CNPJ number.
 
@@ -339,7 +339,7 @@ async def get_cnpj_info(
     Returns:
     - A dictionary with information about the CNPJ.
     """
-    
+
     return await cnpj_service.get_cnpj_info(cnpj)
 
 
@@ -426,8 +426,13 @@ async def get_cnpj_establishments(
 
 @router.get("/cnpjs")
 async def get_cnpjs(
-    state_abbrev: str = '', city_name: str  = '', cnae_code: str = '', is_all: bool = False,
-    limit: int = 10, offset: int = 0, cnpj_service: CNPJService = CNPJServiceDependency,
+    state_abbrev: str = "",
+    city_name: str = "",
+    cnae_code: str = "",
+    is_all: bool = False,
+    limit: int = 10,
+    offset: int = 0,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNPJs from the database.
@@ -445,7 +450,8 @@ async def get_cnpjs(
 
 @router.post("/cnpjs")
 async def get_cnpjs_info(
-    cnpj_batch: BatchModel, cnpj_service: CNPJService = CNPJServiceDependency,
+    cnpj_batch: BatchModel,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNPJs from the database.
@@ -504,4 +510,4 @@ async def get_cnpjs_establishment(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_establishment(cnpj_batch)   
+    return await cnpj_service.get_cnpjs_establishment(cnpj_batch)

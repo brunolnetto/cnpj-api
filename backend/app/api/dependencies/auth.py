@@ -2,13 +2,14 @@ from fastapi import HTTPException, status, Depends
 from fastapi.requests import Request
 from os import getenv
 from jose import jwt
-from time import time 
+from time import time
 from fastapi.security import OAuth2PasswordBearer
 
 from backend.app.exceptions import ExpiredTokenException
 
-JWT_SECRET_KEY = getenv("JWT_SECRET_KEY") 
+JWT_SECRET_KEY = getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = getenv("JWT_ALGORITHM")
+
 
 class JWTBearer(OAuth2PasswordBearer):
     def __init__(self, tokenUrl: str = "token"):
@@ -29,19 +30,20 @@ class JWTBearer(OAuth2PasswordBearer):
 
         try:
             payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-            
-            if payload['exp'] <= time():
+
+            if payload["exp"] <= time():
                 raise ExpiredTokenException()
-        
+
         except ExpiredTokenException:
             raise ExpiredTokenException()
-            
+
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Token is invalid",
             )
-            
+
+
 jwt_bearer = JWTBearer(tokenUrl="token")
 
 JWTDependency = Depends(jwt_bearer)

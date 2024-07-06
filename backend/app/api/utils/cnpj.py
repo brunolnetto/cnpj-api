@@ -70,6 +70,7 @@ def is_cnpj_str_valid(cnpj: str) -> Dict[str, Union[bool, str]]:
     # Valid CNPJ
     return {"is_valid": True, "reason": ""}
 
+
 def are_cnpj_str_valid(cnpjs: List[str]):
     """
     Check if a list of CNPJ strings are valid.

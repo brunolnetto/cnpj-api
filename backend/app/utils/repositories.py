@@ -1,7 +1,4 @@
-from typing import List, Optional
-from datetime import datetime
-
-from backend.app.utils.misc import are, is_number, is_field_valid
+from backend.app.utils.misc import is_number, is_field_valid
 
 
 # Define a function to format the date
@@ -48,7 +45,10 @@ def format_cep(cep_str: str):
 
 # Define a function to format the phone number
 def format_phone(
-    ddd_num: str, phone_num: str, ddd_ldelimiter: tuple = "(", ddd_rdelimiter: tuple = ")",
+    ddd_num: str,
+    phone_num: str,
+    ddd_ldelimiter: tuple = "(",
+    ddd_rdelimiter: tuple = ")",
     phone_delimiter="-",
 ):
     """

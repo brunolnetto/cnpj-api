@@ -108,7 +108,7 @@ def humanize_string(s):
         >>> humanize_string("hello123world")
         'Hello 123 World'
     """
-    
+
     # Step 1: Separate letters and special characters from numbers
     s = re.sub(r"(\W+)(\d+)", r"\1 \2", s)
     s = re.sub(r"([A-Za-z]+)(\d+)", r"\1 \2", s)

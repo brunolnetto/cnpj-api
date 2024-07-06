@@ -52,9 +52,9 @@ def test_are_cnpj_str_valid_valid_cnpj():
     """Tests the is_cnpj_str_valid function with a valid CNPJ."""
     cnpjs = ["12345678901230", "123456789012345"]
     validation_result = are_cnpj_str_valid(cnpjs)
-    
-    assert [result['is_valid'] for result in validation_result] == [True, False]
-    
+
+    assert [result["is_valid"] for result in validation_result] == [True, False]
+
 
 def test_is_cnpj_str_valid_invalid_length():
     """Tests the is_cnpj_str_valid function with an invalid length CNPJ."""
