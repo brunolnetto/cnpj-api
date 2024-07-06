@@ -10,7 +10,10 @@ router = APIRouter(
 )
 
 @router.get('/token')
-async def get_token():
+async def get_token(
+    request: Request
+):
+    print(request.headers)
     return {
         "access_token": create_token({}),
     }
