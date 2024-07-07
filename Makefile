@@ -44,7 +44,7 @@ install: ## Installs the python requirements. Usage: make install
 	uv pip install -r requirements_dev.txt
 
 run: ## Run the application. Usage: make run
-	uvicorn backend.app.main:app --reload --workers 4 --host 0.0.0.0 --port 8000
+	uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 
 search: ## Searchs for a token in the code. Usage: make search token=your_token
 	grep -rnw . --exclude-dir=venv --exclude-dir=.git --exclude=poetry.lock -e "$(token)"
