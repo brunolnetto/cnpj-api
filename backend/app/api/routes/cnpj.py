@@ -1,21 +1,13 @@
 from fastapi import APIRouter
 from typing import Union
-from datetime import datetime, timezone
 
 from backend.app.api.services.cnpj import (
     CNPJService, 
     CNPJServiceDependency,
 )
-from backend.app.api.services.scrapper import (
-    CNPJScrapService, 
-    CNPJScrapServiceDependency,
-)
-from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
-from backend.app.utils.misc import is_number, are_numbers
-from backend.app.api.utils.misc import check_limit_and_offset
-from backend.app.api.models.cnpj import CNPJBatch, CNPJ
+
+from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
-from backend.app.setup.config import settings
 from backend.app.api.dependencies.auth import JWTDependency
 
 # Types
