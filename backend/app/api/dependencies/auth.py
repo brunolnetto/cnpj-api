@@ -5,7 +5,11 @@ from jose import jwt
 from time import time 
 from fastapi.security import OAuth2PasswordBearer
 
-from backend.app.exceptions import ExpiredTokenException
+from backend.app.exceptions import (
+    ExpiredTokenException,
+    MissingTokenException,
+    InvalidTokenException,
+)
 
 JWT_SECRET_KEY = getenv("JWT_SECRET_KEY") 
 JWT_ALGORITHM = getenv("JWT_ALGORITHM")
@@ -20,16 +24,11 @@ class JWTBearer(OAuth2PasswordBearer):
 
         if authorization:
             scheme, token = authorization.split()
-
         if not token:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Token is missing",
-            )
+            raise MissingTokenException()
 
         try:
             payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-            
             if payload['exp'] <= time():
                 raise ExpiredTokenException()
         
@@ -37,11 +36,8 @@ class JWTBearer(OAuth2PasswordBearer):
             raise ExpiredTokenException()
             
         except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Token is invalid",
-            )
-            
+            raise InvalidTokenException()
+
 jwt_bearer = JWTBearer(tokenUrl="token")
 
 JWTDependency = Depends(jwt_bearer)
