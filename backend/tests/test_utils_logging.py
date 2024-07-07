@@ -13,11 +13,16 @@ def test_clear_folder_items_success():
     os.makedirs(f"{tmp_path}/1", exist_ok=True)
     os.makedirs(f"{tmp_path}/2", exist_ok=True)
     os.makedirs(f"{tmp_path}/3", exist_ok=True)
+    
+    key_map = lambda file: file.path 
 
-    clear_folder_items(tmp_path, 2)
+    clear_folder_items(tmp_path, 2, key=key_map)
 
-    assert os.path.exists(f"{tmp_path}/1")
-    assert not os.path.exists(f"{tmp_path}/2")
+    from os import listdir
+    listdir(tmp_path)
+
+    assert not os.path.exists(f"{tmp_path}/1")
+    assert os.path.exists(f"{tmp_path}/2")
     assert os.path.exists(f"{tmp_path}/3")
 
 
