@@ -3,20 +3,11 @@ from fastapi import APIRouter, Request
 import toml
 
 from backend.app.setup.config import settings
-from backend.app.utils.security import create_token
+
 
 router = APIRouter(
     tags=["Setup"]
 )
-
-@router.get('/token')
-async def get_token(
-    request: Request
-):
-    print(request.headers)
-    return {
-        "access_token": create_token({}),
-    }
 
 @router.get("/health")
 async def health_check():
