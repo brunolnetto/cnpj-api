@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import HTTPException, Depends
 from typing import Union
 from datetime import datetime, timezone
 
@@ -17,8 +17,6 @@ from .constants import STATES_BRAZIL
 
 # Types
 CodeType = Union[str, int]
-
-router = APIRouter()
 
 
 def cnpj_str_to_obj(cnpj_str: str):
