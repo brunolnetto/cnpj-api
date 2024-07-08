@@ -98,23 +98,6 @@ def setup_app(app_):
             allow_methods=["*"],
             allow_headers=["*"],
         )
-        
-    @app_.get("/openapi.json", dependencies=[JWTDependency])
-    async def get_open_api_endpoint():
-        return get_openapi(
-            title=settings.PROJECT_NAME, 
-            version=settings.VERSION, 
-            routes=app_.routes
-        )
-
-    @app_.get("/docs", dependencies=[JWTDependency])
-    async def get_documentation():
-        return get_swagger_ui_html(openapi_url="/openapi.json", title="docs")
-
-    @app_.get("/redoc", dependencies=[JWTDependency])
-    async def get_redoc():
-        return get_redoc_html(openapi_url="/openapi.json", title="ReDoc")
-
 
 
 def init_app():
