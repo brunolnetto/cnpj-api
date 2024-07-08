@@ -8,5 +8,3 @@ api_router = APIRouter()
 api_router.include_router(auth.router)
 api_router.include_router(setup.router)
 api_router.include_router(cnpj.router)
-
-

@@ -5,11 +5,11 @@ from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import pool, text, inspect
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from backend.app.setup.logging import logger
 from backend.app.database.schemas import Base
+
 
 class Database:
     """
@@ -24,10 +24,10 @@ class Database:
         self.uri = uri
         self.engine = create_engine(
             uri,
-            poolclass=pool.QueuePool,   # Use connection pooling
-            pool_size=20,               # Adjust pool size based on your workload
-            max_overflow=10,            # Adjust maximum overflow connections
-            pool_recycle=3600,          # Periodically recycle connections (optional)
+            poolclass=pool.QueuePool,  # Use connection pooling
+            pool_size=20,  # Adjust pool size based on your workload
+            max_overflow=10,  # Adjust maximum overflow connections
+            pool_recycle=3600,  # Periodically recycle connections (optional)
         )
         self.session_maker = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
@@ -86,7 +86,6 @@ class Database:
         except Exception as e:
             logger.error(f"Error fetching table names: {str(e)}")
 
-
     def init(self):
         """
         Initializes the database connection and creates the tables.
@@ -113,7 +112,7 @@ class Database:
             self.create_tables()
         except Exception as e:
             logger.error(f"Error creating tables: {e}")
-        
+
         try:
             self.print_tables()
         except Exception as e:
@@ -137,6 +136,7 @@ def get_db_uri():
 
 # Load environment variables from the .env file
 database = None
+
 
 def init_database():
     global database
