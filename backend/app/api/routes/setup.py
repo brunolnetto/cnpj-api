@@ -3,10 +3,11 @@ from fastapi import APIRouter, Request
 import toml
 
 from backend.app.setup.config import settings
+from backend.app.api.dependencies.auth import JWTDependency
 
 
 router = APIRouter(
-    tags=["Setup"]
+    tags=["Setup"], dependencies=[JWTDependency]
 )
 
 @router.get("/health")
