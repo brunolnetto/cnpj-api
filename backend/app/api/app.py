@@ -66,6 +66,10 @@ def setup_app(app_):
     obj = StaticFiles(directory="static")
     app_.mount("/static", obj, name="static")
 
+    @app_.get("/favicon.ico")
+    async def get_favicon():
+        return FileResponse("static/favicon.ico")
+
     @app_.exception_handler(status.HTTP_404_NOT_FOUND)
     async def not_found_handler(request: Request, exc: HTTPException):
         warning_msg=f"The requested resource could not be found."
@@ -88,15 +92,11 @@ def setup_app(app_):
 
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
+        urls=[ str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS ]
+
         app_.add_middleware(
-            CORSMiddleware,
-            allow_origins=[
-                str(origin).strip("/") 
-                for origin in settings.BACKEND_CORS_ORIGINS
-            ],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
+            CORSMiddleware, allow_origins=urls, allow_credentials=True,
+            allow_methods=["*"], allow_headers=["*"],
         )
 
 
