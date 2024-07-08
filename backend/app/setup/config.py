@@ -63,13 +63,14 @@ class Settings(BaseSettings):
         protocol = "http" if self.ENVIRONMENT == "development" else "https"
         return f"{protocol}://{self.DOMAIN}"
 
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str = "HS256"
+
     POSTGRES_HOST: str
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DBNAME: str = ""
-
-    SENTRY_DSN: str = ""
 
     def _check_default_secret(self, var_name: str, value: Union[str, None]) -> None:
         if value == DEFAULT_PASSWORD:

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from . import setup, cnpj, auth, docs
+from . import setup, cnpj, auth
 
 api_router = APIRouter()
 
