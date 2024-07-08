@@ -6,7 +6,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.utils import get_openapi
 
+from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 from backend.app.api.routes.router_bundler import api_router
@@ -63,18 +66,13 @@ def setup_app(app_):
     obj = StaticFiles(directory="static")
     app_.mount("/static", obj, name="static")
 
-    # Add favicon
-    @app_.get("/favicon.ico", include_in_schema=False)
-    async def my_favicon():
-        return FileResponse("static/favicon.ico")
-
     @app_.exception_handler(status.HTTP_404_NOT_FOUND)
     async def not_found_handler(request: Request, exc: HTTPException):
         warning_msg=f"The requested resource could not be found."
-        suggestion_msg=f"Refer to the API documentation at {settings.API_V1_STR}/docs for available endpoints."
+        endpoints=f"{settings.API_V1_STR}/docs or {settings.API_V1_STR}/redoc"
+        suggestion_msg=f"Refer to the API documentation on endpoints {endpoints} for available endpoints."
         return JSONResponse(
-            f"{warning_msg} {suggestion_msg}",
-            status_code=status.HTTP_404_NOT_FOUND,
+            f"{warning_msg} {suggestion_msg}", status_code=status.HTTP_404_NOT_FOUND,
         )
 
     @app_.exception_handler(Exception)  # Catch all exceptions
@@ -100,8 +98,23 @@ def setup_app(app_):
             allow_methods=["*"],
             allow_headers=["*"],
         )
+        
+    @app_.get("/openapi.json", dependencies=[JWTDependency])
+    async def get_open_api_endpoint():
+        return get_openapi(
+            title=settings.PROJECT_NAME, 
+            version=settings.VERSION, 
+            routes=app_.routes
+        )
 
-    return app_
+    @app_.get("/docs", dependencies=[JWTDependency])
+    async def get_documentation():
+        return get_swagger_ui_html(openapi_url="/openapi.json", title="docs")
+
+    @app_.get("/redoc", dependencies=[JWTDependency])
+    async def get_redoc():
+        return get_redoc_html(openapi_url="/openapi.json", title="ReDoc")
+
 
 
 def init_app():
@@ -109,7 +122,7 @@ def init_app():
     app = create_app()
 
     # Setup the application
-    app = setup_app(app)
+    setup_app(app)
 
     return app
 
