@@ -1,14 +1,13 @@
 # Description: This file contains the setup routes for the FastAPI application.
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 import toml
 
 from backend.app.setup.config import settings
 from backend.app.api.dependencies.auth import JWTDependency
 
 
-router = APIRouter(
-    tags=["Setup"], dependencies=[JWTDependency]
-)
+router = APIRouter(tags=["Setup"], dependencies=[JWTDependency])
+
 
 @router.get("/health")
 async def health_check():
