@@ -27,10 +27,7 @@ class JWTBearer(OAuth2PasswordBearer):
             scheme, token = authorization.split()
         if not token:
             raise MissingTokenException()
-        print(token)
         try:
-            print(JWT_SECRET_KEY)
-            print(JWT_ALGORITHM)
             check_claims={
                 "verify_aud": False, 
                 "verify_iss": False, 
