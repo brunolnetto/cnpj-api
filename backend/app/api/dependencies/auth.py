@@ -29,16 +29,12 @@ class JWTBearer(OAuth2PasswordBearer):
             raise MissingTokenException()
         try:
             check_claims={
-                "verify_aud": False, 
-                "verify_iss": False, 
-                "verify_sub": False
+                "verify_aud": False, "verify_iss": False, "verify_sub": False
             }
             payload = jwt.decode(
-                token, 
-                JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM],
-                options=check_claims
+                token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM], options=check_claims
             )
-            
+
             if payload["exp"] <= time():
                 raise ExpiredTokenException()
 
