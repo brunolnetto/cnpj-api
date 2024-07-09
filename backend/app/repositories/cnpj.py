@@ -1295,6 +1295,7 @@ class CNPJRepository:
             "atividades_secundarias",
             "efr",
             "qsa",
+            "cnpj_raw"
         ]
 
         # Get the establishment
