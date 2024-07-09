@@ -1271,6 +1271,7 @@ class CNPJRepository:
         columns = [
             "ultima_atualizacao",
             "cnpj",
+            "cnpj_raw",
             "abertura",
             "tipo",
             "nome",
@@ -1294,8 +1295,7 @@ class CNPJRepository:
             "atividade_principal",
             "atividades_secundarias",
             "efr",
-            "qsa",
-            "cnpj_raw"
+            "qsa"
         ]
 
         # Get the establishment
