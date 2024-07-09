@@ -1327,22 +1327,24 @@ class CNPJRepository:
         update_at = cnpj_scrap_service.max_update_at()
 
         date_format = "%Y-%m-%d %H:%M:%S"
+
         cnpj_infos = {
             cnpj_key: {
+                "cnpj_raw": cnpj_key,
                 "ultima_atualizacao": update_at.strftime(date_format),
                 **cnpj_info,
             }
             for cnpj_key, cnpj_info in cnpj_info_dict.items()
         }
 
-        return {
-            key: {
+        return [
+            {
                 key_: cnpj_infos[key][key_]
                 for key_ in columns
                 if key_ in cnpj_infos[key]
             }
             for key in cnpj_infos
-        }
+        ]
 
     def get_cnpj_info(self, cnpj: CNPJ) -> JSON:
         """
