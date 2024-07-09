@@ -1,11 +1,6 @@
-from backend.app.api.utils.misc import (
-    check_limit_and_offset,
-    convert_to_bytes,
-    MAX_LIMIT,
-)
-
 import pytest
 
+from backend.app.api.utils.misc import check_limit_and_offset, convert_to_bytes, MAX_LIMIT
 
 def test_check_limit_and_offset_valid():
     limit, offset = check_limit_and_offset(20, 5)
