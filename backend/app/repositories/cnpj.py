@@ -62,8 +62,8 @@ class CNPJRepository:
         state_condition = f"uf='{state_abbrev}'" if state_abbrev else "1=1"
         city_condition = f"municipio='{city_code}'" if city_code else "1=1"
         
-        filled_zipcode=str(int(zipcode)) if zipcode else ""
-        zipcode_condition = f"cep = {filled_zipcode}" if filled_zipcode else "1=1"
+        filled_zipcode=str(float(zipcode)) if zipcode else ""
+        zipcode_condition = f"cep = '{filled_zipcode}'" if filled_zipcode else "1=1"
 
         if cnae_code:
             cnae_condition = (
@@ -95,6 +95,7 @@ class CNPJRepository:
                         situacao_cadastral,
                         municipio,
                         uf,
+                        cep,
                         cnae_fiscal_principal,
                         case
                             WHEN cnae_fiscal_secundaria = 'nan' THEN '{{}}'
@@ -110,7 +111,7 @@ class CNPJRepository:
                     from
                         estabelecimento_uf
                     where
-                        {city_condition}
+                        {city_condition} and {zipcode_condition}
                 )
 
                 select cnpj
@@ -123,7 +124,6 @@ class CNPJRepository:
                     {offset}
         """
         )
-    
         cnpjs_result = self.session.execute(query)
         cnpjs_result = cnpjs_result.fetchall()
 
