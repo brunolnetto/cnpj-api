@@ -844,7 +844,6 @@ class CNPJService:
             cnpj_objs = [cnpj_obj]
 
             cnpj_info = self.repository.get_cnpjs_info(cnpj_objs)
-
         except Exception as e:
             logger.error(f"Error getting CNPJ info: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -852,7 +851,7 @@ class CNPJService:
         if not cnpj_info:
             return {"message": f"CNPJ {format_cnpj(cnpj)} not found."}
 
-        return cnpj_info[cnpj]
+        return cnpj_info[0]
 
     async def get_cnpjs_info(self, cnpj_batch: BatchModel):
         """
