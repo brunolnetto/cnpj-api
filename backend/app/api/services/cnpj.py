@@ -694,10 +694,11 @@ class CNPJService:
         state_abbrev: str = "",
         city_name: str = "",
         cnae_code: str = "",
+        zipcode: str = "",
         is_all: bool = False,
         limit: int = 10,
         offset: int = 0,
-    ):
+    ): 
         """
         Get a list of CNPJs from the database.
 
@@ -707,9 +708,12 @@ class CNPJService:
         Returns:
         - A list of CNPJs as dictionaries.
         """
-        city_name = city_name.replace("'", "").replace('"', "")
-        cnae_code = cnae_code.replace("'", "").replace('"', "")
-        state_abbrev = state_abbrev.replace("'", "").replace('"', "")
+        remove_quotes=lambda text: text.replace("'", "").replace('"', "")
+        
+        city_name = remove_quotes(city_name)
+        cnae_code = remove_quotes(cnae_code)
+        state_abbrev = remove_quotes(state_abbrev)
+        zipcode = remove_quotes(zipcode)
 
         try:
             limit, offset = check_limit_and_offset(limit, offset)
@@ -731,11 +735,18 @@ class CNPJService:
             if cnae_code:
                 if not self.repository.get_cnae(cnae_code):
                     raise ValueError(f"CNAE code {cnae_code} not found.")
+                
+            if zipcode:
+                try:
+                    zipcode=str(int(zipcode))
+                except Exception:
+                    raise ValueError(f"Invalid Zipcode {zipcode}.")
 
             cnpjs_raw_list = self.repository.get_cnpjs_raw(
                 state_abbrev=state_abbrev,
                 city_code=city_code,
                 cnae_code=cnae_code,
+                zipcode=zipcode,
                 is_all=is_all,
                 limit=limit,
                 offset=offset,
