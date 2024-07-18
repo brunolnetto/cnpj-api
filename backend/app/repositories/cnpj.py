@@ -48,6 +48,7 @@ class CNPJRepository:
         state_abbrev: str = "",
         city_code: str = "",
         cnae_code: str = "",
+        zipcode: str = "",
         is_all: bool = False,
         limit: int = 10,
         offset: int = 0,
@@ -60,6 +61,9 @@ class CNPJRepository:
         """
         state_condition = f"uf='{state_abbrev}'" if state_abbrev else "1=1"
         city_condition = f"municipio='{city_code}'" if city_code else "1=1"
+        
+        filled_zipcode=str(int(zipcode)) if zipcode else ""
+        zipcode_condition = f"cep = {filled_zipcode}" if filled_zipcode else "1=1"
 
         if cnae_code:
             cnae_condition = (
@@ -119,7 +123,7 @@ class CNPJRepository:
                     {offset}
         """
         )
-
+    
         cnpjs_result = self.session.execute(query)
         cnpjs_result = cnpjs_result.fetchall()
 
