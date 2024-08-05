@@ -9,7 +9,7 @@ psycopg2-binary==2.9.9
 pyarrow==17.0.0
 pydantic-settings==2.4.0
 starlette==0.38.2
-SQLAlchemy==2.0.31
+SQLAlchemy==2.0.32
 SQLAlchemy-Utils==0.41.2
 typing-extensions==4.12.2
 python-dotenv==1.0.1
