@@ -42,10 +42,6 @@ def create_app():
         lifespan=lifespan,
     )
 
-    @app_.get("/favicon.ico")
-    async def get_favicon():
-        return FileResponse("static/favicon.ico")
-
     return app_
 
 
@@ -67,15 +63,15 @@ def setup_app(app_):
     obj = StaticFiles(directory="static")
     app_.mount("/static", obj, name="static")
 
-    # Add favicon
-    @app_.get("/favicon.ico", include_in_schema=False)
-    async def my_favicon():
+    @app_.get("/favicon.ico")
+    async def get_favicon():
         return FileResponse("static/favicon.ico")
 
     @app_.exception_handler(status.HTTP_404_NOT_FOUND)
     async def not_found_handler(request: Request, exc: HTTPException):
-        warning_msg=f"The requested resource could not be found."
-        suggestion_msg=f"Refer to the API documentation at {settings.API_V1_STR}/docs for available endpoints."
+        warning_msg = "The requested resource could not be found."
+        endpoints = f"{settings.API_V1_STR}/docs or {settings.API_V1_STR}/redoc"
+        suggestion_msg = f"Refer to the API documentation on endpoints {endpoints} for available endpoints."
         return JSONResponse(
             f"{warning_msg} {suggestion_msg}",
             status_code=status.HTTP_404_NOT_FOUND,
@@ -88,24 +84,20 @@ def setup_app(app_):
         logger.error(f"Unhandled exception: {exc}")
 
         # Return a generic error response to the client
-        code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return JSONResponse(f"An unexpected error occurred: {exc}.", status_code=code)
-
 
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
+        urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]
+
         app_.add_middleware(
             CORSMiddleware,
-            allow_origins=[
-                str(origin).strip("/") 
-                for origin in settings.BACKEND_CORS_ORIGINS
-            ],
+            allow_origins=urls,
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
         )
-
-    return app_
 
 
 def init_app():
@@ -113,7 +105,7 @@ def init_app():
     app = create_app()
 
     # Setup the application
-    app = setup_app(app)
+    setup_app(app)
 
     return app
 
