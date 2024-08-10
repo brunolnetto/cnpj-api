@@ -74,3 +74,11 @@ pylint:
 report: test ## Generate coverage report. Usage: make report
 	coverage report --omit=$(OMIT_PATHS) --show-missing
 
+ps: ## List all running containers. Usage: make ps
+	docker compose ps -a
+
+up: ## Start the application. Usage: make up
+	docker-compose up -d
+
+down: ## Stop the application. Usage: make down
+	docker-compose down
