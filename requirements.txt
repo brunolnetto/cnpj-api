@@ -2,7 +2,7 @@ bs4==0.0.2
 fastapi==0.112.0
 fastapi-limiter==0.1.6lxml==5.2.2
 python-jose==3.3.0
-nltk==3.8.1
+nltk==3.8.2
 pandas==2.2.2
 psycopg2-binary==2.9.9
 pyarrow==17.0.0
