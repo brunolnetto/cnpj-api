@@ -1,7 +1,7 @@
 from typing import Dict, Union, List, Any
 from sqlalchemy import text
 import pandas as pd
-from datetime import datetime, timezone
+from datetime import datetime
 
 from backend.app.utils.misc import string_to_json
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,6 +30,8 @@ from backend.app.api.utils.cnpj import format_cnpj
 from backend.app.repositories.constants import (
     SIZE_DICT, SITUATION_DICT, EST_TYPE_DICT,
 )
+
+from backend.app.database.schemas import CNAE 
 
 # Types
 CNPJList = List[CNPJ]
@@ -191,6 +193,32 @@ class CNPJRepository:
         def wrap_values_map(code_text):
             return {"code": code_text[0], "text": code_text[1]}
 
+        cnae_dict = list(map(wrap_values_map, cnae_result))
+
+        return cnae_dict
+
+    def get_cnae_by_token(self, token: str):
+        """
+        Get the CNAE for the token.
+
+        Parameters:
+        token (str): The token to search for in the CNAE descriptions.
+
+        Returns:
+        list: A list of dictionaries with CNAE 'code' and 'text' fields.
+        """
+        # Ensure the token is not empty and handle it accordingly
+        if not token:
+            return []
+
+        # Use parameterized queries to safely include the token in the query
+        cnae_result = self.session.query(CNAE).filter(CNAE.descricao.ilike(f'%{token}%')).all()
+
+        # Define a function to map the query results to a dictionary format
+        def wrap_values_map(cnae):
+            return {"code": cnae.id, "text": cnae.descricao}
+
+        # Map the results to the desired format
         cnae_dict = list(map(wrap_values_map, cnae_result))
 
         return cnae_dict
