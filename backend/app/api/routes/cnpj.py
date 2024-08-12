@@ -50,8 +50,11 @@ async def get_cnae_objects(
     Returns:
     - A list with the CNAE objects.
     """
-    return await cnpj_service.get_cnae_objects(cnae_code_batch) \
-        if not search_token else  cnpj_service.get_cnae_by_token(search_token)
+    return (
+        await cnpj_service.get_cnae_objects(cnae_code_batch)
+        if not search_token
+        else cnpj_service.get_cnae_by_token(search_token)
+    )
 
 
 @router.post("/cnaes/cnpjs")
@@ -110,6 +113,7 @@ async def get_cnpjs_with_cnae(
     - A list of establishments as dictionaries.
     """
     return await cnpj_service.get_cnpjs_with_cnae(cnae_code, limit, offset)
+
 
 @router.post("/states/cnpjs")
 async def get_cnpjs_by_state(

@@ -32,7 +32,7 @@ from backend.app.repositories.constants import (
     EST_TYPE_DICT,
 )
 
-from backend.app.database.schemas import CNAE 
+from backend.app.database.schemas import CNAE
 
 # Types
 CNPJList = List[CNPJ]
@@ -63,8 +63,8 @@ class CNPJRepository:
         """
         state_condition = f"uf='{state_abbrev}'" if state_abbrev else "1=1"
         city_condition = f"municipio='{city_code}'" if city_code else "1=1"
-        
-        filled_zipcode=str(float(zipcode)) if zipcode else ""
+
+        filled_zipcode = str(float(zipcode)) if zipcode else ""
         zipcode_condition = f"cep = '{filled_zipcode}'" if filled_zipcode else "1=1"
 
         if cnae_code:
@@ -226,7 +226,9 @@ class CNPJRepository:
             return []
 
         # Use parameterized queries to safely include the token in the query
-        cnae_result = self.session.query(CNAE).filter(CNAE.descricao.ilike(f'%{token}%')).all()
+        cnae_result = (
+            self.session.query(CNAE).filter(CNAE.descricao.ilike(f"%{token}%")).all()
+        )
 
         # Define a function to map the query results to a dictionary format
         def wrap_values_map(cnae):
@@ -237,7 +239,9 @@ class CNPJRepository:
 
         return cnae_dict
 
-    def get_cnaes(self, limit: int = 10, offset: int = 0, enable_pagination: bool = True):
+    def get_cnaes(
+        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
+    ):
         """
         Get all CNAEs from the database.
 
@@ -1325,7 +1329,7 @@ class CNPJRepository:
             "atividade_principal",
             "atividades_secundarias",
             "efr",
-            "qsa"
+            "qsa",
         ]
 
         # Get the establishment
@@ -1369,11 +1373,7 @@ class CNPJRepository:
         }
 
         return [
-            {
-                key_: cnpj_infos[key][key_]
-                for key_ in columns
-                if key_ in cnpj_infos[key]
-            }
+            {key_: cnpj_infos[key][key_] for key_ in columns if key_ in cnpj_infos[key]}
             for key in cnpj_infos
         ]
 

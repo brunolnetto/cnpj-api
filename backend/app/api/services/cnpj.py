@@ -120,7 +120,6 @@ class CNPJService:
 
         return cnaes[0]
 
-
     async def get_cnae_by_token(self, search_token):
         """
         Get a list of CNAEs from the database.
@@ -139,7 +138,6 @@ class CNPJService:
         except Exception as e:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
-
 
     async def get_cnpjs_with_cnae(
         self, cnae_code: CodeType, limit: int = 10, offset: int = 0
@@ -719,7 +717,7 @@ class CNPJService:
         is_all: bool = False,
         limit: int = 10,
         offset: int = 0,
-    ): 
+    ):
         """
         Get a list of CNPJs from the database.
 
@@ -729,8 +727,10 @@ class CNPJService:
         Returns:
         - A list of CNPJs as dictionaries.
         """
-        remove_quotes=lambda text: text.replace("'", "").replace('"', "")
-        
+
+        def remove_quotes(text):
+            return text.replace("'", "").replace('"', "")
+
         city_name = remove_quotes(city_name)
         cnae_code = remove_quotes(cnae_code)
         state_abbrev = remove_quotes(state_abbrev)
@@ -756,10 +756,10 @@ class CNPJService:
             if cnae_code:
                 if not self.repository.get_cnae(cnae_code):
                     raise ValueError(f"CNAE code {cnae_code} not found.")
-                
+
             if zipcode:
                 try:
-                    zipcode=str(int(zipcode))
+                    zipcode = str(int(zipcode))
                 except Exception:
                     raise ValueError(f"Invalid Zipcode {zipcode}.")
 
