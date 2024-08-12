@@ -35,7 +35,7 @@ async def get_cnaes(
     """
     print(search_token)
     return (
-        await cnpj_service.get_cnaes(limit, offset, enable_pagination) 
+        await cnpj_service.get_cnaes(limit, offset, enable_pagination)
         if not search_token
         else await cnpj_service.get_cnae_by_token(search_token)
     )
@@ -116,6 +116,7 @@ async def get_cnpjs_with_cnae(
     - A list of establishments as dictionaries.
     """
     return await cnpj_service.get_cnpjs_with_cnae(cnae_code, limit, offset)
+
 
 @router.post("/states/cnpjs")
 async def get_cnpjs_by_state(
