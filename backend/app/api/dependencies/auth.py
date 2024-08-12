@@ -14,7 +14,8 @@ from backend.app.exceptions import (
 JWT_SECRET_KEY = settings.JWT_SECRET_KEY
 JWT_ALGORITHM = settings.JWT_ALGORITHM
 
-AUTH_TOKEN_URL=f"{settings.API_V1_STR}/token"
+AUTH_TOKEN_URL = f"{settings.API_V1_STR}/token"
+
 
 class JWTBearer(OAuth2PasswordBearer):
     def __init__(self, tokenUrl: str = AUTH_TOKEN_URL):
@@ -29,14 +30,16 @@ class JWTBearer(OAuth2PasswordBearer):
         if not token:
             raise MissingTokenException()
         try:
-            check_claims={
-                "verify_aud": False, "verify_iss": False, "verify_sub": False
+            check_claims = {
+                "verify_aud": False,
+                "verify_iss": False,
+                "verify_sub": False,
             }
-            
+
             payload = jwt.decode(
                 token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM], options=check_claims
             )
-            
+
             if payload["exp"] <= time():
                 raise ExpiredTokenException()
 

@@ -1,12 +1,14 @@
 import requests
 import math
 
+
 def get_lat_lon_by_cep(cep):
     url = f"https://cep.awesomeapi.com.br/json/{cep}"
     response = requests.get(url)
     data = response.json()
     print(data)
-    return float(data['lat']), float(data['lng'])
+    return float(data["lat"]), float(data["lng"])
+
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     # Radius of the Earth in kilometers
@@ -20,18 +22,23 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     dlon = lon2 - lon1
 
     # Haversine formula
-    a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+    )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
     # Distance in kilometers
     distance = R * c
     return distance
 
+
 def main(cep1, cep2):
     lat1, lon1 = get_lat_lon_by_cep(cep1)
     lat2, lon2 = get_lat_lon_by_cep(cep2)
     distance = haversine_distance(lat1, lon1, lat2, lon2)
     return distance
+
 
 # Example usage
 cep1 = "68980970"  # Replace with the first CEP

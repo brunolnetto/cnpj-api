@@ -50,8 +50,11 @@ async def get_cnae_objects(
     Returns:
     - A list with the CNAE objects.
     """
-    return await cnpj_service.get_cnae_objects(cnae_code_batch) \
-        if not search_token else  cnpj_service.get_cnae_by_token(search_token)
+    return (
+        await cnpj_service.get_cnae_objects(cnae_code_batch)
+        if not search_token
+        else cnpj_service.get_cnae_by_token(search_token)
+    )
 
 
 @router.post("/cnaes/cnpjs")
