@@ -32,7 +32,7 @@ from backend.app.repositories.constants import (
     EST_TYPE_DICT,
 )
 
-from backend.app.database.schemas import CNAE 
+from backend.app.database.schemas import CNAE
 
 # Types
 CNPJList = List[CNPJ]
