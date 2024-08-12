@@ -114,7 +114,6 @@ async def get_cnpjs_with_cnae(
     """
     return await cnpj_service.get_cnpjs_with_cnae(cnae_code, limit, offset)
 
-
 @router.post("/states/cnpjs")
 async def get_cnpjs_by_state(
     state_batch: BatchModel,
