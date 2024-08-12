@@ -78,7 +78,7 @@ ps: ## List all running containers. Usage: make ps
 	docker compose ps -a
 
 up: ## Start the application. Usage: make up
-	docker-compose up -d
+	docker compose up -d
 
 down: ## Stop the application. Usage: make down
-	docker-compose down
+	docker compose down
