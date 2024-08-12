@@ -32,6 +32,8 @@ from backend.app.repositories.constants import (
     EST_TYPE_DICT,
 )
 
+from backend.app.database.schemas import CNAE 
+
 # Types
 CNPJList = List[CNPJ]
 JSON = Dict[str, Any]
@@ -209,9 +211,33 @@ class CNPJRepository:
 
         return cnae_dict
 
-    def get_cnaes(
-        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
-    ):
+    def get_cnae_by_token(self, token: str):
+        """
+        Get the CNAE for the token.
+
+        Parameters:
+        token (str): The token to search for in the CNAE descriptions.
+
+        Returns:
+        list: A list of dictionaries with CNAE 'code' and 'text' fields.
+        """
+        # Ensure the token is not empty and handle it accordingly
+        if not token:
+            return []
+
+        # Use parameterized queries to safely include the token in the query
+        cnae_result = self.session.query(CNAE).filter(CNAE.descricao.ilike(f'%{token}%')).all()
+
+        # Define a function to map the query results to a dictionary format
+        def wrap_values_map(cnae):
+            return {"code": cnae.id, "text": cnae.descricao}
+
+        # Map the results to the desired format
+        cnae_dict = list(map(wrap_values_map, cnae_result))
+
+        return cnae_dict
+
+    def get_cnaes(self, limit: int = 10, offset: int = 0, enable_pagination: bool = True):
         """
         Get all CNAEs from the database.
 
