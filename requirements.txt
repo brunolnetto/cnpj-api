@@ -1,5 +1,5 @@
 bs4==0.0.2
-fastapi==0.111.0
+fastapi==0.111.1
 fastapi-limiter==0.1.6
 lxml==5.2.2
 python-jose==3.3.0
