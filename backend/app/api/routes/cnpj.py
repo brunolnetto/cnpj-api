@@ -33,10 +33,9 @@ async def get_cnaes(
     Returns:
     - A list of CNAEs as dictionaries.
     """
-    print(search_token)
     return (
         await cnpj_service.get_cnaes(limit, offset, enable_pagination)
-        if not search_token
+        if search_token != ''
         else await cnpj_service.get_cnae_by_token(search_token)
     )
 
