@@ -256,7 +256,6 @@ class CNPJService:
         try:
             states = list(set(map(str.upper, state_batch.batch)))
             invalid_states = set(states) - set(STATES_BRAZIL)
-            set(states) - invalid_states
 
             if invalid_states:
                 raise ValueError(f"Invalid states: {invalid_states}")
