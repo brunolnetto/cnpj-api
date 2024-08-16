@@ -4,27 +4,28 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
-    networks:
-      - SuasVendasNet
-    volumes:
-      - .:/app
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend-app.entrypoints=websecure"
-      - "traefik.http.routers.backend-app.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.backend-app.rule=Host(`backend-app.localhost`)"
-      - "traefik.http.services.backend-app.loadbalancer.server.port=8000"
-      - "traefik.http.routers.backend-app.service=backend-app"
     env_file: .env
+    # networks:
+    #   - SuasVendasNet
+    # volumes:
+    #   - .:/app
+    # deploy:
+    #   mode: replicated
+    #   replicas: 1
+    #   placement:
+    #     constraints:
+    #       - node.role == manager
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.backend-app.entrypoints=websecure"
+    #   - "traefik.http.routers.backend-app.tls.certresolver=letsencryptresolver"
+    #   - "traefik.http.routers.backend-app.rule=Host(`backend-app.localhost`)"
+    #   - "traefik.http.services.backend-app.loadbalancer.server.port=8000"
+    #   - "traefik.http.routers.backend-app.service=backend-app"
+    
 
-networks:
-  SuasVendasNet:
-    external: true
-    name: SuasVendasNet
-    attachable: true
+#networks:
+#  SuasVendasNet:
+#    external: true
+#    name: SuasVendasNet
+#    attachable: true
