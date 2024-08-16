@@ -1529,7 +1529,6 @@ class CNPJRepository:
 
         result = self.session.execute(query)
         cnpj_tuples = result.fetchall()
-        print(len(cnpj_tuples))
 
         cnpjs_str_list = [
             CNPJ(cnpj_base, cnpj_order, cnpj_digits)
