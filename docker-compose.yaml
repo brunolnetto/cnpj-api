@@ -26,4 +26,4 @@ services:
 networks:
   SuasVendasNet:
     external: true
-    name: mynet
+    name: SuasVendasNet
