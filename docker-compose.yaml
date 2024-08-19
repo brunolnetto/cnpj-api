@@ -3,11 +3,11 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "80:8000"
     networks:
       - SuasVendasNet
     volumes:
-      - .:/app
+     - .:/app
     deploy:
       mode: replicated
       replicas: 1
@@ -26,5 +26,5 @@ services:
 networks:
   SuasVendasNet:
     external: true
-    name: SuasVendasNet
+    name: ConexxoHubNet
     attachable: true
