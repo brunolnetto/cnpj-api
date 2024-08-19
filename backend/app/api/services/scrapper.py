@@ -11,8 +11,7 @@ from backend.app.api.models.base import BaseModel
 from backend.app.api.utils.misc import convert_to_bytes
 from backend.app.api.constants import UNIT_MULTIPLIER
 
-DATA_URL = "http://200.152.38.155/CNPJ"
-
+BASE_URL = "http://200.152.38.155/CNPJ/dados_abertos_cnpj"
 
 class FileInfo(BaseModel):
     """
@@ -38,7 +37,26 @@ class FileInfo(BaseModel):
 class CNPJScrapService:
 
     def __init__(self) -> None:
-        self.data_url = DATA_URL
+        self.base_url = BASE_URL
+
+    def get_previous_year_month(self, year_month_str):
+        """
+        Returns the previous year-month string.
+
+        Args:
+            year_month_str (str): The current year-month string in the format 'YYYY-MM'.
+
+        Returns:
+            str: The previous year-month string.
+        """
+        year, month = map(int, year_month_str.split('-'))
+        if month == 1:
+            year -= 1
+            month = 12
+        else:
+            month -= 1
+        return f"{year:04d}-{month:02d}"
+
 
     def scrap_files_date(self):
         """
@@ -47,7 +65,11 @@ class CNPJScrapService:
         Returns:
             list: A list of tuples containing the updated date and filename of the files found on the RF website.
         """
-        raw_html = request.urlopen(self.data_url)
+        current_year_month = datetime.now().strftime("%Y-%m")
+        year_month = self.get_previous_year_month(current_year_month)
+        data_url = f"{self.base_url}/{year_month}/"
+
+        raw_html = request.urlopen(data_url)
         raw_html = raw_html.read()
 
         # Formatar página e converter em string
