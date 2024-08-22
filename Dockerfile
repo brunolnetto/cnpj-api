@@ -10,10 +10,17 @@ COPY requirements.txt .
 # Install the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code into the container
-COPY backend .
-COPY static .
-COPY .env .
+# Create directories for backend and static files
+RUN mkdir -p /app/backend /app/static
+
+# Copy the backend and static folders into their respective directories
+COPY ./backend /app/backend
+COPY ./static /app/static
+
+# Copy the .env and pyproject.toml file into the working directory
+COPY ./.env .
+
+COPY ./pyproject.toml .
 
 # Command to run the FastAPI application
 CMD ["uvicorn", "backend.app.main:app", "--workers", "4", "--host", "0.0.0.0", "--port", "8000"]
