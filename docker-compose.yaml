@@ -2,28 +2,6 @@ services:
   backend-app:
     build: .
     restart: unless-stopped
-    networks:
-      - cnpjapinet
-      - ConexxoHubNet
-    volumes:
-      - .:/app
-    deploy:
-      mode: replicated
-      replicas: 3
-      restart_policy:
-        condition: on-failure
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.backend-app.entrypoints=websecure"
-        - "traefik.http.routers.backend-app.tls.certresolver=letsencryptresolver"
-        - "traefik.http.routers.backend-app.rule=Host(`cnpjapi.connexohub.com.br`)"
-        - "traefik.http.services.backend-app.loadbalancer.server.port=8000"
-        - "traefik.http.routers.backend-app.service=backend-app"
-    env_file: .env
-
-networks:
-  ConexxoHubNet:
-    external: true
-  cnpjapinet:
-    external: true
-    driver: overlay
+  ports:
+        - "8000:8000"
+      env_file: .env
