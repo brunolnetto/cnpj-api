@@ -1,6 +1,7 @@
 import nltk
 from nltk.corpus import stopwords
 from collections import Counter
+from typing import List
 
 from nltk.metrics import edit_distance
 
@@ -14,8 +15,8 @@ def init_nltk():
 
 
 def find_most_possible_tokens(
-    eligible_tokens: list[str], token: str, limit_count: int
-) -> list[str]:
+    eligible_tokens: List[str], token: str, limit_count: int
+) -> List[str]:
     """
     This function finds the most possible city names from a list of eligible tokens based on a given token,
     using a combination of word overlap and Levenshtein distance.

@@ -1,5 +1,5 @@
 # Use the official Python image as the base image
-FROM python:3.11
+FROM python:3.11-slim
 
 # Set the working directory
 WORKDIR /app
@@ -16,10 +16,4 @@ COPY static .
 COPY .env .
 
 # Command to run the FastAPI application
-CMD [\
-    "uvicorn", \
-    "backend.app.main:app", \
-    "--workers", "4", \
-    "--host", "0.0.0.0", \
-    "--port", "8000" \
-]
+CMD ["uvicorn", "backend.app.main:app", "--workers", "4", "--host", "0.0.0.0", "--port", "8000"]
