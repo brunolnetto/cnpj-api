@@ -39,7 +39,7 @@ class CNPJScrapService:
     def __init__(self) -> None:
         self.base_url = BASE_URL
 
-    def get_previous_year_month(self, year_month_str):
+    def get_previous_year_month(year_month_str):
         """
         Returns the previous year-month string.
 
