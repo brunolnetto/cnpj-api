@@ -1358,14 +1358,16 @@ class CNPJRepository:
         }
 
         cnpj_scrap_service = get_cnpj_scrap_service()
-        update_at = cnpj_scrap_service.max_update_at()
+        
+        # XXX: Fix scrap according to new route structure
+        # update_at = cnpj_scrap_service.max_update_at()
 
         date_format = "%Y-%m-%d %H:%M:%S"
 
         cnpj_infos = {
             cnpj_key: {
                 "cnpj_raw": cnpj_key,
-                "ultima_atualizacao": update_at.strftime(date_format),
+                # "ultima_atualizacao": update_at.strftime(date_format),
                 **cnpj_info,
             }
             for cnpj_key, cnpj_info in cnpj_info_dict.items()
@@ -1529,7 +1531,6 @@ class CNPJRepository:
 
         result = self.session.execute(query)
         cnpj_tuples = result.fetchall()
-        print(len(cnpj_tuples))
 
         cnpjs_str_list = [
             CNPJ(cnpj_base, cnpj_order, cnpj_digits)
