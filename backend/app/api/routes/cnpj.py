@@ -18,7 +18,7 @@ router = APIRouter(tags=["CNPJ"], dependencies=[JWTDependency])
 
 @router.get("/cnaes")
 async def get_cnaes(
-    search_token: str = '',
+    search_token: str = "",
     limit: int = 10,
     offset: int = 0,
     enable_pagination: bool = True,
@@ -35,7 +35,7 @@ async def get_cnaes(
     """
     return (
         await cnpj_service.get_cnaes(limit, offset, enable_pagination)
-        if search_token != ''
+        if search_token != ""
         else await cnpj_service.get_cnae_by_token(search_token)
     )
 

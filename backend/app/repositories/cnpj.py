@@ -32,7 +32,6 @@ from backend.app.repositories.constants import (
     EST_TYPE_DICT,
 )
 
-from backend.app.database.schemas import CNAE
 
 # Types
 CNPJList = List[CNPJ]
@@ -225,16 +224,19 @@ class CNPJRepository:
         if not token:
             return []
 
-
         # Use parameterized queries to safely include the token in the query
         cnae_result = (
             self.session.execute(
-                text(f"select codigo, descricao from cnae where descricao ilike concat('%', {token}, '%')"),
+                text(
+                    f"select codigo, descricao from cnae where descricao ilike concat('%', {token}, '%')"
+                ),
             )
         ).all()
 
         # Map the results to the desired format
-        cnae_dict = [{"code": cnae.codigo, "text": cnae.descricao} for cnae in cnae_result]
+        cnae_dict = [
+            {"code": cnae.codigo, "text": cnae.descricao} for cnae in cnae_result
+        ]
 
         return cnae_dict
 
@@ -1357,12 +1359,10 @@ class CNPJRepository:
             for common_key in common_keys
         }
 
-        cnpj_scrap_service = get_cnpj_scrap_service()
-        
+        get_cnpj_scrap_service()
+
         # XXX: Fix scrap according to new route structure
         # update_at = cnpj_scrap_service.max_update_at()
-
-        date_format = "%Y-%m-%d %H:%M:%S"
 
         cnpj_infos = {
             cnpj_key: {

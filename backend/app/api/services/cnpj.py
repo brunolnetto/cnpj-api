@@ -120,7 +120,7 @@ class CNPJService:
 
         return cnaes[0]
 
-    async def get_cnae_by_token(self, search_token: str = ''):
+    async def get_cnae_by_token(self, search_token: str = ""):
         """
         Get a list of CNAEs from the database.
 
