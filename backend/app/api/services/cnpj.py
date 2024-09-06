@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Depends
 from typing import Union
 
-from backend.app.repositories.cnpj import CNPJRepository
+from backend.app.api.repositories.cnpj import CNPJRepository
 from backend.app.utils.misc import is_number, are_numbers
 from backend.app.api.utils.cnpj import are_cnpj_str_valid
 from backend.app.setup.config import settings
@@ -13,10 +13,24 @@ from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
 from backend.app.setup.logging import logger
 from backend.app.api.constants import STATES_BRAZIL
-from backend.app.api.utils.cnpj import cnpj_str_to_obj 
+from backend.app.api.models.cnpj import CNPJ
 
 # Types
 CodeType = Union[str, int]
+
+def cnpj_str_to_obj(cnpj_str: str):
+    """
+    Converts a CNPJ string to a CNPJ object.
+
+    Args:
+        cnpj_str (str): The CNPJ string to convert.
+
+    Returns:
+        CNPJ: The CNPJ object.
+    """
+
+    cnpj_list = parse_cnpj_str(cnpj_str)
+    return CNPJ(*cnpj_list)
 
 class CNPJService:
     def __init__(self, cnpj_repository: CNPJRepository):

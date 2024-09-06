@@ -20,7 +20,7 @@ from warnings import warn
 import toml
 
 DEFAULT_PASSWORD = "postgres"
-POSTGRES_DSN_SCHEME = "postgresql+psycopg"
+POSTGRES_DSN_SCHEME = "postgresql+psycopg2"
 BASE_URI_TEMPLATE = "{dsn_scheme}://{user}:{password}@{host}:{port}/{database}"
 
 def generate_db_uri(dsn_scheme, user, password, host, port, database):

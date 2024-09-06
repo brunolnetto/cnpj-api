@@ -2,6 +2,8 @@ from os import getenv, path, getcwd
 from dotenv import load_dotenv
 from typing import Dict
 
+from contextlib import contextmanager
+from urllib.parse import urlparse
 from psycopg2 import OperationalError
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import pool, text, inspect
@@ -40,16 +42,19 @@ class MultiDatabase(BaseDatabase):
         """
         self.databases = {
             db_name: Database(uri)
-            for db_name, uri in database_uris
+            for db_name, uri in database_uris.items()
         }
-            
+    
+    @contextmanager   
     def get_session(self, db_name):
         """
         Get a session for a specific database.
         """
         if db_name not in self.databases:
             raise ValueError(f"No such database: {db_name}")
-        yield self.databases[db_name].get_session()
+        
+        with self.databases[db_name].get_session() as session:
+            yield session
 
     def create_database(self, db_name):
         for name, database in self.databases.items():
@@ -96,7 +101,16 @@ class Database(BaseDatabase):
         self.session_maker = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
         )
+    
+    def mask_password(self, uri):
+        parsed_uri = urlparse(uri)
+        userinfo = parsed_uri.username
+        password = parsed_uri.password
+        masked_password = '*' * len(password) if password else ''
+        masked_uri = parsed_uri._replace(netloc=f"{userinfo}:{masked_password}@{parsed_uri.hostname}")
+        return masked_uri.geturl()
 
+    @contextmanager
     def get_session(self):
         yield self.session_maker()
 
@@ -118,7 +132,8 @@ class Database(BaseDatabase):
                 # Test the connection
                 conn.execute(query)
 
-                logger.info("Connection to the database established!")
+                masked_uri = self.mask_password(self.uri)
+                logger.info(f"Connection to the database {masked_uri} established!")
 
         except OperationalError as e:
             logger.error(f"Error connecting to the database: {e}")
@@ -190,7 +205,9 @@ def init_database():
     multi_database = MultiDatabase(settings.postgres_uris_dict)
     multi_database.init()
 
+init_database()
 
+@contextmanager
 def get_session(db_name: str):
     """
     Define a dependency to create a database session asynchronously.

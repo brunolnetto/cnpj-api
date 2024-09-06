@@ -5,13 +5,12 @@ from sqlalchemy.future import select
 from typing import Dict, Any, List, Annotated, Optional
 from fastapi import Depends
 
-
 from uuid import UUID
 
-from backend.app.database.models.logs import TaskLog, RequestLog
+from backend.app.database.models.logs import RequestLog
 from backend.app.api.models.logs import RequestLogCreate
 from backend.app.database.base import get_session
-from backend.app.repositories.base import BaseRepository
+from backend.app.api.repositories.base import BaseRepository
 
 
 class RequestLogRepository(BaseRepository):
