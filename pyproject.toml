@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10.12"
 bs4 = "^0.0.2"
-fastapi = "0.112.2"
+fastapi = "0.114.0"
 fastapi-limiter = "0.1.6"
 lxml = "^5.2.2"
 python-jose = "3.3.0"
