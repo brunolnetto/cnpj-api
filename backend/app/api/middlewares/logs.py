@@ -4,8 +4,8 @@ from starlette.responses import Response, StreamingResponse
 from time import time, strftime, localtime
 from io import BytesIO
 
-from backend.app.schemas.logs import RequestLogCreate
-from backend.app.repositories.logs import RequestLogRepository
+from backend.app.api.models.logs import RequestLogCreate
+from backend.app.api.repositories.logs import RequestLogRepository
 from backend.app.database.base import get_session
 from backend.app.setup.config import settings
 
