@@ -1,8 +1,5 @@
 from backend.app.utils.misc import is_positive, is_non_negative
-from backend.app.api.constants import UNIT_MULTIPLIER
-
-# The maximum limit value that can be provided.
-MAX_LIMIT = 100
+from backend.app.api.constants import UNIT_MULTIPLIER, MAX_LIMIT
 
 
 def check_limit_and_offset(limit: int, offset: int) -> None:

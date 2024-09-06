@@ -5,26 +5,8 @@ from sqlalchemy.exc import (
 )
 
 from backend.app.database.base import (
-    get_db_uri,
-    Database,
+    MultiDatabase, Database,
 )
-
-
-def test_get_db_uri_with_environment_vars():
-    """Tests get_db_uri function with mocked environment variables."""
-
-    patched_credentials = {
-        "POSTGRES_HOST": "my_host",
-        "POSTGRES_PORT": "1234",
-        "POSTGRES_USER": "my_user",
-        "POSTGRES_PASSWORD": "my_password",
-        "POSTGRES_DBNAME": "my_database",
-    }
-
-    with patch.dict("os.environ", patched_credentials):
-        uri = get_db_uri()
-        assert uri == "postgresql://my_user:my_password@my_host:1234/my_database"
-
 
 @pytest.fixture
 def mock_create_engine(mocker):
@@ -55,3 +37,4 @@ def test_test_connection_error(mocker):
     mocker.patch.object(db.engine, "connect", side_effect=error)
     with pytest.raises(Exception):
         db.test_connection()
+

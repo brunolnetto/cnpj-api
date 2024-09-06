@@ -7,12 +7,16 @@ from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
+from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware
 from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 from backend.app.api.routes.router_bundler import api_router
 from backend.app.database.base import init_database
 from backend.app.api.utils.ml import init_nltk
-
+from backend.app.api.exceptions import (
+    not_found_handler, 
+    general_exception_handler,
+)
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     tag = "" if not route.tags else route.tags[0]
@@ -45,7 +49,7 @@ def create_app():
     return app_
 
 
-def setup_app(app_):
+def setup_app(app_: FastAPI):
     """
     Setup the application with the necessary configurations.
 
@@ -56,37 +60,16 @@ def setup_app(app_):
         FastAPI: FastAPI application instance with the necessary configurations
     """
 
-    # Add routers here
+    #############################################################################
+    # Routers 
+    #############################################################################
     app_.include_router(api_router, prefix=settings.API_V1_STR)
 
-    # Add static files
-    obj = StaticFiles(directory="static")
-    app_.mount("/static", obj, name="static")
-
-    @app_.get("/favicon.ico")
-    async def get_favicon():
-        return FileResponse("static/favicon.ico")
-
-    @app_.exception_handler(status.HTTP_404_NOT_FOUND)
-    async def not_found_handler(request: Request, exc: HTTPException):
-        warning_msg = "The requested resource could not be found."
-        endpoints = f"{settings.API_V1_STR}/docs or {settings.API_V1_STR}/redoc"
-        suggestion_msg = f"Refer to the API documentation on endpoints {endpoints} for available endpoints."
-        return JSONResponse(
-            f"{warning_msg} {suggestion_msg}",
-            status_code=status.HTTP_404_NOT_FOUND,
-        )
-
-    @app_.exception_handler(Exception)  # Catch all exceptions
-    async def general_exception_handler(request: Request, exc: Exception):
-        """Handles all uncaught exceptions."""
-        # Log the exception details
-        logger.error(f"Unhandled exception: {exc}")
-
-        # Return a generic error response to the client
-        code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        return JSONResponse(f"An unexpected error occurred: {exc}.", status_code=code)
-
+    ############################################################################# 
+    # Middleware 
+    ##############################################################################
+    app.add_middleware(AsyncRequestLoggingMiddleware)
+    
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
         urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]
@@ -98,6 +81,22 @@ def setup_app(app_):
             allow_methods=["*"],
             allow_headers=["*"],
         )
+    
+    # Add static files
+    obj = StaticFiles(directory="static")
+    app_.mount("/static", obj, name="static")
+    
+    # Add favicon
+    @app_.get("/favicon.ico")
+    async def get_favicon():
+        return FileResponse("static/favicon.ico")
+
+    ############################################################################## 
+    # Exception 
+    ##############################################################################
+    # Add exception handlers
+    app_.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
+    app_.add_exception_handler(Exception, general_exception_handler)
 
 
 def init_app():

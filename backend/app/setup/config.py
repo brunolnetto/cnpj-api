@@ -3,11 +3,15 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 from pydantic import (
+    Field,
     AnyUrl,
     BeforeValidator,
     computed_field,
     model_validator,
+    field_validator,
+    ValidationInfo,
 )
+from typing import Optional
 
 from typing import Literal, List, Any, Union
 from typing_extensions import Self, Annotated
@@ -17,9 +21,33 @@ import toml
 
 DEFAULT_PASSWORD = "postgres"
 POSTGRES_DSN_SCHEME = "postgresql+psycopg"
+BASE_URI_TEMPLATE = "{dsn_scheme}://{user}:{password}@{host}:{port}/{database}"
+
+def generate_db_uri(dsn_scheme, user, password, host, port, database):
+    """
+    Generate a database URI using a template.
+    
+    Args:
+        user (str): The database user.
+        password (str): The database password.
+        host (str): The database host.
+        port (int): The database port.
+        database (str): The database name.
+
+    Returns:
+        str: The generated database URI.
+    """
+    return BASE_URI_TEMPLATE.format(
+        dsn_scheme=dsn_scheme,
+        user=user,
+        password=password,
+        host=host,
+        port=port,
+        database=database
+    )
 
 
-def parse_cors(v: Any) -> Union[List[str], str]:
+def parse_comma_separated(v: Any) -> Union[List[str], str]:
     if isinstance(v, str) and not v.startswith("["):
         return [i.strip() for i in v.split(",")]
     elif isinstance(v, (list, str)):
@@ -50,7 +78,7 @@ class Settings(BaseSettings):
 
     # CORS
     BACKEND_CORS_ORIGINS: Annotated[
-        Union[List[AnyUrl], str], BeforeValidator(parse_cors)
+        Union[List[AnyUrl], str], BeforeValidator(parse_comma_separated)
     ] = []
 
     # 1 day
@@ -70,7 +98,20 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    POSTGRES_DBNAME: str = ""
+    
+    POSTGRES_DBNAME_RFB: str = ""
+    POSTGRES_DBNAME_AUDIT: str = ""
+    
+    DEFAULT_RATE_LIMIT: str
+    DEFAULT_BURST_RATE_LIMIT: str
+    DEFAULT_RATE_LIMITS: List[str] = Field(default_factory=list)
+
+    @field_validator("DEFAULT_RATE_LIMITS", mode="before")
+    @classmethod
+    def default_rate_limits(cls, v: Optional[str], values: ValidationInfo) -> List[str]:
+        rate_limit = values.data.get("DEFAULT_RATE_LIMIT")
+        burst_rate_limit = values.data.get("DEFAULT_BURST_RATE_LIMIT")
+        return [rate_limit, burst_rate_limit]
 
     def _check_default_secret(self, var_name: str, value: Union[str, None]) -> None:
         if value == DEFAULT_PASSWORD:
@@ -82,6 +123,23 @@ class Settings(BaseSettings):
                 warn(message, stacklevel=1)
             else:
                 raise ValueError(message)
+
+    @computed_field
+    @property
+    def postgres_uris_dict(self) -> str:
+        return {
+            db_name: generate_db_uri(
+                POSTGRES_DSN_SCHEME, 
+                self.POSTGRES_USER, 
+                self.POSTGRES_PASSWORD, 
+                self.POSTGRES_HOST, 
+                self.POSTGRES_PORT, 
+                db_name
+            ) for db_name in [
+                self.POSTGRES_DBNAME_RFB,
+                self.POSTGRES_DBNAME_AUDIT
+            ]
+        }
 
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
