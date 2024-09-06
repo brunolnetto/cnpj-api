@@ -3,8 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 
 from backend.app.database.base import get_session
-from backend.app.repositories.cnpj import CNPJRepository
-from backend.app.api.services import CNPJService
+from backend.app.api.repositories.cnpj import CNPJRepository
 from backend.app.setup.config import settings
 
 CNPJSessionDependency=Annotated[
@@ -25,4 +24,4 @@ async def get_cnpj_repository(session: CNPJSessionDependency):
     return CNPJRepository(session)
 
 
-CNPJRepositoryDependency = Annotated[CNPJService, Depends(get_cnpj_repository)]
+CNPJRepositoryDependency = Depends(get_cnpj_repository)

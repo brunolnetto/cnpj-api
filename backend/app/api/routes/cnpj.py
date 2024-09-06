@@ -1,10 +1,8 @@
 from fastapi import APIRouter
 from typing import Union
 
-from backend.app.api.services.cnpj import (
-    CNPJService,
-    CNPJServiceDependency,
-)
+from backend.app.api.services.cnpj import CNPJServiceDependency
+from backend.app.api.services.cnpj import CNPJService
 
 from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel

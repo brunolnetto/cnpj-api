@@ -68,7 +68,7 @@ def setup_app(app_: FastAPI):
     ############################################################################# 
     # Middleware 
     ##############################################################################
-    app.add_middleware(AsyncRequestLoggingMiddleware)
+    app_.add_middleware(AsyncRequestLoggingMiddleware)
     
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
@@ -94,8 +94,8 @@ def setup_app(app_: FastAPI):
     ############################################################################## 
     # Exception 
     ##############################################################################
-    # Add exception handlers
-    app_.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
+    # Register the exception handlers with the app
+    app_.add_exception_handler(HTTPException, not_found_handler)
     app_.add_exception_handler(Exception, general_exception_handler)
 
 
