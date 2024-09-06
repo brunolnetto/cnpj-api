@@ -30,54 +30,6 @@ class BaseDatabase:
     def print_tables(self):
         raise NotImplementedError()
 
-class MultiDatabase(BaseDatabase):
-    """
-    This class represents a multi-database connection and session management object.
-    It contains methods to handle multiple databases.
-    """
-
-    def __init__(self, database_uris: Dict[str, str]):
-        """
-        Initialize with a dictionary of database URIs.
-        """
-        self.databases = {
-            db_name: Database(uri)
-            for db_name, uri in database_uris.items()
-        }
-    
-    @contextmanager   
-    def get_session(self, db_name):
-        """
-        Get a session for a specific database.
-        """
-        if db_name not in self.databases:
-            raise ValueError(f"No such database: {db_name}")
-        
-        with self.databases[db_name].get_session() as session:
-            yield session
-
-    def create_database(self, db_name):
-        for name, database in self.databases.items():
-            database.create_database()
-
-    def test_connection(self, db_name):
-        for name, database in self.databases.items():
-            database.test_connection()
-
-    def create_tables(self):
-        for name, database in self.databases.items():
-            database.create_tables()
-
-    def print_tables(self, db_name):
-        """
-        Print the available tables in a specific database.
-        """
-        for name, database in self.databases.items():
-            database.print_tables()
-            
-    def init(self):
-        for name, database in self.databases.items():
-            database.init()
 
 class Database(BaseDatabase):
     """
@@ -196,6 +148,56 @@ class Database(BaseDatabase):
             self.print_tables()
         except Exception as e:
             logger.error(f"Error print available tables: {e}")
+
+class MultiDatabase(BaseDatabase):
+    """
+    This class represents a multi-database connection and session management object.
+    It contains methods to handle multiple databases.
+    """
+
+    def __init__(self, database_uris: Dict[str, str]):
+        """
+        Initialize with a dictionary of database URIs.
+        """
+        self.databases = {
+            db_name: Database(uri)
+            for db_name, uri in database_uris.items()
+        }
+    
+    @contextmanager   
+    def get_session(self, db_name):
+        """
+        Get a session for a specific database.
+        """
+        if db_name not in self.databases:
+            raise ValueError(f"No such database: {db_name}")
+        
+        with self.databases[db_name].get_session() as session:
+            yield session
+
+    def create_database(self, db_name):
+        for database in self.databases.values():
+            database.create_database()
+
+    def test_connection(self, db_name):
+        for database in self.databases.values():
+            database.test_connection()
+
+    def create_tables(self):
+        for database in self.databases.values():
+            database.create_tables()
+
+    def print_tables(self, db_name):
+        """
+        Print the available tables in a specific database.
+        """
+        for database in self.databases.values():
+            database.print_tables()
+            
+    def init(self):
+        for database in self.databases.values():
+            database.init()
+
 
 # Load environment variables from the .env file
 multi_database = None
