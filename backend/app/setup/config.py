@@ -2,6 +2,7 @@ from pydantic_settings import (
     BaseSettings,
     SettingsConfigDict,
 )
+from datetime import timedelta
 from pydantic import (
     Field,
     AnyUrl,
@@ -11,7 +12,9 @@ from pydantic import (
     field_validator,
     ValidationInfo,
 )
-from typing import Optional
+import os
+
+from typing import Optional, Dict
 
 from typing import Literal, List, Any, Union
 from typing_extensions import Self, Annotated
@@ -20,7 +23,7 @@ from warnings import warn
 import toml
 
 DEFAULT_PASSWORD = "postgres"
-POSTGRES_DSN_SCHEME = "postgresql+psycopg"
+POSTGRES_DSN_SCHEME = "postgresql+psycopg2"
 BASE_URI_TEMPLATE = "{dsn_scheme}://{user}:{password}@{host}:{port}/{database}"
 
 def generate_db_uri(dsn_scheme, user, password, host, port, database):
@@ -101,10 +104,36 @@ class Settings(BaseSettings):
     
     POSTGRES_DBNAME_RFB: str = ""
     POSTGRES_DBNAME_AUDIT: str = ""
-    
+
     DEFAULT_RATE_LIMIT: str
     DEFAULT_BURST_RATE_LIMIT: str
     DEFAULT_RATE_LIMITS: List[str] = Field(default_factory=list)
+
+    # Define cron parameters for request logs cleanup
+    REQUEST_CLEANUP_CRON_KWARGS: Dict[str, str] = {
+        "minute": "0",
+        "hour": "0",  # Runs at midnight
+        "day": "*",  # Every day
+        "month": "*",  # Every month
+        "day_of_week": "*",  # Every day of the week
+    }
+    REQUEST_CLEANUP_MAX_ROWS: int = 10*10**6
+
+    # Define the age of request logs to be cleaned up
+    REQUEST_CLEANUP_AGE: Dict[str, Any] = {"days": 30}
+
+    # Define cron parameters for task logs cleanup
+    TASK_CLEANUP_CRON_KWARGS: Dict[str, str] = {
+        "minute": "0",
+        "hour": "0",  # Runs at midnight
+        "day": "*",  # Every first day of the month
+        "month": "*",  # Every month
+        "day_of_week": "*",  # Every day of the week
+    }
+
+    # Define the age of task logs to be cleaned up
+    TASK_CLEANUP_AGE: timedelta = timedelta(days=30)
+    REQUEST_CLEANUP_MAX_ROWS: int = 10**6
 
     @field_validator("DEFAULT_RATE_LIMITS", mode="before")
     @classmethod

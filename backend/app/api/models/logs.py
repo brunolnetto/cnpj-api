@@ -26,3 +26,14 @@ class RequestLogBase(BaseModel):
 
 class RequestLogCreate(RequestLogBase):
     pass
+
+class TaskLogCreate(BaseModel):
+    talo_name: str
+    talo_status: str
+    talo_type: str
+    talo_details: Dict[str, Optional[str]] = Field(default_factory=dict)
+    talo_start_time: datetime
+    talo_end_time: Optional[datetime] = None
+    talo_success: bool = False
+    talo_error_message: Optional[str] = None
+    talo_error_trace: Optional[str] = None

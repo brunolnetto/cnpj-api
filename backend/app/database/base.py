@@ -1,6 +1,7 @@
 from os import getenv, path, getcwd
 from dotenv import load_dotenv
 from typing import Dict
+from contextlib import contextmanager
 
 from psycopg2 import OperationalError
 from sqlalchemy_utils import database_exists, create_database
@@ -8,6 +9,7 @@ from sqlalchemy import pool, text, inspect
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.engine.url import make_url
 
 from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
@@ -24,7 +26,7 @@ class BaseDatabase:
 
     def create_tables(self):
         raise NotImplementedError()
-    
+
     def print_tables(self):
         raise NotImplementedError()
 
@@ -40,16 +42,16 @@ class MultiDatabase(BaseDatabase):
         """
         self.databases = {
             db_name: Database(uri)
-            for db_name, uri in database_uris
+            for db_name, uri in database_uris.items()
         }
-            
+    
     def get_session(self, db_name):
         """
         Get a session for a specific database.
         """
         if db_name not in self.databases:
             raise ValueError(f"No such database: {db_name}")
-        yield self.databases[db_name].get_session()
+        return self.databases[db_name].get_session()
 
     def create_database(self, db_name):
         for name, database in self.databases.items():
@@ -73,6 +75,10 @@ class MultiDatabase(BaseDatabase):
     def init(self):
         for name, database in self.databases.items():
             database.init()
+
+    def disconnect(self):
+        for name, database in self.databases.items():
+            database.disconnect()
 
 class Database(BaseDatabase):
     """
@@ -98,19 +104,34 @@ class Database(BaseDatabase):
         )
 
     def get_session(self):
-        yield self.session_maker()
+        return self.session_maker()
+
+    def mask_sensitive_data(self) -> str:
+        # Parse the URI using SQLAlchemy's make_url
+        parsed_uri = make_url(self.uri)
+
+        # Mask the password if it's present
+        if parsed_uri.password:
+            parsed_uri = parsed_uri.set(password="******")
+
+        # Return the sanitized URI as a string
+        return str(parsed_uri)
 
     def create_database(self):
+        masked_uri=self.mask_sensitive_data()
         # Create the database if it does not exist
         try:
             if not database_exists(self.uri):
                 # Create the database engine and session maker
                 create_database(self.uri)
 
+            logger.info(f"Database {masked_uri} created!")
+
         except OperationalError as e:
-            logger.error(f"Error creating to database: {e}")
+            logger.error(f"Error creating to database {masked_uri}: {e}")
 
     def test_connection(self):
+        masked_uri=self.mask_sensitive_data()
         try:
             with self.engine.connect() as conn:
                 query = text("SELECT 1")
@@ -118,10 +139,10 @@ class Database(BaseDatabase):
                 # Test the connection
                 conn.execute(query)
 
-                logger.info("Connection to the database established!")
+                logger.info(f"Connection to the database {masked_uri} established!")
 
         except OperationalError as e:
-            logger.error(f"Error connecting to the database: {e}")
+            logger.error(f"Error connecting to the database {masked_uri}: {e}")
 
     def create_tables(self):
         """
@@ -132,12 +153,15 @@ class Database(BaseDatabase):
             None: If there was an error connecting to the database.
 
         """
+        masked_uri=self.mask_sensitive_data()
         try:
             # Create all tables defined using the Base class (if not already created)
             self.base.metadata.create_all(self.engine)
 
+            logger.info(f"Tables for database {masked_uri} created!")
+
         except Exception as e:
-            logger.error(f"Error creating tables in the database: {str(e)}")
+            logger.error(f"Error creating tables in the database {masked_uri}: {str(e)}")
 
     def print_tables(self):
         """
@@ -182,15 +206,40 @@ class Database(BaseDatabase):
         except Exception as e:
             logger.error(f"Error print available tables: {e}")
 
+    def disconnect(self):
+        """
+        Clean up and close the database connection and session maker.
+        """
+        masked_uri=self.mask_sensitive_data(self.uri)
+        try:
+            # Close all connections in the pool
+            self.engine.dispose()
+            print(f"Database {masked_uri} connections closed.")
+        except Exception as e:
+            print(f"Error closing database connections: {str(e)}")
+
+    def __repr__(self):
+        masked_uri=self.mask_sensitive_data(self.uri)
+        return f"<Database(uri={masked_uri})>"
+
 # Load environment variables from the .env file
 multi_database = None
 
-def init_database():
+def create_database():
     global multi_database
     multi_database = MultiDatabase(settings.postgres_uris_dict)
+
+create_database()
+
+def init_database():
+    global multi_database
+    if not multi_database:
+        create_database()
+
     multi_database.init()
 
 
+@contextmanager
 def get_session(db_name: str):
     """
     Define a dependency to create a database session asynchronously.
@@ -203,8 +252,8 @@ def get_session(db_name: str):
     if multi_database is None:
         init_database()
 
-    with multi_database.get_session(db_name) as session:
-        try:
-            yield session
-        finally:
-            session.close()
+    session=multi_database.get_session(db_name)
+    try:
+        yield session
+    finally:
+        session.close()

@@ -26,7 +26,7 @@ from backend.app.utils.misc import (
 from backend.app.api.utils.ml import find_most_possible_tokens
 from backend.app.utils.dataframe import dataframe_to_nested_dict
 from backend.app.api.utils.cnpj import format_cnpj
-from backend.app.repositories.constants import (
+from backend.app.api.repositories.constants import (
     SIZE_DICT,
     SITUATION_DICT,
     EST_TYPE_DICT,

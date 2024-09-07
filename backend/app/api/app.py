@@ -7,16 +7,15 @@ from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware
 from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
+from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware
 from backend.app.api.routes.router_bundler import api_router
-from backend.app.database.base import init_database
+from backend.app.api.exceptions import not_found_handler, general_exception_handler
+from backend.app.database.base import init_database, multi_database
 from backend.app.api.utils.ml import init_nltk
-from backend.app.api.exceptions import (
-    not_found_handler, 
-    general_exception_handler,
-)
+from backend.app.scheduler.bundler import task_orchestrator
+
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     tag = "" if not route.tags else route.tags[0]
@@ -29,8 +28,13 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_database()
+    task_orchestrator.start()
     init_nltk()
+
     yield
+
+    task_orchestrator.shutdown()
+    multi_database.disconnect()
 
 
 def create_app():
@@ -68,7 +72,7 @@ def setup_app(app_: FastAPI):
     ############################################################################# 
     # Middleware 
     ##############################################################################
-    app.add_middleware(AsyncRequestLoggingMiddleware)
+    app_.add_middleware(AsyncRequestLoggingMiddleware)
     
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
