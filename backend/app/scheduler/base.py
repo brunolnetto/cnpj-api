@@ -15,12 +15,13 @@ import traceback
 import asyncio
 import inspect
 
+from backend.app.database.base import multi_database
 from backend.app.database.base import get_session, init_database, Database
+from backend.app.setup.logging import logger
 from backend.app.database.models.logs import TaskLog
-from backend.app.schemas import TaskConfig
-from backend.app.repositories.tasks import TaskRepository
-from backend.app.schemas import TaskCreate
-
+from backend.app.api.models.tasks import TaskConfig, TaskCreate
+from backend.app.api.repositories.tasks import TaskRepository
+from backend.app.setup.config import settings
 
 # Custom exception for invalid scheduling parameters
 class InvalidScheduleParameter(Exception):
@@ -113,8 +114,9 @@ def setup_scheduler(
 
 
 # Define a function to create the appropriate scheduler
-def create_scheduler(database: Database, schedule_type):
-    jobstores = {"default": SQLAlchemyJobStore(engine=database.engine)}
+audit_database=multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
+def create_scheduler(schedule_type):
+    jobstores = {"default": SQLAlchemyJobStore(engine=audit_database.engine)}
 
     executors = {
         "default": ThreadPoolExecutor(max_workers=20),
@@ -145,7 +147,7 @@ class ScheduledTask:
             *args: Positional arguments to pass to the task_callable.
             **kwargs: Keyword  arguments to pass to the task_callable.
         """
-        with get_session() as session:
+        with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
             task_log = TaskLog(
                 talo_task_id=self.task_config.task_id,
                 talo_name=self.task_config.task_name,
@@ -195,10 +197,9 @@ class ScheduledTask:
 
 class TaskOrchestrator:
     def __init__(self):
-        database = init_database()
         self.schedulers = {
-            "background": create_scheduler(database, "background"),
-            "asyncio": create_scheduler(database, "asyncio"),
+            "background": create_scheduler("background"),
+            "asyncio": create_scheduler("asyncio"),
         }
 
     def start(self):
@@ -263,5 +264,8 @@ class TaskRegister:
                 task_details=config.task_details,
             )
 
-            # Register the task using the repository's create method
-            self.task_repository.create(task_data.model_dump())
+            try:
+                # Register the task using the repository's create method
+                self.task_repository.create(task_data.model_dump())
+            except Exception as e:
+                logger.error(f"Error trying to register TaskConfig {task_data.task_name}: {e}")

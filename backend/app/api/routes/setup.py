@@ -1,16 +1,18 @@
 # Description: This file contains the setup routes for the FastAPI application.
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 import toml
 
 from backend.app.setup.config import settings
 from backend.app.api.dependencies.auth import JWTDependency
-
+from backend.app.rate_limiter import limiter
+from backend.app.setup.config import settings
 
 router = APIRouter(tags=["Setup"], dependencies=[JWTDependency])
 
 
 @router.get("/health")
-async def health_check():
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
+async def health_check(request: Request):
     return {
         "name": settings.PROJECT_NAME,
         "version": settings.VERSION,
@@ -20,7 +22,8 @@ async def health_check():
 
 
 @router.get("/info")
-async def info():
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
+async def info(request: Request):
     with open("pyproject.toml", "r", encoding="latin-1") as f:
         config = toml.load(f)
 
