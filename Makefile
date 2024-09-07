@@ -1,4 +1,4 @@
-.PHONY: build run stop ps host
+.PHONY: build run stop ps host logs
 
 OMIT_PATHS := "*/__init__.py,backend/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py,backend/app/api/services/scrapper.py"
 
@@ -85,3 +85,6 @@ up: ## Start the application. Usage: make up
 
 down: ## Stop the application. Usage: make down
 	docker compose down
+
+logs: ## Logs the container. Usage: make logs
+	docker logs -f cnpj_app
