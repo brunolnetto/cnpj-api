@@ -1,9 +1,11 @@
 from urllib import request
-from bs4 import BeautifulSoup
-from datetime import datetime
-import pytz
-import re
 from functools import reduce
+from datetime import datetime
+import re
+
+from bs4 import BeautifulSoup
+import pytz
+
 from fastapi import Depends
 
 from backend.app.setup.logging import logger

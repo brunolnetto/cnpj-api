@@ -1,6 +1,7 @@
+from typing import Annotated
+
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Annotated
 
 from backend.app.database.base import get_session
 from backend.app.api.repositories.cnpj import CNPJRepository

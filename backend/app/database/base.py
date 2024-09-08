@@ -54,11 +54,11 @@ class MultiDatabase(BaseDatabase):
             raise ValueError(f"No such database: {db_name}")
         return self.databases[db_name].get_session()
 
-    def create_database(self, db_name):
+    def create_database(self):
         for name, database in self.databases.items():
             database.create_database()
 
-    def test_connection(self, db_name):
+    def test_connection(self):
         for name, database in self.databases.items():
             database.test_connection()
 
@@ -66,7 +66,7 @@ class MultiDatabase(BaseDatabase):
         for name, database in self.databases.items():
             database.create_tables()
 
-    def print_tables(self, db_name):
+    def print_tables(self):
         """
         Print the available tables in a specific database.
         """
