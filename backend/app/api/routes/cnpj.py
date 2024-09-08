@@ -1,10 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from typing import Union
 
 from backend.app.api.services.cnpj import (
     CNPJService,
     CNPJServiceDependency,
 )
+from backend.app.rate_limiter import limiter
+from backend.app.setup.config import settings
 
 from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
@@ -15,8 +17,11 @@ CodeType = Union[str, int]
 
 router = APIRouter(tags=["CNPJ"], dependencies=[JWTDependency])
 
+
 @router.get("/cnaes")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnaes(
+    request: Request,
     search_token: str = "",
     limit: int = 10,
     offset: int = 0,
@@ -40,7 +45,9 @@ async def get_cnaes(
 
 
 @router.post("/cnaes")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnae_objects(
+    request: Request,
     search_token: str,
     cnae_code_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -58,7 +65,9 @@ async def get_cnae_objects(
 
 
 @router.post("/cnaes/cnpjs")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpjs_by_cnaes(
+    request: Request,
     cnae_batch: BatchModel,
     limit: int = 10,
     offset: int = 0,
@@ -79,8 +88,11 @@ async def get_cnpjs_by_cnaes(
 
 
 @router.get("/cnae/{cnae_code}")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnae_description(
-    cnae_code: CodeType, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request,
+    cnae_code: CodeType,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get the description of a CNAE code.
@@ -95,7 +107,9 @@ async def get_cnae_description(
 
 
 @router.get("/cnae/{cnae_code}/cnpjs")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpjs_with_cnae(
+    request: Request,
     cnae_code: CodeType,
     limit: int = 10,
     offset: int = 0,
@@ -116,7 +130,9 @@ async def get_cnpjs_with_cnae(
 
 
 @router.post("/states/cnpjs")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpjs_by_state(
+    request: Request,
     state_batch: BatchModel,
     limit: int = 10,
     offset: int = 0,
@@ -137,7 +153,9 @@ async def get_cnpjs_by_state(
 
 
 @router.get("/company/sizes")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_company_sizes(
+    request: Request,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -150,7 +168,9 @@ async def get_company_sizes(
 
 
 @router.get("/company/situation")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_situations(
+    request: Request,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -163,7 +183,9 @@ async def get_situations(
 
 
 @router.get("/establishment/types")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_establishment_sizes(
+    request: Request,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -176,8 +198,11 @@ async def get_establishment_sizes(
 
 
 @router.get("/city/{city_code}")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_city(
-    city_code: CodeType, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request,
+    city_code: CodeType,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get the name of a city code.
@@ -192,7 +217,9 @@ async def get_city(
 
 
 @router.get("/cities")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cities(
+    request: Request,
     limit: int = 10,
     offset: int = 0,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -210,7 +237,9 @@ async def get_cities(
 
 
 @router.post("/cities")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cities_list(
+    request: Request,
     cities_code_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -218,7 +247,9 @@ async def get_cities_list(
 
 
 @router.post("/cities/infer")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def infer_city(
+    request: Request,
     city_name_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -226,7 +257,9 @@ async def infer_city(
 
 
 @router.get("/legal-nature/{legal_nature_code}")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_legal_nature(
+    request: Request,
     legal_nature_code: CodeType,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -243,7 +276,9 @@ async def get_legal_nature(
 
 
 @router.get("/legal-natures")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_legal_natures(
+    request: Request,
     limit: int = 10,
     offset: int = 0,
     enable_pagination: bool = True,
@@ -262,7 +297,9 @@ async def get_legal_natures(
 
 
 @router.post("/legal-natures")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_legal_natures_list(
+    request: Request,
     legal_natures_code_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -279,7 +316,9 @@ async def get_legal_natures_list(
 
 
 @router.get("/registration-status/{registration_status_code}")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_registration_status(
+    request: Request,
     registration_status_code: CodeType,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -296,7 +335,9 @@ async def get_registration_status(
 
 
 @router.get("/registration-statuses")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_registration_statuses(
+    request: Request,
     limit: int = 10,
     offset: int = 0,
     enable_pagination: bool = True,
@@ -317,7 +358,9 @@ async def get_registration_statuses(
 
 
 @router.post("/registration-statuses")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_registration_statuses_list(
+    request: Request,
     registration_code_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -335,7 +378,10 @@ async def get_registration_statuses_list(
 
 
 @router.get("/cnpj/{cnpj}")
-async def get_cnpj_info(cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency):
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
+async def get_cnpj_info(
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
+):
     """
     Get information about a CNPJ number.
 
@@ -350,8 +396,9 @@ async def get_cnpj_info(cnpj: str, cnpj_service: CNPJService = CNPJServiceDepend
 
 
 @router.get("/cnpj/{cnpj}/activities")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_activities(
-    cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the activities of a CNPJ number.
@@ -366,8 +413,9 @@ async def get_cnpj_activities(
 
 
 @router.get("/cnpj/{cnpj}/partners")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_partners(
-    cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the partners of a CNPJ number.
@@ -382,8 +430,9 @@ async def get_cnpj_partners(
 
 
 @router.get("/cnpj/{cnpj}/company")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_company(
-    cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the company associated with a CNPJ number.
@@ -398,8 +447,9 @@ async def get_cnpj_company(
 
 
 @router.get("/cnpj/{cnpj}/establishment")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_establishment(
-    cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the establishment associated with a CNPJ number.
@@ -414,8 +464,9 @@ async def get_cnpj_establishment(
 
 
 @router.get("/cnpj/{cnpj}/establishments")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_establishments(
-    cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the establishments associated with a CNPJ base (First 8 digits).
@@ -431,7 +482,9 @@ async def get_cnpj_establishments(
 
 
 @router.get("/cnpjs")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpjs(
+    request: Request,
     state_abbrev: str = "",
     city_name: str = "",
     cnae_code: str = "",
@@ -456,7 +509,9 @@ async def get_cnpjs(
 
 
 @router.post("/cnpjs")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpjs_info(
+    request: Request,
     cnpj_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -473,8 +528,11 @@ async def get_cnpjs_info(
 
 
 @router.post("/cnpjs/partners")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpjs_partners(
-    cnpj_batch: CNPJBatch, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request,
+    cnpj_batch: CNPJBatch,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNPJ partners information from the database.
@@ -489,8 +547,11 @@ async def get_cnpjs_partners(
 
 
 @router.post("/cnpjs/company")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpjs_company(
-    cnpj_batch: CNPJBatch, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request,
+    cnpj_batch: CNPJBatch,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNPJ partners information from the database.
@@ -505,8 +566,11 @@ async def get_cnpjs_company(
 
 
 @router.post("/cnpjs/establishment")
+@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpjs_establishment(
-    cnpj_batch: CNPJBatch, cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request,
+    cnpj_batch: CNPJBatch,
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNPJ partners information from the database.

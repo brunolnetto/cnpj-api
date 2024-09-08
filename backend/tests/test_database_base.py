@@ -1,12 +1,12 @@
 import pytest
-from unittest.mock import patch
 from sqlalchemy.exc import (
     ArgumentError,
 )
 
 from backend.app.database.base import (
-    MultiDatabase, Database,
+    Database,
 )
+
 
 @pytest.fixture
 def mock_create_engine(mocker):
@@ -37,4 +37,3 @@ def test_test_connection_error(mocker):
     mocker.patch.object(db.engine, "connect", side_effect=error)
     with pytest.raises(Exception):
         db.test_connection()
-

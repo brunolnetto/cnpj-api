@@ -1,4 +1,4 @@
-.PHONY: build run stop ps host
+.PHONY: build run stop ps host logs
 
 OMIT_PATHS := "*/__init__.py,backend/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py,backend/app/api/services/scrapper.py"
 
@@ -64,15 +64,28 @@ test-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
 minimal-requirements: ## Generates minimal requirements. Usage: make requirements
 	python3 scripts/clean_packages.py requirements.txt requirements.txt
 
-lint: ## perform inplace lint fixes
+lint-install: ## Installs lint dependencies. Usage: make lint-install
+	apt install autopep8 black
+
+lint: ## Perform inplace lint fixes. Usage: make lint
+	@autopep8 --in-place --aggressive --aggressive $(shell git ls-files '*.py')
 	@ruff check --unsafe-fixes --fix .
 	@black $(shell git ls-files '*.py')
+
+cloc-install: ## Installs row-count tool
+	apt install cloc
+
+cloc: ## Row count of code. Usage: make cloc
+	cloc .
 
 pylint:
 	@pylint backend/
 
 report: test ## Generate coverage report. Usage: make report
 	coverage report --omit=$(OMIT_PATHS) --show-missing
+
+build: ## Build the container image. Usage: make build
+	docker compose build
 
 ps: ## List all running containers. Usage: make ps
 	docker compose ps -a
@@ -82,3 +95,6 @@ up: ## Start the application. Usage: make up
 
 down: ## Stop the application. Usage: make down
 	docker compose down
+
+logs: ## Logs the container. Usage: make logs
+	docker logs -f cnpj_app

@@ -1,13 +1,12 @@
 import logging
 import sys
-
-from datetime import datetime
-from dotenv import load_dotenv
 from os import getenv, makedirs, path
+from datetime import datetime
+
+from dotenv import load_dotenv
 from pythonjsonlogger import jsonlogger
 
 from backend.app.utils.logging import clear_folder_items
-
 
 # Use the logger
 logger = logging.getLogger(__name__)
@@ -52,6 +51,14 @@ if ENVIRONMENT == "development":
     logging.basicConfig(level=logging.INFO, handlers=[stdout_stream_handler])
 
     logging.basicConfig(level=logging.WARN, handlers=[stderr_stream_handler])
+
+worker_id = getenv("WORKER_ID", "0")
+
+# Only enable logs for worker 0
+if worker_id == "0":
+    logging.basicConfig(level=logging.INFO)
+else:
+    logging.basicConfig(level=logging.CRITICAL)
 
 # Create separate log files for errors and info
 date_str = datetime.now().strftime("%Y-%m-%d")
