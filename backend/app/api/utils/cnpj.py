@@ -1,6 +1,6 @@
 from typing import Dict, List, Union, Tuple
 
-from backend.app.utils.misc import is_number 
+from backend.app.utils.misc import is_number
 
 
 def calculate_cnpj_verification_digits(cnpj: str) -> Tuple[int, int]:
@@ -105,11 +105,11 @@ def parse_cnpj_str(cnpj: str) -> List[str]:
 def format_cnpj(cnpj_str: str) -> str:
     """
     Formats a CNPJ string.
-    
+
     Args:
         cnpj_str (str): The CNPJ string to format.
     """
-    
+
     basico, ordem, digitos_verificadores = parse_cnpj_str(cnpj_str)
 
     basico = f"{basico[:2]}.{basico[2:5]}.{basico[5:8]}"
@@ -117,5 +117,3 @@ def format_cnpj(cnpj_str: str) -> str:
     digitos_verificadores = f"{digitos_verificadores}"
 
     return f"{basico}/{ordem}-{digitos_verificadores}"
-
-

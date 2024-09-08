@@ -5,7 +5,6 @@ import toml
 from backend.app.setup.config import settings
 from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.rate_limiter import limiter
-from backend.app.setup.config import settings
 
 router = APIRouter(tags=["Setup"], dependencies=[JWTDependency])
 

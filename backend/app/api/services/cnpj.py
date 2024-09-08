@@ -14,6 +14,7 @@ from backend.app.api.models.base import BatchModel
 from backend.app.setup.logging import logger
 from backend.app.api.constants import STATES_BRAZIL
 
+
 def cnpj_str_to_obj(cnpj_str: str):
     """
     Converts a CNPJ string to a CNPJ object.
@@ -28,8 +29,10 @@ def cnpj_str_to_obj(cnpj_str: str):
     cnpj_list = parse_cnpj_str(cnpj_str)
     return CNPJ(*cnpj_list)
 
+
 # Types
 CodeType = Union[str, int]
+
 
 class CNPJService:
     def __init__(self, cnpj_repository: CNPJRepository):

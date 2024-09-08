@@ -16,7 +16,7 @@ import asyncio
 import inspect
 
 from backend.app.database.base import multi_database
-from backend.app.database.base import get_session, init_database, Database
+from backend.app.database.base import get_session
 from backend.app.setup.logging import logger
 from backend.app.database.models.logs import TaskLog
 from backend.app.api.models.tasks import TaskConfig, TaskCreate
@@ -24,6 +24,8 @@ from backend.app.api.repositories.tasks import TaskRepository
 from backend.app.setup.config import settings
 
 # Custom exception for invalid scheduling parameters
+
+
 class InvalidScheduleParameter(Exception):
     pass
 
@@ -114,7 +116,9 @@ def setup_scheduler(
 
 
 # Define a function to create the appropriate scheduler
-audit_database=multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
+audit_database = multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
+
+
 def create_scheduler(schedule_type):
     jobstores = {"default": SQLAlchemyJobStore(engine=audit_database.engine)}
 
@@ -268,4 +272,6 @@ class TaskRegister:
                 # Register the task using the repository's create method
                 self.task_repository.create(task_data.model_dump())
             except Exception as e:
-                logger.error(f"Error trying to register TaskConfig {task_data.task_name}: {e}")
+                logger.error(
+                    f"Error trying to register TaskConfig {task_data.task_name}: {e}"
+                )

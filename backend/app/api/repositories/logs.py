@@ -2,15 +2,12 @@
 from datetime import datetime, timedelta
 from sqlalchemy import delete
 from sqlalchemy.future import select
-from typing import Dict, Any, List, Annotated, Optional
-from fastapi import Depends
+from typing import Dict, Any, List, Optional
 
 from uuid import UUID
 
-from backend.app.setup.config import settings
 from backend.app.database.models.logs import TaskLog, RequestLog
 from backend.app.api.models.logs import RequestLogCreate
-from backend.app.database.base import get_session
 from backend.app.api.repositories.base import BaseRepository
 from backend.app.api.models.logs import TaskLogCreate
 
@@ -112,4 +109,3 @@ class TaskLogRepository(BaseRepository):
             delete_query = query.delete(synchronize_session="fetch")
             self.session.execute(delete_query)
             self.session.commit()
-

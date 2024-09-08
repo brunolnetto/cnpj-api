@@ -1,4 +1,3 @@
-
 import uuid
 
 from sqlalchemy import ForeignKey, Column, Integer, String, DateTime, Boolean, Text
@@ -9,7 +8,8 @@ from sqlalchemy.orm import relationship
 from backend.app.database.base import multi_database
 from backend.app.setup.config import settings
 
-logs_database=multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
+logs_database = multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
+
 
 class RequestLog(logs_database.base):
     __tablename__ = "request_logs"
@@ -34,6 +34,7 @@ class RequestLog(logs_database.base):
     def __repr__(self):
         params = f"id={self.relo_id}, method={self.relo_method}, url={self.relo_url}, status_code={self.relo_status_code}"
         return f"<RequestLog({params})>"
+
 
 class Task(logs_database.base):
     __tablename__ = "tasks"
