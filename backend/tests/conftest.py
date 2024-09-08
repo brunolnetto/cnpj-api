@@ -1,10 +1,12 @@
-import pytest
 from unittest import mock
+
+import pytest
+
+from backend.app.api.app import app
 
 
 @pytest.fixture(scope="session")
 def test_client():
-    from backend.app.api.app import app
 
     with app.test_client() as client:
         yield client

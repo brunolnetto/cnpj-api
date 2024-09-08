@@ -9,7 +9,7 @@ from backend.app.setup.logging import logger
 async def not_found_handler(request: Request, exc: HTTPException):
     warning_msg = "The requested resource could not be found."
     endpoints = f"{settings.API_V1_STR}/docs or {settings.API_V1_STR}/redoc"
-    suggestion_msg = f"Refer to the API documentation on endpoints {endpoints} for available endpoints."
+    suggestion_msg = f"Refer to the API documentation on endpoints {endpoints}."
     return JSONResponse(
         f"{warning_msg} {suggestion_msg}",
         status_code=status.HTTP_404_NOT_FOUND,

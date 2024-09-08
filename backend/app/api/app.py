@@ -1,12 +1,12 @@
 # Description: This file initializes the FastAPI application and sets up
 # configurations.
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, status, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 from slowapi.errors import RateLimitExceeded
 
 from backend.app.setup.config import settings

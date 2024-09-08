@@ -3,8 +3,9 @@ from sqlalchemy import text
 import pandas as pd
 from datetime import datetime
 
-from backend.app.utils.misc import string_to_json
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.app.utils.misc import string_to_json
 from backend.app.api.models.cnpj import CNPJ
 from backend.app.api.services.scrapper import get_cnpj_scrap_service
 from backend.app.utils.repositories import (

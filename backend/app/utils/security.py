@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
+from os import getenv
+
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
-from os import getenv
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

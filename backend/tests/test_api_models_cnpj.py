@@ -65,7 +65,7 @@ def test_cnpj_dict():
     """
     cnpj_obj = CNPJ("12345678", "9012", "34")
 
-    cnpj_dict = cnpj_obj.__dict__()
+    cnpj_dict = dict(cnpj_obj)
 
     assert cnpj_dict["basico"] == "12345678"
     assert cnpj_dict["ordem"] == "9012"
