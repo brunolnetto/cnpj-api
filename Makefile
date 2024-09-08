@@ -64,10 +64,19 @@ test-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
 minimal-requirements: ## Generates minimal requirements. Usage: make requirements
 	python3 scripts/clean_packages.py requirements.txt requirements.txt
 
-lint: ## perform inplace lint fixes. Usage: make lint
+lint-install: ## Installs lint dependencies. Usage: make lint-install
+	apt install autopep8 black
+
+lint: ## Perform inplace lint fixes. Usage: make lint
 	@autopep8 --in-place --aggressive --aggressive $(shell git ls-files '*.py')
 	@ruff check --unsafe-fixes --fix .
 	@black $(shell git ls-files '*.py')
+
+cloc-install: ## Installs row-count tool
+	apt install cloc
+
+cloc: ## Row count of code. Usage: make cloc
+	cloc .
 
 pylint:
 	@pylint backend/
