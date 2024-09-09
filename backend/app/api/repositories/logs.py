@@ -48,7 +48,7 @@ class RequestLogRepository(BaseRepository):
         self.session.commit()
 
     def delete_excess_logs(self, max_rows: int):
-        query = self.session.query(RequestLog).order_by(RequestLog.inserted_at)
+        query = self.session.query(RequestLog).order_by(RequestLog.relo_inserted_at)
         total_rows = query.count()
         if total_rows > max_rows:
             delete_query = query.delete(synchronize_session="fetch")
@@ -69,7 +69,7 @@ class TaskLogRepository(BaseRepository):
         if not task_log:
             return None
 
-        for key, value in data.dict(exclude_unset=True).items():
+        for key, value in data.model_dump(exclude_unset=True).items():
             setattr(task_log, key, value)
 
         self.session.commit()
@@ -103,7 +103,7 @@ class TaskLogRepository(BaseRepository):
         self.session.commit()
 
     def delete_excess_logs(self, max_rows: int):
-        query = self.session.query(TaskLog).order_by(TaskLog.inserted_at)
+        query = self.session.query(TaskLog).order_by(TaskLog.talo_inserted_at)
         total_rows = query.count()
         if total_rows > max_rows:
             delete_query = query.delete(synchronize_session="fetch")
