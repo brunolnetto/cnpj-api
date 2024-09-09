@@ -90,3 +90,14 @@ class TaskLog(logs_database.base):
     def __repr__(self):
         params = f"id={self.talo_id}, name={self.talo_name}, status={self.talo_status}, success={self.talo_success}"
         return f"<TaskLog({params})>"
+
+
+class AppStartLog(logs_database.base):
+    __tablename__ = "app_start_logs"
+
+    stlo_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    stlo_start_time = Column(DateTime(timezone=True), server_default=func.now())
+
+    def __repr__(self):
+        params=f"id={self.stlo_id}, time={self.stlo_start_time}"
+        return f"<AppRestartLog({params})>"
