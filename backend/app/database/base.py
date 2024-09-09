@@ -247,6 +247,7 @@ def init_database():
     multi_database.init()
 
 
+@contextmanager
 def get_session(db_name: str):
     """
     Define a dependency to create a database session asynchronously.
@@ -259,4 +260,8 @@ def get_session(db_name: str):
     if multi_database is None:
         init_database()
 
-    return multi_database.get_session(db_name)
+    session = multi_database.get_session(db_name)
+    try:
+        yield session
+    finally:
+        session.close()
