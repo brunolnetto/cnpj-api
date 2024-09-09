@@ -4,5 +4,4 @@ from backend.app.scheduler.tasks.misc import print_empty_task_config
 task_configs = [
     cleanup_request_config,
     cleanup_task_config,
-    print_empty_task_config,
 ]
