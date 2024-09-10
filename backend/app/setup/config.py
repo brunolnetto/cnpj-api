@@ -121,13 +121,13 @@ class Settings(BaseSettings):
         "month": "*",  # Every month
         "day_of_week": "*",  # Every day of the week
     }
-    
+
     IP_LOOKUP_CRON_KWARGS: Dict[str, str] = {
         "minute": "0",
-        "hour": "*/2",          # Runs every 2 hours
-        "day": "*",             # Every first day of the month
-        "month": "*",           # Every month
-        "day_of_week": "*",     # Every day of the week
+        "hour": "*/2",  # Runs every 2 hours
+        "day": "*",  # Every first day of the month
+        "month": "*",  # Every month
+        "day_of_week": "*",  # Every day of the week
     }
 
     # Define the age of request logs to be cleaned up
@@ -138,7 +138,7 @@ class Settings(BaseSettings):
 
     # Define the age of task logs to be cleaned up
     DEBUG_CLEANUP_AGE: timedelta = timedelta(days=14)
-    
+
     # Define the maximum number of rows to retain
     CLEANUP_MAX_ROWS: int = 10**6
 

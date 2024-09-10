@@ -18,7 +18,4 @@ SITUATION_DICT = {
 }
 
 # Company Type
-EST_TYPE_DICT = {
-    "1": "MATRIZ", 
-    "2": "FILIAL"
-}
+EST_TYPE_DICT = {"1": "MATRIZ", "2": "FILIAL"}

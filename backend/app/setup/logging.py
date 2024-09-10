@@ -1,7 +1,5 @@
 import logging
 import sys
-from os import getenv, makedirs, path
-from datetime import datetime
 
 from dotenv import load_dotenv
 from pythonjsonlogger import jsonlogger
@@ -17,12 +15,27 @@ load_dotenv()
 
 # Define logging format
 fields = [
-    "name", "process", "processName", "threadName", "thread", "taskName", "asctime", "created", 
-    "relativeCreated", "msecs", "pathname", "module", "filename", "funcName", "levelno", 
-    "levelname", "message",
+    "name",
+    "process",
+    "processName",
+    "threadName",
+    "thread",
+    "taskName",
+    "asctime",
+    "created",
+    "relativeCreated",
+    "msecs",
+    "pathname",
+    "module",
+    "filename",
+    "funcName",
+    "levelno",
+    "levelname",
+    "message",
 ]
 logging_format = " ".join(map(lambda field_name: f"%({field_name})s", fields))
 fmt = jsonlogger.JsonFormatter(logging_format)
+
 
 def setup_logger():
     try:
@@ -38,7 +51,7 @@ def setup_logger():
         print(f"Error setting up database logging: {e}", file=sys.stderr)
         # You might want to raise an exception or log it to a file
 
-    if settings.ENVIRONMENT == 'development':
+    if settings.ENVIRONMENT == "development":
         # Set up stdout and stderr handlers for development
         stdout_stream_handler = logging.StreamHandler(sys.stdout)
         stderr_stream_handler = logging.StreamHandler(sys.stderr)

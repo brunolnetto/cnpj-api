@@ -1,7 +1,6 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response, StreamingResponse
-from starlette.types import Message
 from time import time, strftime, localtime
 from io import BytesIO
 
@@ -16,6 +15,7 @@ async def capture_request_body(request: Request):
         # Read the body only once and store it in request.state
         request.state.body = await request.body()
     return request.state.body.decode() if request.state.body else ""
+
 
 class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):

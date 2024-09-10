@@ -1,4 +1,3 @@
-from os import rmdir, makedirs
 import pytest
 from unittest.mock import patch
 from json import JSONDecodeError

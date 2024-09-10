@@ -1,13 +1,12 @@
-from typing import Annotated
-
 from fastapi import Depends
-from sqlalchemy.orm import Session
 
 from backend.app.database.base import get_session
 from backend.app.api.repositories.cnpj import CNPJRepository
 from backend.app.setup.config import settings
 
 # Define a dependency to create a CNPJRepository instance
+
+
 async def get_cnpj_repository():
     """
     Create a CNPJRepository instance.
