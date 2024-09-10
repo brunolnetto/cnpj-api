@@ -34,7 +34,8 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         response_size = len(response_body)
 
         # Capture request body
-        body = (await request.body()).decode() if await request.body() else ""
+        body_bytes = await request.body()  # Read the body once
+        body = body_bytes.decode() if body_bytes else ""
 
         log_data = {
             "relo_method": request.method,
