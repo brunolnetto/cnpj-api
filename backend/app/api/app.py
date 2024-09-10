@@ -23,9 +23,8 @@ from backend.app.api.dependencies.logs import get_app_start_logs_repository
 from backend.app.database.base import init_database, multi_database
 from backend.app.api.utils.ml import init_nltk
 from backend.app.scheduler.bundler import task_orchestrator
-
 from backend.app.rate_limiter import limiter
-
+from backend.app.setup.logging import setup_logger
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     tag = "" if not route.tags else route.tags[0]
@@ -38,9 +37,9 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_database()
+    setup_logger()
+    log_app_start()  
     task_orchestrator.start()
-    log_app_start()
-    
     init_nltk()
 
     yield

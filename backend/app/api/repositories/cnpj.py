@@ -40,7 +40,6 @@ JSON = Dict[str, Any]
 CodeType = Union[str, int]
 CodeListType = List[CodeType]
 
-
 class CNPJRepository:
     def __init__(self, session: AsyncSession):
         self.session = session

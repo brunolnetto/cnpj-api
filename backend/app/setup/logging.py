@@ -6,93 +6,48 @@ from datetime import datetime
 from dotenv import load_dotenv
 from pythonjsonlogger import jsonlogger
 
-from backend.app.utils.logging import clear_folder_items
+from backend.app.setup.config import settings
+from backend.app.api.dependencies.logs import get_debug_logs_handler
 
-# Use the logger
+# Advanced logger
 logger = logging.getLogger(__name__)
 
-# Configure logging with a single handler
-# Set the overall logging level
+# Load environment variables
 load_dotenv()
-ENVIRONMENT = getenv("ENVIRONMENT", "development")
 
+# Define logging format
 fields = [
-    "name",
-    "process",
-    "processName",
-    "threadName",
-    "thread",
-    "taskName",
-    "asctime",
-    "created",
-    "relativeCreated",
-    "msecs",
-    "pathname",
-    "module",
-    "filename",
-    "funcName",
-    "levelno",
-    "levelname",
-    "message",
+    "name", "process", "processName", "threadName", "thread", "taskName", "asctime", "created", 
+    "relativeCreated", "msecs", "pathname", "module", "filename", "funcName", "levelno", 
+    "levelname", "message",
 ]
-
 logging_format = " ".join(map(lambda field_name: f"%({field_name})s", fields))
 fmt = jsonlogger.JsonFormatter(logging_format)
 
-if ENVIRONMENT == "development":
-    # Create a handler for stdout and stderr
-    stdout_stream_handler = logging.StreamHandler(sys.stdout)
-    stderr_stream_handler = logging.StreamHandler(sys.stderr)
+def setup_logger():
+    try:
+        # Set up database logging handler
+        db_handler = get_debug_logs_handler()
+        db_handler.setLevel(logging.INFO)
+        db_handler.setFormatter(fmt)
+        logger.addHandler(db_handler)
+        logger.info("Database logging started.")
 
-    # Set the format for the handlers
-    stdout_stream_handler.setFormatter(fmt)
-    stderr_stream_handler.setFormatter(fmt)
+    except Exception as e:
+        # Handle exceptions with setting up database logging
+        print(f"Error setting up database logging: {e}", file=sys.stderr)
+        # You might want to raise an exception or log it to a file
 
-    logging.basicConfig(level=logging.INFO, handlers=[stdout_stream_handler])
+    if settings.ENVIRONMENT == 'development':
+        # Set up stdout and stderr handlers for development
+        stdout_stream_handler = logging.StreamHandler(sys.stdout)
+        stderr_stream_handler = logging.StreamHandler(sys.stderr)
+        stdout_stream_handler.setFormatter(fmt)
+        stderr_stream_handler.setFormatter(fmt)
 
-    logging.basicConfig(level=logging.WARN, handlers=[stderr_stream_handler])
+        # Apply basic configuration with these handlers
+        logging.basicConfig(level=logging.INFO, handlers=[stdout_stream_handler])
+        logging.basicConfig(level=logging.WARN, handlers=[stderr_stream_handler])
 
-worker_id = getenv("WORKER_ID", "0")
-
-# Only enable logs for worker 0
-if worker_id == "0":
-    logging.basicConfig(level=logging.INFO)
-else:
-    logging.basicConfig(level=logging.CRITICAL)
-
-# Create separate log files for errors and info
-date_str = datetime.now().strftime("%Y-%m-%d")
-time_str = datetime.now().strftime("%H_%M")
-
-log_root_path = f"logs/{date_str}"
-
-# Clear the latest 5 files (adjust 'n' as needed)
-LOG_FILES_HORIZON = 5
-if path.exists(log_root_path):
-    clear_folder_items(log_root_path, LOG_FILES_HORIZON)
-
-base_path = f"{log_root_path}/{time_str}"
-error_file = f"{base_path}/error_log.log"
-info_file = f"{base_path}/info_log.log"
-
-error_path = path.dirname(error_file)
-info_path = path.dirname(info_file)
-
-# Create the directory structure if it doesn't exist
-makedirs(info_path, exist_ok=True)
-makedirs(error_path, exist_ok=True)
-
-log_infos = [
-    (error_file, logging.ERROR),
-    (info_file, logging.INFO),
-    (info_file, logging.WARN),
-]
-
-for log_file, log_level in log_infos:
-    log_handler = logging.FileHandler(log_file, mode="a")
-    log_handler.setFormatter(fmt)
-    log_handler.setLevel(log_level)  # Only log errors to this file
-
-    logger.addHandler(log_handler)
 
 logger.info("Logging started.")
