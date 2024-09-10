@@ -98,3 +98,5 @@ down: ## Stop the application. Usage: make down
 
 logs: ## Logs the container. Usage: make logs
 	docker logs -f cnpj_app
+
+restart: down build up ## Restart the application. Usage: make restart
