@@ -1,6 +1,7 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response, StreamingResponse
+from starlette.types import Message
 from time import time, strftime, localtime
 from io import BytesIO
 
@@ -39,15 +40,11 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         )
         response_size = len(response_body)
 
-        # Capture request body
         response = await call_next(request)
-        body: bytes | None = request.scope.get('cached_body')
-        body = body.decode() if body else ""
 
         log_data = {
             "relo_method": request.method,
             "relo_url": str(request.url),
-            "relo_body": body,
             "relo_headers": dict(request.headers),
             "relo_status_code": response.status_code,
             "relo_ip_address": request.client.host,

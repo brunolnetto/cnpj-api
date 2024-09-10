@@ -16,8 +16,10 @@ async def cleanup_request_logs(time_delta: timedelta, max_rows: int = None):
     Cleans up requests logs based on either time or table row count.
 
     Args:
-        time_delta (timedelta): The time difference from now. Logs older than this will be deleted.
-        max_rows (int, optional): The maximum number of rows to retain. If specified, logs will be deleted based on their creation time and this count.
+        time_delta (timedelta): The time difference from now. Logs older than 
+        this will be deleted.
+        max_rows (int, optional): The maximum number of rows to retain. If specified, 
+        logs will be deleted based on their creation time and this count.
     """
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         request_log_repository = RequestLogRepository(db_session)
@@ -32,8 +34,10 @@ async def lookup_and_update_ip_info_task():
     Cleans up requests logs based on either time or table row count.
 
     Args:
-        time_delta (timedelta): The time difference from now. Logs older than this will be deleted.
-        max_rows (int, optional): The maximum number of rows to retain. If specified, logs will be deleted based on their creation time and this count.
+        time_delta (timedelta): The time difference from now. Logs older than this 
+        will be deleted.
+        max_rows (int, optional): The maximum number of rows to retain. If specified, 
+        logs will be deleted based on their creation time and this count.
     """
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         request_log_repository = RequestLogRepository(db_session)
@@ -45,8 +49,10 @@ async def cleanup_task_logs(time_delta: timedelta, max_rows: int = None):
     Cleans up tasks logs based on either time or table row count.
 
     Args:
-        time_delta (timedelta): The time difference from now. Logs older than this will be deleted.
-        max_rows (int, optional): The maximum number of rows to retain. If specified, logs will be deleted based on their creation time and this count.
+        time_delta (timedelta): The time difference from now. Logs older than this 
+        will be deleted.
+        max_rows (int, optional): The maximum number of rows to retain. If specified, 
+        logs will be deleted based on their creation time and this count.
     """
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         task_log_repository = TaskLogRepository(db_session)
@@ -61,8 +67,10 @@ async def cleanup_debug_logs(time_delta: timedelta, max_rows: int = None):
     Cleans up tasks logs based on either time or table row count.
 
     Args:
-        time_delta (timedelta): The time difference from now. Logs older than this will be deleted.
-        max_rows (int, optional): The maximum number of rows to retain. If specified, logs will be deleted based on their creation time and this count.
+        time_delta (timedelta): The time difference from now. Logs older than 
+        this will be deleted.
+        max_rows (int, optional): The maximum number of rows to retain. If specified, 
+        logs will be deleted based on their creation time and this count.
     """
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         debug_log_repository = DebuggingDatabaseHandler(db_session)
@@ -75,7 +83,7 @@ async def cleanup_debug_logs(time_delta: timedelta, max_rows: int = None):
 cleanup_request_config = TaskConfig(
     task_id=uuid4(),
     schedule_type="background",
-    schedule_params=settings.CRON_KWARGS,
+    schedule_params=settings.CLEANUP_CRON_KWARGS,
     task_name=f"Cleanup request logs",
     task_type="cron",
     task_callable=cleanup_request_logs,
@@ -89,7 +97,7 @@ cleanup_request_config = TaskConfig(
 cleanup_task_config = TaskConfig(
     task_id=uuid4(),
     schedule_type="background",
-    schedule_params=settings.CRON_KWARGS,
+    schedule_params=settings.CLEANUP_CRON_KWARGS,
     task_name=f"Cleanup task logs",
     task_type="cron",
     task_callable=cleanup_task_logs,
@@ -103,7 +111,7 @@ cleanup_task_config = TaskConfig(
 cleanup_debug_config = TaskConfig(
     task_id=uuid4(),
     schedule_type="background",
-    schedule_params=settings.CRON_KWARGS,
+    schedule_params=settings.CLEANUP_CRON_KWARGS,
     task_name=f"Cleanup debug logs",
     task_type="cron",
     task_callable=cleanup_debug_logs,
@@ -117,7 +125,7 @@ cleanup_debug_config = TaskConfig(
 lookup_and_update_ip_info_config = TaskConfig(
     task_id=uuid4(),
     schedule_type="background",
-    schedule_params=settings.CRON_KWARGS,
+    schedule_params=settings.IP_LOOKUP_CRON_KWARGS,
     task_name=f"Augment IPs with metadata",
     task_type="cron",
     task_callable=lookup_and_update_ip_info_task,
