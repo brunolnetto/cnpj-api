@@ -1,5 +1,6 @@
 from datetime import timedelta
 from warnings import warn
+import platform
 
 from typing import Optional, Dict, Literal, List, Any, Union
 
@@ -77,7 +78,9 @@ class Settings(BaseSettings):
     DESCRIPTION: str = config["tool"]["poetry"]["description"]
     API_V1_STR: str = "/api"
 
-    ENVIRONMENT: Literal["development"] = "development"
+    ENVIRONMENT: Literal["development", "staging", "production"] = "development"
+    MACHINE_NAME: str = platform.node()
+
     DOMAIN: str = "localhost:8000"
 
     # CORS
@@ -110,21 +113,8 @@ class Settings(BaseSettings):
     DEFAULT_BURST_RATE_LIMIT: str
     DEFAULT_RATE_LIMITS: List[str] = Field(default_factory=list)
 
-    # Define cron parameters for request logs cleanup
-    REQUEST_CLEANUP_CRON_KWARGS: Dict[str, str] = {
-        "minute": "0",
-        "hour": "0",  # Runs at midnight
-        "day": "*",  # Every day
-        "month": "*",  # Every month
-        "day_of_week": "*",  # Every day of the week
-    }
-    REQUEST_CLEANUP_MAX_ROWS: int = 10 * 10**6
-
-    # Define the age of request logs to be cleaned up
-    REQUEST_CLEANUP_AGE: Dict[str, Any] = {"days": 30}
-
     # Define cron parameters for task logs cleanup
-    TASK_CLEANUP_CRON_KWARGS: Dict[str, str] = {
+    CRON_KWARGS: Dict[str, str] = {
         "minute": "0",
         "hour": "0",  # Runs at midnight
         "day": "*",  # Every first day of the month
@@ -132,9 +122,17 @@ class Settings(BaseSettings):
         "day_of_week": "*",  # Every day of the week
     }
 
+    # Define the age of request logs to be cleaned up
+    REQUEST_CLEANUP_AGE: Dict[str, Any] = {"days": 30}
+
     # Define the age of task logs to be cleaned up
     TASK_CLEANUP_AGE: timedelta = timedelta(days=30)
-    REQUEST_CLEANUP_MAX_ROWS: int = 10**6
+
+    # Define the age of task logs to be cleaned up
+    DEBUG_CLEANUP_AGE: timedelta = timedelta(days=14)
+    
+    # Define the maximum number of rows to retain
+    CLEANUP_MAX_ROWS: int = 10**6
 
     @field_validator("DEFAULT_RATE_LIMITS", mode="before")
     @classmethod

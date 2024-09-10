@@ -10,7 +10,6 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.engine.url import make_url
 
 from backend.app.setup.config import settings
-from backend.app.setup.logging import logger
 
 
 class BaseDatabase:
@@ -126,10 +125,10 @@ class Database(BaseDatabase):
                 # Create the database engine and session maker
                 create_database(self.uri)
 
-            logger.info(f"Database {masked_uri} created!")
+            print(f"Database {masked_uri} created!")
 
         except OperationalError as e:
-            logger.error(f"Error creating to database {masked_uri}: {e}")
+            print(f"Error creating to database {masked_uri}: {e}")
 
     def test_connection(self):
         masked_uri = self.mask_sensitive_data()
@@ -140,10 +139,10 @@ class Database(BaseDatabase):
                 # Test the connection
                 conn.execute(query)
 
-                logger.info(f"Connection to the database {masked_uri} established!")
+                print(f"Connection to the database {masked_uri} established!")
 
         except OperationalError as e:
-            logger.error(f"Error connecting to the database {masked_uri}: {e}")
+            print(f"Error connecting to the database {masked_uri}: {e}")
 
     def create_tables(self):
         """
@@ -160,10 +159,10 @@ class Database(BaseDatabase):
             # created)
             self.base.metadata.create_all(self.engine)
 
-            logger.info(f"Tables for database {masked_uri} created!")
+            print(f"Tables for database {masked_uri} created!")
 
         except Exception as e:
-            logger.error(
+            print(
                 f"Error creating tables in the database {masked_uri}: {str(e)}"
             )
 
@@ -174,9 +173,9 @@ class Database(BaseDatabase):
         try:
             inspector = inspect(self.engine)
             tables = inspector.get_table_names()
-            logger.info(f"Available tables: {tables}")
+            print(f"Available tables: {tables}")
         except Exception as e:
-            logger.error(f"Error fetching table names: {str(e)}")
+            print(f"Error fetching table names: {str(e)}")
 
     def init(self):
         """
@@ -193,22 +192,22 @@ class Database(BaseDatabase):
         try:
             self.create_database()
         except Exception as e:
-            logger.error(f"Error creating database: {e}")
+            print(f"Error creating database: {e}")
 
         try:
             self.test_connection()
         except Exception as e:
-            logger.error(f"Error testing connection: {e}")
+            print(f"Error testing connection: {e}")
 
         try:
             self.create_tables()
         except Exception as e:
-            logger.error(f"Error creating tables: {e}")
+            print(f"Error creating tables: {e}")
 
         try:
             self.print_tables()
         except Exception as e:
-            logger.error(f"Error print available tables: {e}")
+            print(f"Error print available tables: {e}")
 
     def disconnect(self):
         """

@@ -34,12 +34,12 @@ class TaskCreate(TaskBase):
 
 
 class TaskRead(TaskBase):
-    class Config:
+    class ConfigDict:
         from_atributes = True
 
 
 class TaskResponse(TaskBase):
-    class Config:
+    class ConfigDict:
         from_atributes = True
 
 
