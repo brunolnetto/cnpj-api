@@ -10,6 +10,12 @@ from backend.app.database.base import get_session
 from backend.app.setup.config import settings
 
 
+async def capture_request_body(request: Request):
+    if not hasattr(request.state, "body"):
+        # Read the body only once and store it in request.state
+        request.state.body = await request.body()
+    return request.state.body.decode() if request.state.body else ""
+
 class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start_time = time()
@@ -34,7 +40,7 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         response_size = len(response_body)
 
         # Capture request body
-        body_bytes = await request.body()  # Read the body once
+        body_bytes = await capture_request_body(request)
         body = body_bytes.decode() if body_bytes else ""
 
         log_data = {
