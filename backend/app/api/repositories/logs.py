@@ -10,7 +10,6 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 
 from backend.app.setup.config import settings
-from backend.app.setup.logging import logger
 from backend.app.database.models.logs import DebugLog
 from backend.app.database.models.logs import TaskLog, RequestLog, AppStartLog, DebugLog
 from backend.app.api.models.logs import RequestLogCreate
@@ -126,7 +125,7 @@ class RequestLogRepository(BaseRepository):
                         )
                     self.session.commit()
                 except Exception as e:
-                    logger.error(f"Error looking up IP {ip_address}: {e}")
+                    print(f"Error looking up IP {ip_address}: {e}")
                     self.session.rollback()
 
 class TaskLogRepository(BaseRepository):
