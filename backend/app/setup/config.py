@@ -114,12 +114,20 @@ class Settings(BaseSettings):
     DEFAULT_RATE_LIMITS: List[str] = Field(default_factory=list)
 
     # Define cron parameters for task logs cleanup
-    CRON_KWARGS: Dict[str, str] = {
+    CLEANUP_CRON_KWARGS: Dict[str, str] = {
         "minute": "0",
         "hour": "0",  # Runs at midnight
         "day": "*",  # Every first day of the month
         "month": "*",  # Every month
         "day_of_week": "*",  # Every day of the week
+    }
+    
+    IP_LOOKUP_CRON_KWARGS: Dict[str, str] = {
+        "minute": "0",
+        "hour": "*/2",          # Runs every 2 hours
+        "day": "*",             # Every first day of the month
+        "month": "*",           # Every month
+        "day_of_week": "*",     # Every day of the week
     }
 
     # Define the age of request logs to be cleaned up
