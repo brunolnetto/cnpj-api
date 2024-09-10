@@ -40,8 +40,9 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         response_size = len(response_body)
 
         # Capture request body
-        body_bytes = await capture_request_body(request)
-        body = body_bytes.decode() if body_bytes else ""
+        response = await call_next(request)
+        body: bytes | None = request.scope.get('cached_body')
+        body = body.decode() if body else ""
 
         log_data = {
             "relo_method": request.method,
