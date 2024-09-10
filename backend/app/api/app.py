@@ -11,8 +11,6 @@ from slowapi.errors import RateLimitExceeded
 from datetime import datetime
 
 from backend.app.setup.config import settings
-from backend.app.utils.database import log_app_start
-from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware
 from backend.app.api.routes.router_bundler import api_router
 from backend.app.api.exceptions import (
     not_found_handler,
@@ -25,14 +23,14 @@ from backend.app.api.utils.ml import init_nltk
 from backend.app.scheduler.bundler import task_orchestrator
 from backend.app.rate_limiter import limiter
 from backend.app.setup.logging import setup_logger
+from backend.app.api.dependencies.logs import get_app_start_logs_repository
 
-def custom_generate_unique_id(route: APIRoute) -> str:
-    tag = "" if not route.tags else route.tags[0]
-    name = route.name
-    route_label = f"{tag}-{name}" if tag else name
-
-    return route_label
-
+def log_app_start():
+    app_start_logs_repository=get_app_start_logs_repository()
+    app_start_log = {
+        "stlo_start_time": datetime.now()
+    }
+    app_start_logs_repository.create(app_start_log)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -57,7 +55,6 @@ def create_app():
         docs_url=f"{settings.API_V1_STR}/docs",
         openapi_url=f"{settings.API_V1_STR}/openapi.json",
         redoc_url=f"{settings.API_V1_STR}/redoc",
-        generate_unique_id_function=custom_generate_unique_id,
         lifespan=lifespan,
     )
 
@@ -83,7 +80,8 @@ def setup_app(app_: FastAPI):
     ##########################################################################
     # Middleware
     ##########################################################################
-    app_.add_middleware(AsyncRequestLoggingMiddleware)
+    ## XXX: Review Async RequestLoggingMiddleware with task 
+    #app_.add_middleware(AsyncRequestLoggingMiddleware)
 
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:

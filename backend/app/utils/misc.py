@@ -4,8 +4,6 @@ from datetime import datetime
 import json
 import re
 
-from backend.app.setup.logging import logger
-
 NumberList = List[Union[int, float]]
 
 
@@ -298,25 +296,6 @@ def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
         return " ".join(str(el).split())
 
     return operate_on_list_tuple(lst, clean_spaces_map)
-
-
-def makedir(folder_name: str, is_verbose: bool = False):
-    """
-    Creates a new directory if it doesn't already exist.
-
-    Args:
-        folder_name (str): The name of the folder to create.
-        is_verbose (bool, optional): Whether to log verbose information. Defaults to False.
-    """
-    if not path.exists(folder_name):
-        makedirs(folder_name)
-
-        if is_verbose:
-            logger.info(f"Folder {repr(str(folder_name))} created!")
-
-    else:
-        if is_verbose:
-            logger.warning(f"Folder {repr(str(folder_name))} already exists!")
 
 
 def replace_spaces(text):
