@@ -10,6 +10,7 @@ from backend.app.setup.config import settings
 
 logs_database = multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
 
+
 class RequestLog(logs_database.base):
     __tablename__ = "request_logs"
 
@@ -95,17 +96,22 @@ class TaskLog(logs_database.base):
 class AppStartLog(logs_database.base):
     __tablename__ = "startup_logs"
 
-    stlo_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    stlo_id = Column(
+        UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4
+    )
     stlo_start_time = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):
-        params=f"id={self.stlo_id}, time={self.stlo_start_time}"
+        params = f"id={self.stlo_id}, time={self.stlo_start_time}"
         return f"<AppRestartLog({params})>"
+
 
 class DebugLog(logs_database.base):
     __tablename__ = "debug_logs"
 
-    delo_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    delo_id = Column(
+        UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4
+    )
     delo_created_at = Column(DateTime(timezone=True), server_default=func.now())
     delo_environment = Column(String)  # New column to store the environment
     delo_machine = Column(String)

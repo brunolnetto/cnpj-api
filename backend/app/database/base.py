@@ -173,9 +173,7 @@ class Database(BaseDatabase):
             print(f"Tables for database {masked_uri} created!")
 
         except Exception as e:
-            print(
-                f"Error creating tables in the database {masked_uri}: {str(e)}"
-            )
+            print(f"Error creating tables in the database {masked_uri}: {str(e)}")
 
     def print_tables(self):
         """

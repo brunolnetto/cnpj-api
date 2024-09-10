@@ -4,6 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+
 class RequestLogBase(BaseModel):
     relo_method: str
     relo_url: str

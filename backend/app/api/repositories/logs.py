@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.setup.config import settings
 from backend.app.database.models.logs import DebugLog
-from backend.app.database.models.logs import TaskLog, RequestLog, AppStartLog, DebugLog
+from backend.app.database.models.logs import TaskLog, RequestLog, AppStartLog
 from backend.app.api.models.logs import RequestLogCreate
 from backend.app.api.repositories.base import BaseRepository
 from backend.app.api.models.logs import TaskLogCreate
@@ -60,54 +60,11 @@ class RequestLogRepository(BaseRepository):
             self.session.execute(delete_query)
             self.session.commit()
 
-
-class RequestLogRepository(BaseRepository):
-    def create(self, log: RequestLogCreate) -> RequestLog:
-        db_log = RequestLog(**log.model_dump())
-        self.session.add(db_log)
-        self.session.commit()
-        self.session.refresh(db_log)
-        return db_log
-
-    def update(self, id: UUID, data: Dict[str, Any]) -> Optional[RequestLog]:
-        # Not typically used for RequestLog, but implemented for completeness
-        return None
-
-    def get_by_id(self, id: UUID) -> Optional[RequestLog]:
-        return self.session.get(RequestLog, id)
-
-    def delete_by_id(self, id: UUID) -> bool:
-        log = self.get_by_id(id)
-        if not log:
-            return False
-        self.session.delete(log)
-        self.session.commit()
-        return True
-
-    def get_all(self, limit: int = 100, offset: int = 0) -> List[RequestLog]:
-        result = self.session.execute(select(RequestLog).offset(offset).limit(limit))
-        return result.scalars().all()
-
-    def delete_old_logs(self, time_delta: timedelta):
-        cutoff_date = datetime.now() - time_delta
-        delete_query = delete(RequestLog).where(
-            RequestLog.relo_inserted_at < cutoff_date
-        )
-        self.session.execute(delete_query)
-        self.session.commit()
-
-    def delete_excess_logs(self, max_rows: int):
-        query = self.session.query(RequestLog).order_by(RequestLog.relo_inserted_at)
-        total_rows = query.count()
-        if total_rows > max_rows:
-            delete_query = query.delete(synchronize_session="fetch")
-            self.session.execute(delete_query)
-            self.session.commit()
-
     def lookup_and_update_ip_info(self):
         # Get all logs with missing IP info
-        logs_without_ip_info = self.session.query(RequestLog)\
-                .filter(RequestLog.relo_ip_info == {}).all()
+        logs_without_ip_info = (
+            self.session.query(RequestLog).filter(RequestLog.relo_ip_info == {}).all()
+        )
 
         for log in logs_without_ip_info:
             ip_address = log.relo_ip_address
@@ -118,15 +75,14 @@ class RequestLogRepository(BaseRepository):
                     results = obj.lookup_rdap(depth=1)
 
                     # Update the log's IP info
-                    self.session.query(RequestLog)\
-                        .filter(RequestLog.relo_id == log.relo_id)\
-                        .update(
-                            {RequestLog.relo_ip_info: results}
-                        )
+                    self.session.query(RequestLog).filter(
+                        RequestLog.relo_id == log.relo_id
+                    ).update({RequestLog.relo_ip_info: results})
                     self.session.commit()
                 except Exception as e:
                     print(f"Error looking up IP {ip_address}: {e}")
                     self.session.rollback()
+
 
 class TaskLogRepository(BaseRepository):
     def create(self, task_log_data: TaskLogCreate) -> TaskLog:
@@ -182,6 +138,7 @@ class TaskLogRepository(BaseRepository):
             self.session.execute(delete_query)
             self.session.commit()
 
+
 class AppStartLogRepository(BaseRepository):
     def create(self, log_data: Dict[str, Any]) -> AppStartLog:
         """
@@ -222,7 +179,9 @@ class AppStartLogRepository(BaseRepository):
         Deletes AppStartLog entries older than a specified time delta.
         """
         cutoff_date = datetime.now() - time_delta
-        self.session.query(AppStartLog).filter(AppStartLog.stlo_start_time < cutoff_date).delete()
+        self.session.query(AppStartLog).filter(
+            AppStartLog.stlo_start_time < cutoff_date
+        ).delete()
         self.session.commit()
 
     def delete_excess_logs(self, max_rows: int):
@@ -236,6 +195,7 @@ class AppStartLogRepository(BaseRepository):
             self.session.execute(delete_query)
             self.session.commit()
 
+
 class DebuggingDatabaseHandler(logging.Handler):
     """
     A custom logging handler that logs messages to the database.
@@ -246,7 +206,8 @@ class DebuggingDatabaseHandler(logging.Handler):
         self.db_session = db_session
 
     def emit(self, record):
-        log_entry = self.format(record)  # This is where you format the log record
+        # This is where you format the log record
+        log_entry = self.format(record)
 
         # Create a new DebugLog entry and add it to the session
         debug_log = DebugLog(
@@ -259,17 +220,19 @@ class DebuggingDatabaseHandler(logging.Handler):
             delo_environment=settings.ENVIRONMENT,
             delo_machine=settings.MACHINE_NAME,
         )
-        
+
         # Add the log to the database and commit the session
         self.db_session.add(debug_log)
         self.db_session.commit()
-        
+
     def delete_old_logs(self, time_delta: timedelta):
         """
         Deletes DebugLog entries older than a specified time delta.
         """
         cutoff_date = datetime.now() - time_delta
-        self.session.query(DebugLog).filter(DebugLog.delo_created_at < cutoff_date).delete()
+        self.session.query(DebugLog).filter(
+            DebugLog.delo_created_at < cutoff_date
+        ).delete()
         self.session.commit()
 
     def delete_excess_logs(self, max_rows: int):

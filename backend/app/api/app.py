@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, status, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from datetime import datetime
@@ -23,20 +22,19 @@ from backend.app.api.utils.ml import init_nltk
 from backend.app.scheduler.bundler import task_orchestrator
 from backend.app.rate_limiter import limiter
 from backend.app.setup.logging import setup_logger
-from backend.app.api.dependencies.logs import get_app_start_logs_repository
+
 
 def log_app_start():
-    app_start_logs_repository=get_app_start_logs_repository()
-    app_start_log = {
-        "stlo_start_time": datetime.now()
-    }
+    app_start_logs_repository = get_app_start_logs_repository()
+    app_start_log = {"stlo_start_time": datetime.now()}
     app_start_logs_repository.create(app_start_log)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_database()
     setup_logger()
-    log_app_start()  
+    log_app_start()
     task_orchestrator.start()
     init_nltk()
 
@@ -80,8 +78,8 @@ def setup_app(app_: FastAPI):
     ##########################################################################
     # Middleware
     ##########################################################################
-    ## XXX: Review Async RequestLoggingMiddleware with task 
-    #app_.add_middleware(AsyncRequestLoggingMiddleware)
+    # XXX: Review Async RequestLoggingMiddleware with task
+    # app_.add_middleware(AsyncRequestLoggingMiddleware)
 
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
