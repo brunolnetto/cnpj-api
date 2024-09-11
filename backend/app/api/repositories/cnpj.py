@@ -44,6 +44,23 @@ CodeListType = List[CodeType]
 class CNPJRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
+        self.cnaes_dict={
+            cnae_info['code']: cnae_info
+            for cnae_info in self.get_cnaes(enable_pagination=False)
+        }
+        self.legal_nature_dict={
+            legal_nature_info['code']: legal_nature_info
+            for legal_nature_info in self.get_legal_natures(enable_pagination=False)
+        }
+        self.registration_statuses_dict={
+            registration_status_info['code']: registration_status_info
+            for registration_status_info in self.get_registration_statuses(enable_pagination=False)
+        }
+        self.cities_dict={
+            city_info['code']: city_info
+            for city_info in self.get_cities(enable_pagination=False)
+        }
+        
 
     def get_cnpjs_raw(
         self,
@@ -151,29 +168,8 @@ class CNPJRepository:
         if not cnae_code and not is_number(cnae_code):
             return {}
 
-        query = text(
-            f"""
-            select
-                descricao
-            from
-                cnae
-            where
-                codigo::text = '{cnae_code}'
-        """
-        )
-
-        cnae_result = self.session.execute(query).fetchall()
-
-        cnae_description = "" if len(cnae_result) == 0 else cnae_result[0][0]
-
-        return (
-            {}
-            if len(cnae_description) == 0
-            else {
-                "code": int(cnae_code),
-                "text": cnae_description,
-            }
-        )
+        return self.cnaes_dict[str(cnae_code)] \
+            if cnae_code in self.cnaes_dict else {}
 
     def get_cnae_list(self, cnae_code_list: CodeListType):
         """
@@ -185,31 +181,11 @@ class CNPJRepository:
         Returns:
         str: The description of the CNAE.
         """
-        cnae_code_str = ",".join(
-            [f"'{str(cnae_code)}'" for cnae_code in cnae_code_list]
-        )
-
-        query = text(
-            f"""
-            select
-                distinct
-                codigo,
-                descricao
-            from
-                cnae
-            where
-                codigo::text in ({cnae_code_str})
-        """
-        )
-
-        cnae_result = self.session.execute(query).fetchall()
-
-        def wrap_values_map(code_text):
-            return {"code": code_text[0], "text": code_text[1]}
-
-        cnae_dict = list(map(wrap_values_map, cnae_result))
-
-        return cnae_dict
+        return [
+            self.cnaes_dict[str(cnae_code)]
+            for cnae_code in cnae_code_list
+            if cnae_code in self.cnaes_dict
+        ]
 
     def get_cnae_by_token(self, token: str):
         """
@@ -292,31 +268,8 @@ class CNPJRepository:
         if not is_valid_legal_nature_code:
             return {}
 
-        query = text(
-            f"""
-            select
-                descricao
-            from
-                natju
-            where
-                codigo::text = '{legal_nature_code}'
-            """
-        )
-
-        legal_natures_result = self.session.execute(query).fetchall()
-
-        legal_nature_description = (
-            "" if len(legal_natures_result) == 0 else legal_natures_result[0][0]
-        )
-
-        return (
-            {}
-            if len(legal_nature_description) == 0
-            else {
-                "code": legal_nature_code,
-                "text": legal_nature_description,
-            }
-        )
+        return self.legal_nature_dict[str(legal_nature_code)] \
+            if legal_nature_code in self.legal_nature_dict else {}
 
     def get_legal_natures_list(self, legal_nature_list: CodeListType):
         """
@@ -325,30 +278,11 @@ class CNPJRepository:
         Returns:
         dict: The dictionary with the legal nature code and text.
         """
-        legal_nature_str = ",".join(
-            [f"'{str(legal_nature_code)}'" for legal_nature_code in legal_nature_list]
-        )
-
-        query = text(
-            f"""
-                select
-                    distinct
-                        codigo, descricao
-                from
-                    natju
-                where
-                    codigo::text in ({legal_nature_str})
-            """
-        )
-
-        legal_natures_result = self.session.execute(query).fetchall()
-
-        def wrap_values_map(code_text):
-            return {"code": code_text[0], "text": code_text[1]}
-
-        registration_status_dict = list(map(wrap_values_map, legal_natures_result))
-
-        return registration_status_dict
+        return [
+            self.legal_nature_dict[str(legal_nature_code)]
+            for legal_nature_code in legal_nature_list
+            if legal_nature_code in self.legal_nature_dict
+        ]
 
     def get_legal_natures(
         self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
@@ -404,36 +338,11 @@ class CNPJRepository:
         Returns:
         str: The reason for the signup situation.
         """
-        registration_status_str = ",".join(
-            [
-                f"'{str(registration_status_code)}'"
-                for registration_status_code in registration_status_codes
-            ]
-        )
-
-        query = text(
-            f"""
-                select
-                    distinct
-                        codigo,
-                        descricao
-                from
-                    moti
-                where
-                    codigo::text in ({registration_status_str})
-            """
-        )
-
-        registration_status_result = self.session.execute(query).fetchall()
-
-        def wrap_values_map(code_text):
-            return {"code": code_text[0], "text": code_text[1]}
-
-        registration_status_dict = list(
-            map(wrap_values_map, registration_status_result)
-        )
-
-        return registration_status_dict
+        return [
+            self.registration_statuses_dict[str(registration_status_code)]
+            for registration_status_code in registration_status_codes
+            if registration_status_code in self.registration_statuses_dict
+        ]
 
     def get_registration_statuses(
         self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
@@ -531,30 +440,9 @@ class CNPJRepository:
         if not city_code and not is_number(city_code):
             return {}
 
-        query = text(
-            f"""
-                select
-                    distinct codigo, descricao
-                from
-                    munic
-                where
-                    codigo = '{city_code}'
-            """
-        )
+        return self.cities_dict[str(city_code)] if city_code in self.cities_dict else {}
 
-        city_result = self.session.execute(query).fetchall()
-
-        columns = ["code", "text"]
-        empty_df = pd.DataFrame(columns=columns)
-        city_df = (
-            empty_df
-            if len(city_result) == 0
-            else pd.DataFrame(city_result, columns=columns)
-        )
-
-        return {} if len(city_df) == 0 else city_df.to_dict(orient="records")[0]
-
-    def get_cities(self, limit: int = 10, offset: int = 0):
+    def get_cities(self, limit: int = 10, offset: int = 0, enable_pagination: bool = True):
         """
         Get the city for the code.
 
@@ -565,16 +453,26 @@ class CNPJRepository:
         str: The name of the city.
         """
 
-        query = text(
-            f"""
-                select
-                    codigo, descricao
-                from
-                    munic
-                limit {limit}
-                offset {offset}
-            """
-        )
+        query = (
+            text(
+                f"""
+                    select
+                        codigo, descricao
+                    from
+                        munic
+                    limit {limit}
+                    offset {offset}
+                """
+            ) if enable_pagination
+            else text(
+                    """
+                        select
+                            codigo, descricao
+                        from
+                            munic
+                    """
+                )
+        ) 
 
         city_result = self.session.execute(query).fetchall()
 
@@ -637,29 +535,11 @@ class CNPJRepository:
         Returns:
         List[dict]: The name of the city.
         """
-        cities_code_str = ",".join(
-            [f"'{str(city_code)}'" for city_code in cities_code_list]
-        )
-
-        query = text(
-            f"""
-                select
-                    codigo, descricao
-                from
-                    munic
-                where
-                    codigo::text in ({cities_code_str})
-            """
-        )
-
-        city_result = self.session.execute(query).fetchall()
-
-        def wrap_values_map(code_text):
-            return {"code": code_text[0], "text": code_text[1]}
-
-        cities_dict = list(map(wrap_values_map, city_result))
-
-        return cities_dict
+        return {
+            city_code: self.cities_dict[str(city_code)]
+            for city_code in cities_code_list
+            if city_code in self.cities_dict
+        }
 
     def get_company_size_dict(self):
         """
@@ -825,7 +705,7 @@ class CNPJRepository:
             data_situacao_cadastral
         )
         del establishment_dict["data_situacao_cadastral"]
-
+        
         registration_reason = establishment_dict["motivo_situacao_cadastral"]
         establishment_dict["motivo_situacao"] = registration_reason
 
@@ -839,15 +719,16 @@ class CNPJRepository:
         telefone_1 = establishment_dict["telefone_1"]
         telefone_2 = establishment_dict["telefone_2"]
 
+        # Format the phone number
         is_1_invalid = is_field_valid(ddd_1)
         is_2_invalid = is_field_valid(ddd_2)
-
-        # Format the phone number
+        
         telefone_1 = "" if is_1_invalid else format_phone(ddd_1, telefone_1)
         telefone_2 = "" if is_2_invalid else format_phone(ddd_2, telefone_2)
         delimiter = " / " if telefone_1 and telefone_1 else ""
+        
         establishment_dict["telefone"] = telefone_1 + delimiter + telefone_2
-
+        
         del establishment_dict["ddd_1"]
         del establishment_dict["telefone_1"]
         del establishment_dict["ddd_2"]
@@ -867,7 +748,7 @@ class CNPJRepository:
         complement = establishment_dict["complemento"]
         establishment_dict["complemento"] = humanize_string(complement)
         establishment_dict["bairro"] = humanize_string(establishment_dict["bairro"])
-
+    
         # Format CEP
         zip_code = establishment_dict["cep"]
         establishment_dict["cep"] = format_cep(zip_code)
@@ -882,7 +763,7 @@ class CNPJRepository:
         city_code = establishment_dict["municipio"]
         city_dict = self.get_city(city_code)
         city_label = city_dict["text"]
-
+    
         establishment_dict["municipio"] = humanize_string(city_label)
 
         # Get the main CNAE
@@ -895,16 +776,15 @@ class CNPJRepository:
         del establishment_dict["cnae_fiscal_principal"]
 
         # Get the secondary CNAEs
-        second_activities = establishment_dict["cnae_fiscal_secundaria"]
-        if is_field_valid(second_activities):
-            side_activities_str = establishment_dict["cnae_fiscal_secundaria"]
+        side_activities_str = establishment_dict["cnae_fiscal_secundaria"]
 
-            side_activity_names = []
-            for side_activity in side_activities_str.split(","):
-                if len(side_activity) != 0:
-                    side_activity_code = int(side_activity.strip())
-                    side_activity_name = self.get_cnae(side_activity_code)
-                    side_activity_names.append(side_activity_name)
+        if is_field_valid(side_activities_str):
+            cnae_list=side_activities_str.split(",")
+
+            if len(cnae_list) != 0:
+                cnae_list=[str(int(cnae_str.strip())) for cnae_str in cnae_list]
+                side_activity_names = self.get_cnae_list(cnae_list)
+                print(side_activity_names)
 
             establishment_dict["atividades_secundarias"] = side_activity_names
         else:
@@ -919,13 +799,9 @@ class CNPJRepository:
         return establishment_dict
 
     def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
-        cnpjs_basicos = [f"'{str(cnpj.basico_int)}'" for cnpj in cnpj_list]
-        cnpjs_ordem = [f"'{str(cnpj.ordem_int)}'" for cnpj in cnpj_list]
-        cnpjs_dv = [f"'{str(cnpj.digitos_verificadores_int)}'" for cnpj in cnpj_list]
-
-        cnpjs_basicos_str = ",".join(cnpjs_basicos)
-        cnpjs_ordem_str = ",".join(cnpjs_ordem)
-        cnpjs_dv_str = ",".join(cnpjs_dv)
+        from time import perf_counter
+        t0=perf_counter()
+        instants=[]
 
         columns = [
             "cnpj_basico",
@@ -957,33 +833,42 @@ class CNPJRepository:
         ]
         columns_str = ",".join(columns)
 
+        cnpjs_basicos = [f"'{str(cnpj.basico_int)}'" for cnpj in cnpj_list]
+        cnpjs_ordem = [f"'{str(cnpj.ordem_int)}'" for cnpj in cnpj_list]
+        cnpjs_dv = [f"'{str(cnpj.digitos_verificadores_int)}'" for cnpj in cnpj_list]
+
+        cnpjs_basicos_str = ",".join(cnpjs_basicos)
+        cnpjs_ordem_str = ",".join(cnpjs_ordem)
+        cnpjs_dv_str = ",".join(cnpjs_dv)
+
         # Create the table if it does not exist
         query = text(
             f"""
                 select
-                    distinct on (cnpj_basico)
                     {columns_str}
                 from
                     estabelecimento est
                 where
-                    est.cnpj_basico::text in ({cnpjs_basicos_str}) AND
-                    est.cnpj_ordem::text in ({cnpjs_ordem_str}) AND
-                    est.cnpj_dv::text in ({cnpjs_dv_str})
+                    est.cnpj_basico in ({cnpjs_basicos_str}) AND
+                    est.cnpj_ordem in ({cnpjs_ordem_str}) AND
+                    est.cnpj_dv in ({cnpjs_dv_str})
             """
         )
 
         establishment_result = self.session.execute(query)
         establishment_result = establishment_result.fetchall()
 
+        instants.append(perf_counter()-t0)
+        
         empty_df = pd.DataFrame(columns=columns)
         df_is_empty = len(establishment_result) == 0
         if df_is_empty:
             return {}
 
-        establishment_result = replace_invalid_fields_on_list_tuple(
-            establishment_result
-        )
+        establishment_result = replace_invalid_fields_on_list_tuple(establishment_result)
         establishment_result = replace_spaces_on_list_tuple(establishment_result)
+
+        instants.append(perf_counter()-t0)
 
         establishment_df = pd.DataFrame(establishment_result, columns=columns)
         establishment_df = (
@@ -993,6 +878,8 @@ class CNPJRepository:
         registration_status = tuple(set(establishment_df["motivo_situacao_cadastral"]))
         registration_status = [f"'{status}'" for status in registration_status]
         registration_status_str = ",".join(registration_status)
+
+        instants.append(perf_counter()-t0)
 
         query = text(
             f"""
@@ -1008,33 +895,48 @@ class CNPJRepository:
         registration_status_result = self.session.execute(query)
         registration_status_result = registration_status_result.fetchall()
 
+        instants.append(perf_counter()-t0)
+
         registration_status_dict = dict(registration_status_result)
 
         registration_status = establishment_df["motivo_situacao_cadastral"]
         registration_status = registration_status.map(registration_status_dict)
         establishment_df["motivo_situacao_cadastral"] = registration_status
 
-        # Normalize data
-        def zfill_map(value: str, num: int):
-            return value.zfill(num)
-
         cnpj_base_series = establishment_df["cnpj_basico"]
         cnpj_ordem_series = establishment_df["cnpj_ordem"]
         cnpj_dv_series = establishment_df["cnpj_dv"]
 
+        instants.append(perf_counter()-t0)
+
+        def zfill_factory(n: int):
+            # Normalize data
+            def zfill_map(value: str, num: int):
+                return value.zfill(num)
+            
+            def zfill_n(value: Any):
+                return zfill_map(value, n)
+            
+            return zfill_n
+
         establishment_df["cnpj_"] = (
-            cnpj_base_series.apply(lambda value: zfill_map(value, 8))
-            + cnpj_ordem_series.apply(lambda value: zfill_map(value, 4))
-            + cnpj_dv_series.apply(lambda value: zfill_map(value, 2))
+            cnpj_base_series.apply(zfill_factory(8))
+            + cnpj_ordem_series.apply(zfill_factory(4))
+            + cnpj_dv_series.apply(zfill_factory(2))
         )
         establishment_dict = dataframe_to_nested_dict(establishment_df, "cnpj_")
-
         establishment_items = list(establishment_dict.items())
+
+        instants.append(perf_counter()-t0)
 
         def item_map(item):
             return item[0], self.__format_establishment(item[1])
 
         establishment_dict = dict(map(item_map, establishment_items))
+
+        instants.append(perf_counter()-t0)
+        
+        print(instants)
 
         return establishment_dict
 
@@ -1122,7 +1024,6 @@ class CNPJRepository:
         DataFrame: The DataFrame with the partners.
         """
         cnpj_basicos = [f"'{str(cnpj_obj.basico_int)}'" for cnpj_obj in cnpj_list]
-
         cnpj_basicos_str = ",".join(cnpj_basicos)
 
         query = text(
@@ -1358,9 +1259,8 @@ class CNPJRepository:
             for common_key in common_keys
         }
 
-        get_cnpj_scrap_service()
-
-        # XXX: Fix scrap according to new route structure
+        ## XXX: Fix scrap according to new route structure
+        # cnpj_scrap_service=get_cnpj_scrap_service()
         # update_at = cnpj_scrap_service.max_update_at()
 
         cnpj_infos = {
