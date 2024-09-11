@@ -1,10 +1,15 @@
-from typing import Union, List, Tuple, Dict, Any
+from fastapi import Request
+
+from typing import Union, List, Tuple, Dict, Any, Callable
 from datetime import datetime
+import cProfile
+import pstats
+from io import StringIO
+import asyncio
 import json
 import re
 
 NumberList = List[Union[int, float]]
-
 
 def are(args: List[Any], validation_map: callable) -> bool:
     """
@@ -245,39 +250,30 @@ def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:
 
     Args:
         lst (List): The list to process.
-        operation (str): The operation to perform.
-        value (str): The value to operate with.
+        operation (callable): The operation to perform on each element.
 
     Returns:
         The list with the operation performed.
     """
-
-    def tuple_map(tuple_):
-        return tuple(map(operation, tuple_))
-
-    return list(map(tuple_map, lst))
+    # Use list comprehension for better performance
+    return [tuple(operation(x) for x in tup) for tup in lst]
 
 
-def operate_on_list_dict(lst: List[Tuple], operation: callable) -> List[Any]:
+def operate_on_list_dict(
+    lst: List[Dict[Any, Any]], 
+    operation: Callable[[Any], Any]
+) -> List[Dict[Any, Any]]:
     """
-    Operates on a list of dictionaries.
+    Operates on a list of dictionaries by applying the operation to each value.
 
     Args:
-        lst (List): The list to process.
-        operation (str): The operation to perform.
-        value (str): The value to operate with.
+        lst (List[Dict]): The list of dictionaries to process.
+        operation (Callable): The operation to perform on each value.
 
     Returns:
-        The list with the operation performed.
+        List[Dict]: A new list with the operation performed on the values of each dictionary.
     """
-
-    def item_map(item):
-        return item[0], operation(item[1])
-
-    def dict_map(dict_):
-        return dict(map(item_map, dict_.items()))
-
-    return list(map(dict_map, lst))
+    return [{k: operation(v) for k, v in d.items()} for d in lst]
 
 
 def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:

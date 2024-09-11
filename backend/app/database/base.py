@@ -211,7 +211,7 @@ class Database(BaseDatabase):
         """
         Clean up and close the database connection and session maker.
         """
-        masked_uri = self.mask_sensitive_data(self.uri)
+        masked_uri = self.mask_sensitive_data()
         try:
             # Close all connections in the pool
             self.engine.dispose()

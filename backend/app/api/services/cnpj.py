@@ -290,7 +290,7 @@ class CNPJService:
                 raise ValueError(f"City code {city_code} is not a number.")
 
             city = self.repository.get_city(city_code)
-
+            
         except Exception as e:
             logger.error(f"Error getting city: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e

@@ -1,4 +1,5 @@
 from fastapi import Depends
+from datetime import datetime
 
 from backend.app.setup.config import settings
 from backend.app.database.base import get_session
@@ -33,6 +34,11 @@ def get_app_start_logs_repository():
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
         return AppStartLogRepository(session)
 
+
+def log_app_start():
+    app_start_logs_repository = get_app_start_logs_repository()
+    app_start_log = {"stlo_start_time": datetime.now()}
+    app_start_logs_repository.create(app_start_log)
 
 TaskLogsRepositoryDependency = Depends(get_task_logs_repository)
 RequestLogsRepositoryDependency = Depends(get_request_logs_repository)
