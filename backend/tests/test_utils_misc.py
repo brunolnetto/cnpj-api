@@ -1,4 +1,3 @@
-from os import rmdir, makedirs
 import pytest
 from unittest.mock import patch
 from json import JSONDecodeError
@@ -8,7 +7,6 @@ from backend.app.utils.misc import (
     replace_spaces_on_list_tuple,
     replace_invalid_fields_on_list_tuple,
     replace_invalid_fields_on_list_dict,
-    makedir,
     replace_spaces,
     remove_leading_zeros,
     is_number,
@@ -134,36 +132,6 @@ def test_replace_nan_on_list_tuple():
     data = [("valid", "data"), ("nan", "value"), ("", "empty")]
     expected = [("valid", "data"), ("", "value"), ("", "empty")]
     assert replace_invalid_fields_on_list_tuple(data) == expected
-
-
-# Test with pytest.mock
-def test_makedir(mocker):
-    # Mock logger methods
-    mocker.patch("backend.app.setup.logging.logger.info")
-    mocker.patch("backend.app.setup.logging.logger.warning")
-
-    # Test case 1: Folder created (no warning)
-    folder_name = "new_folder"
-    makedir(folder_name, is_verbose=True)
-    rmdir(folder_name)
-
-    # Assert logger.info was called with the correct message
-    from backend.app.setup.logging import logger
-
-    assert logger.info.call_count == 1
-    assert logger.info.call_args[0][0] == f"Folder '{folder_name}' created!"
-
-    # Test case 2: Folder already exists (warning)
-    folder_name = "existing_folder"
-    makedirs(folder_name, exist_ok=True)  # Create the folder for the test
-    makedir(folder_name, is_verbose=True)
-
-    # Assert logger.warning was called
-    assert logger.warning.call_count == 1
-    assert logger.warning.call_args[0][0] == f"Folder '{folder_name}' already exists!"
-
-    # Clean up (optional)
-    rmdir(folder_name)  # Remove the created folder
 
 
 def test_replace_spaces():

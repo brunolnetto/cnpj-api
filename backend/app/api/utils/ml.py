@@ -5,13 +5,26 @@ from typing import List
 
 from nltk.metrics import edit_distance
 
+from backend.app.setup.logging import logger
 
 def init_nltk():
     """
     This function initializes the NLTK library.
     """
-    nltk.download("stopwords")
-    nltk.download("punkt")
+    try:
+        nltk.download("stopwords")
+    except Exception as e:
+        logger.error(f"Error downloading NLTK package 'stopwords': {e}")
+
+    try:
+        nltk.download("punkt")
+    except Exception as e:
+        logger.error(f"Error downloading NLTK package 'punkt': {e}")
+
+    try:
+        nltk.download("punkt_tab")
+    except Exception as e:
+        logger.error(f"Error downloading NLTK package 'punkt_tab': {e}")
 
 
 def find_most_possible_tokens(

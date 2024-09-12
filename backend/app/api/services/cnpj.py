@@ -13,10 +13,7 @@ from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
 from backend.app.setup.logging import logger
 from backend.app.api.constants import STATES_BRAZIL
-from backend.app.api.models.cnpj import CNPJ
 
-# Types
-CodeType = Union[str, int]
 
 def cnpj_str_to_obj(cnpj_str: str):
     """
@@ -31,6 +28,11 @@ def cnpj_str_to_obj(cnpj_str: str):
 
     cnpj_list = parse_cnpj_str(cnpj_str)
     return CNPJ(*cnpj_list)
+
+
+# Types
+CodeType = Union[str, int]
+
 
 class CNPJService:
     def __init__(self, cnpj_repository: CNPJRepository):
@@ -288,7 +290,7 @@ class CNPJService:
                 raise ValueError(f"City code {city_code} is not a number.")
 
             city = self.repository.get_city(city_code)
-
+            
         except Exception as e:
             logger.error(f"Error getting city: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e

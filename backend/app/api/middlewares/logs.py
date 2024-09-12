@@ -9,6 +9,14 @@ from backend.app.api.repositories.logs import RequestLogRepository
 from backend.app.database.base import get_session
 from backend.app.setup.config import settings
 
+
+async def capture_request_body(request: Request):
+    if not hasattr(request.state, "body"):
+        # Read the body only once and store it in request.state
+        request.state.body = await request.body()
+    return request.state.body.decode() if request.state.body else ""
+
+
 class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start_time = time()
@@ -32,13 +40,11 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         )
         response_size = len(response_body)
 
-        # Capture request body
-        body=(await request.body()).decode() if await request.body() else ""
+        response = await call_next(request)
 
         log_data = {
             "relo_method": request.method,
             "relo_url": str(request.url),
-            "relo_body": body,
             "relo_headers": dict(request.headers),
             "relo_status_code": response.status_code,
             "relo_ip_address": request.client.host,

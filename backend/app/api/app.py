@@ -1,36 +1,43 @@
-# Description: This file initializes the FastAPI application and sets up configurations.
-
-from fastapi import FastAPI, status, Request, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.routing import APIRoute
-from starlette.middleware.cors import CORSMiddleware
+# Description: This file initializes the FastAPI application and sets up
+# configurations.
 from contextlib import asynccontextmanager
 
-from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware
+from fastapi import FastAPI, status, Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.gzip import GZipMiddleware
+from starlette.middleware.cors import CORSMiddleware
+from slowapi.errors import RateLimitExceeded
+from datetime import datetime
+
 from backend.app.setup.config import settings
-from backend.app.setup.logging import logger
 from backend.app.api.routes.router_bundler import api_router
-from backend.app.database.base import init_database
-from backend.app.api.utils.ml import init_nltk
 from backend.app.api.exceptions import (
-    not_found_handler, 
+    not_found_handler,
     general_exception_handler,
+    custom_rate_limit_handler,
 )
-
-def custom_generate_unique_id(route: APIRoute) -> str:
-    tag = "" if not route.tags else route.tags[0]
-    name = route.name
-    route_label = f"{tag}-{name}" if tag else name
-
-    return route_label
+from backend.app.api.middlewares.misc import TimingMiddleware
+from backend.app.api.dependencies.logs import log_app_start
+from backend.app.database.base import init_database, multi_database
+from backend.app.api.utils.ml import init_nltk
+from backend.app.scheduler.bundler import task_orchestrator
+from backend.app.rate_limiter import limiter
+from backend.app.setup.logging import setup_logger
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_database()
+    setup_logger()
+    log_app_start()
+    task_orchestrator.start()
     init_nltk()
+
     yield
+
+    task_orchestrator.shutdown()
+    multi_database.disconnect()
 
 
 def create_app():
@@ -42,7 +49,6 @@ def create_app():
         docs_url=f"{settings.API_V1_STR}/docs",
         openapi_url=f"{settings.API_V1_STR}/openapi.json",
         redoc_url=f"{settings.API_V1_STR}/redoc",
-        generate_unique_id_function=custom_generate_unique_id,
         lifespan=lifespan,
     )
 
@@ -60,15 +66,20 @@ def setup_app(app_: FastAPI):
         FastAPI: FastAPI application instance with the necessary configurations
     """
 
-    #############################################################################
-    # Routers 
-    #############################################################################
+    ##########################################################################
+    # Routers
+    ##########################################################################
     app_.include_router(api_router, prefix=settings.API_V1_STR)
 
-    ############################################################################# 
-    # Middleware 
-    ##############################################################################
-    app_.add_middleware(AsyncRequestLoggingMiddleware)
+    ##########################################################################
+    # Middleware
+    ##########################################################################
+    # XXX: Review Async RequestLoggingMiddleware with task
+    # app_.add_middleware(AsyncRequestLoggingMiddleware)
+
+    # Add timing middleware
+    app_.add_middleware(TimingMiddleware)
+    app_.add_middleware(GZipMiddleware, minimum_size=1000)
     
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
@@ -81,21 +92,24 @@ def setup_app(app_: FastAPI):
             allow_methods=["*"],
             allow_headers=["*"],
         )
-    
+
     # Add static files
     obj = StaticFiles(directory="static")
     app_.mount("/static", obj, name="static")
-    
+
     # Add favicon
     @app_.get("/favicon.ico")
-    async def get_favicon():
+    @limiter.limit(settings.DEFAULT_RATE_LIMIT)
+    async def get_favicon(request: Request):
         return FileResponse("static/favicon.ico")
 
-    ############################################################################## 
-    # Exception 
-    ##############################################################################
-    # Register the exception handlers with the app
-    app_.add_exception_handler(HTTPException, not_found_handler)
+    ##########################################################################
+    # Exception
+    ##########################################################################
+    # Add exception handlers
+    # Register the rate limit exceeded handler
+    app_.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
+    app_.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
     app_.add_exception_handler(Exception, general_exception_handler)
 
 
