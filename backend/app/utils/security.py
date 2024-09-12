@@ -7,9 +7,6 @@ from jose import jwt
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-JWT_SECRET_KEY = getenv("JWT_SECRET_KEY")
-JWT_ALGORITHM = getenv("JWT_ALGORITHM")
-
 # Set the expiration time for the JWT
 ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(days=7)
 
@@ -20,7 +17,8 @@ def create_token(data: dict, expires_delta: timedelta = ACCESS_TOKEN_EXPIRE_MINU
 
     Args:
         data (dict): The data to be encoded in the JWT.
-        expires_delta (timedelta | None, optional): The expiration time for the JWT. Defaults to ACCESS_TOKEN_EXPIRE_MINUTES.
+        expires_delta (timedelta | None, optional): The expiration time for the JWT. 
+        Defaults to ACCESS_TOKEN_EXPIRE_MINUTES.
 
     Returns:
         str: The encoded JWT.

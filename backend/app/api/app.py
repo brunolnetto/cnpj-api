@@ -8,7 +8,6 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
-from datetime import datetime
 
 from backend.app.setup.config import settings
 from backend.app.api.routes.router_bundler import api_router
@@ -80,7 +79,7 @@ def setup_app(app_: FastAPI):
     # Add timing middleware
     app_.add_middleware(TimingMiddleware)
     app_.add_middleware(GZipMiddleware, minimum_size=1000)
-    
+
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
         urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]

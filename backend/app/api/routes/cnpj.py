@@ -9,12 +9,12 @@ from backend.app.rate_limiter import limiter
 from backend.app.setup.config import settings
 from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
-from backend.app.api.dependencies.auth import JWTDependency
 
 # Types
 CodeType = Union[str, int]
 
 router = APIRouter(tags=["CNPJ"])
+
 
 @router.get("/cnaes")
 @limiter.limit(settings.DEFAULT_RATE_LIMIT)
@@ -134,7 +134,7 @@ async def get_cnpjs_by_state(
     state_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
     limit: int = 10,
-    offset: int = 0,    
+    offset: int = 0,
 ):
     """
     Get a list of establishments by state code.
@@ -211,7 +211,14 @@ async def get_city(
     Returns:
     - A dictionary with the city name.
     """
-    return await cnpj_service.get_city(city_code)
+    from time import perf_counter
+
+    t0 = perf_counter()
+    result = await cnpj_service.get_city(city_code)
+    t1 = perf_counter()
+    print(f"get_city took {t1-t0:.4f} seconds")
+
+    return result
 
 
 @router.get("/cities")
@@ -220,7 +227,7 @@ async def get_cities(
     request: Request,
     cnpj_service: CNPJService = CNPJServiceDependency,
     limit: int = 10,
-    offset: int = 0,    
+    offset: int = 0,
 ):
     """
     Get a list of cities from the database.
@@ -232,12 +239,12 @@ async def get_cities(
     - A list of cities as dictionaries.
     """
     from time import perf_counter
-    
-    t0=perf_counter()
-    result=await cnpj_service.get_cities(limit, offset)
-    t1=perf_counter()
+
+    t0 = perf_counter()
+    result = await cnpj_service.get_cities(limit, offset)
+    t1 = perf_counter()
     print(f"get_cities took {t1-t0:.4f} seconds")
-    
+
     return result
 
 
@@ -338,6 +345,7 @@ async def get_registration_status(
     """
     return await cnpj_service.get_registration_status(registration_status_code)
 
+
 @router.get("/registration-statuses")
 @limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_registration_statuses(
@@ -384,9 +392,7 @@ async def get_registration_statuses_list(
 @router.get("/cnpj/{cnpj}")
 @limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_info(
-    request: Request, 
-    cnpj: str, 
-    cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get information about a CNPJ number.
@@ -404,9 +410,7 @@ async def get_cnpj_info(
 @router.get("/cnpj/{cnpj}/activities")
 @limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_activities(
-    request: Request, 
-    cnpj: str, 
-    cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the activities of a CNPJ number.
@@ -423,9 +427,7 @@ async def get_cnpj_activities(
 @router.get("/cnpj/{cnpj}/partners")
 @limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_partners(
-    request: Request, 
-    cnpj: str, 
-    cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the partners of a CNPJ number.
@@ -442,9 +444,7 @@ async def get_cnpj_partners(
 @router.get("/cnpj/{cnpj}/company")
 @limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_company(
-    request: Request, 
-    cnpj: str, 
-    cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the company associated with a CNPJ number.
@@ -460,9 +460,7 @@ async def get_cnpj_company(
 
 @router.get("/cnpj/{cnpj}/establishment")
 async def get_cnpj_establishment(
-    request: Request, 
-    cnpj: str, 
-    cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the establishment associated with a CNPJ number.
@@ -474,8 +472,9 @@ async def get_cnpj_establishment(
     - A dictionary with information about the establishment.
     """
     from time import perf_counter
-    t0=perf_counter()
-    result=await cnpj_service.get_cnpj_establishment(cnpj)
+
+    t0 = perf_counter()
+    result = await cnpj_service.get_cnpj_establishment(cnpj)
     print(f"get_cnpj_establishment took {perf_counter()-t0:.4f} seconds")
 
     return result
@@ -484,9 +483,7 @@ async def get_cnpj_establishment(
 @router.get("/cnpj/{cnpj}/establishments")
 @limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def get_cnpj_establishments(
-    request: Request, 
-    cnpj: str, 
-    cnpj_service: CNPJService = CNPJServiceDependency
+    request: Request, cnpj: str, cnpj_service: CNPJService = CNPJServiceDependency
 ):
     """
     Get the establishments associated with a CNPJ base (First 8 digits).

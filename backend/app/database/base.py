@@ -231,7 +231,7 @@ class Database(BaseDatabase):
             print(f"Error closing database connections: {str(e)}")
 
     def __repr__(self):
-        masked_uri = self.mask_sensitive_data(self.uri)
+        masked_uri = self.mask_sensitive_data()
         return f"<Database(uri={masked_uri})>"
 
 

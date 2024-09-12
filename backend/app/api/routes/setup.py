@@ -18,11 +18,11 @@ class ExampleResponse(BaseModel):
 @router.get("/benchmark")
 def benchmark_serialization(data_size: int):
     data = {"message": "x" * data_size}
-    
+
     start_time = time.time()
     ExampleResponse(**data)
     end_time = time.time()
-    
+
     print(f"Serialization of size {data_size} took {end_time - start_time} seconds")
 
 
