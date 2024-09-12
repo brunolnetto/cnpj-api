@@ -250,15 +250,15 @@ class MultiDatabase(BaseDatabase):
             for db_name, uri in database_uris.items()
         }
     
-    @contextmanager   
+    @contextmanager
     def get_session(self, db_name):
         """
         Get a session for a specific database.
         """
         if db_name not in self.databases:
             raise ValueError(f"No such database: {db_name}")
-        
-        with self.databases[db_name].get_session() as session:
+
+        with self.databases[db_name].session_maker() as session:
             yield session
 
     def create_database(self, db_name):
@@ -296,7 +296,6 @@ def create_database_obj():
 
 create_database_obj()
 
-
 def init_database():
     global multi_database
     if not multi_database:
@@ -319,8 +318,8 @@ def get_session(db_name: str):
     if multi_database is None:
         init_database()
 
-    session = multi_database.get_session(db_name)
-    try:
-        yield session
-    finally:
-        session.close()
+    with multi_database.get_session(db_name) as session:
+        try:
+            yield session
+        finally:
+            session.close()
