@@ -205,10 +205,10 @@ class CNPJRepository:
             self.session.execute(
                 text(
                     f"""
-                    select 
-                        codigo, descricao 
-                    from cnae 
-                    where 
+                    select
+                        codigo, descricao
+                    from cnae
+                    where
                         descricao ilike concat('%', {token}, '%')
                     """
                 ),

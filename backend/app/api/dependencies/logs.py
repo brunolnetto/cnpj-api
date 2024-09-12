@@ -1,5 +1,6 @@
-from fastapi import Depends
 from datetime import datetime
+
+from fastapi import Depends
 
 from backend.app.setup.config import settings
 from backend.app.database.base import get_session

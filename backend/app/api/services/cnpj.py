@@ -1,5 +1,6 @@
-from fastapi import HTTPException, Depends
 from typing import Union
+
+from fastapi import HTTPException, Depends
 
 from backend.app.api.repositories.cnpj import CNPJRepository
 from backend.app.utils.misc import is_number, are_numbers
@@ -667,7 +668,7 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not est_info:
-            cnpj_route=f"{settings.API_V1_STR}/cnpj/{cnpj}/company"
+            cnpj_route = f"{settings.API_V1_STR}/cnpj/{cnpj}/company"
             base_msg = f"There is no establishment associated with CNPJ {cnpj_obj}"
             explanation = f"Try route {cnpj_route} to verify if the CNPJ exists."
             message = f"{base_msg}. {explanation}"
@@ -708,7 +709,7 @@ class CNPJService:
             }
 
         return est_info
-
+    
     async def get_cnpjs(
         self,
         state_abbrev: str = "",

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Request
 from typing import Union
+
+from fastapi import APIRouter, Request
 
 from backend.app.api.services.cnpj import (
     CNPJService,

@@ -1,8 +1,9 @@
 # Description: This file contains the setup routes for the FastAPI application.
-from fastapi import APIRouter, Request
-from pydantic import BaseModel
 import toml
 import time
+
+from fastapi import APIRouter, Request
+from pydantic import BaseModel
 
 from backend.app.setup.config import settings
 from backend.app.api.dependencies.auth import JWTDependency
