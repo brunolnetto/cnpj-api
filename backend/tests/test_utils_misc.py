@@ -173,8 +173,8 @@ def test_string_to_json_valid_string():
 
 def test_string_to_json_invalid_json():
     """
-        Tests the string_to_json function with an invalid JSON string 
-        (raises json.JSONDecodeError).
+    Tests the string_to_json function with an invalid JSON string
+    (raises json.JSONDecodeError).
     """
     invalid_string = '{"key": "value" unbalanced'
     with pytest.raises(JSONDecodeError):
@@ -321,8 +321,8 @@ def test_list_with_strings_strict():
 
 def test_list_with_strings_non_strict():
     """
-        Tests if a list with strings returns False with non-strict type checking 
-        (for non-numeric strings).
+    Tests if a list with strings returns False with non-strict type checking
+    (for non-numeric strings).
     """
     assert not are_numbers(["abc", "123", "def"], is_strict=False)
 
