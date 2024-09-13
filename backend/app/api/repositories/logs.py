@@ -203,7 +203,7 @@ class DebuggingDatabaseHandler(logging.Handler):
 
     def __init__(self, db_session: Session):
         logging.Handler.__init__(self)
-        self.db_session = db_session
+        self.session = db_session
 
     def emit(self, record):
         # This is where you format the log record
@@ -222,8 +222,8 @@ class DebuggingDatabaseHandler(logging.Handler):
         )
 
         # Add the log to the database and commit the session
-        self.db_session.add(debug_log)
-        self.db_session.commit()
+        self.session.add(debug_log)
+        self.session.commit()
 
     def delete_old_logs(self, time_delta: timedelta):
         """

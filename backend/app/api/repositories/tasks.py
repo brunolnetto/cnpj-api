@@ -13,7 +13,7 @@ from backend.app.api.repositories.base import BaseRepository
 
 class TaskRepository(BaseRepository):
     def __init__(self, session: Session):
-        self.session = session
+        BaseRepository.__init__(self, session)
 
     def create(self, task_data: Dict[str, Any]) -> Task:
         # Check if the task already exists
