@@ -733,7 +733,7 @@ class CNPJService:
             }
 
         return est_info
-    
+
     async def get_cnpjs(
         self,
         state_abbrev: str = "",
