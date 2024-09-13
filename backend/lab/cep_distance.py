@@ -7,7 +7,7 @@ def get_lat_lon_by_cep(cep):
     url = f"https://cep.awesomeapi.com.br/json/{cep}"
     response = requests.get(url)
     data = response.json()
-    print(data)
+
     return float(data["lat"]), float(data["lng"])
 
 
@@ -42,8 +42,8 @@ def main(cep1, cep2):
 
 
 # Example usage
-cep1 = "68980970"  # Replace with the first CEP
-cep2 = "96255970"  # Replace with the second CEP
+cep1_ = "68980970"  # Replace with the first CEP
+cep2_ = "96255970"  # Replace with the second CEP
 
-distance = main(cep1, cep2)
-print(f"The distance between {cep1} and {cep2} is {distance:.2f} km.")
+distance_ = main(cep1_, cep2_)
+print(f"The distance between {cep1_} and {cep2_} is {distance_:.2f} km.")

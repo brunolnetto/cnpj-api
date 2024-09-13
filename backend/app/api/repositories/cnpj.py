@@ -1,7 +1,8 @@
+from datetime import datetime
+
 from typing import Dict, Union, List, Any
 from sqlalchemy import text
 import pandas as pd
-from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

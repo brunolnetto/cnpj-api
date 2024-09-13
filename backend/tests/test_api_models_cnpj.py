@@ -80,7 +80,7 @@ def test_cnpj_repr():
     """
     cnpj_obj = CNPJ("12345678", "9012", "34")
 
-    cnpj_repr = cnpj_obj.__repr__()
+    cnpj_repr = repr(cnpj_obj)
 
     assert cnpj_repr == "12.345.678/9012-34"
 
