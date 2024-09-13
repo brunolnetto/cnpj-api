@@ -1,7 +1,7 @@
 # Description: This file contains the setup routes for the FastAPI application.
-import toml
 import time
 
+import toml
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 

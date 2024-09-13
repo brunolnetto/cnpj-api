@@ -1,10 +1,10 @@
 from datetime import datetime
-
 from typing import Dict, Union, List, Any
-from sqlalchemy import text
-import pandas as pd
 
+import pandas as pd
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
 
 from backend.app.utils.misc import string_to_json
 from backend.app.api.models.cnpj import CNPJ

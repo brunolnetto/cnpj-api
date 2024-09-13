@@ -1,8 +1,10 @@
+from time import time
+
+from jose import jwt
 from fastapi import Depends
 from fastapi.requests import Request
-from jose import jwt
-from time import time
 from fastapi.security import OAuth2PasswordBearer
+
 
 from backend.app.setup.config import settings
 from backend.app.exceptions import (
@@ -19,7 +21,7 @@ AUTH_TOKEN_URL = f"{settings.API_V1_STR}/token"
 
 class JWTBearer(OAuth2PasswordBearer):
     def __init__(self, tokenUrl: str = AUTH_TOKEN_URL):
-        super(JWTBearer, self).__init__(tokenUrl=tokenUrl)
+        super().__init__(tokenUrl=tokenUrl)
 
     async def __call__(self, request: Request):
         token = None
@@ -43,11 +45,11 @@ class JWTBearer(OAuth2PasswordBearer):
             if payload["exp"] <= time():
                 raise ExpiredTokenException()
 
-        except ExpiredTokenException:
-            raise ExpiredTokenException()
+        except ExpiredTokenException as exc:
+            raise ExpiredTokenException() from exc
 
         except Exception as e:
-            raise CustomHTTPException(e)
+            raise CustomHTTPException(e) from e
 
 
 jwt_bearer = JWTBearer(tokenUrl=AUTH_TOKEN_URL)
