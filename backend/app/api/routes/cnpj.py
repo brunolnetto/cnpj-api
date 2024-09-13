@@ -1,4 +1,5 @@
 from typing import Union
+from time import perf_counter
 
 from fastapi import APIRouter, Request
 
@@ -213,7 +214,6 @@ async def get_city(
     Returns:
     - A dictionary with the city name.
     """
-    from time import perf_counter
 
     t0 = perf_counter()
     result = await cnpj_service.get_city(city_code)
@@ -240,8 +240,6 @@ async def get_cities(
     Returns:
     - A list of cities as dictionaries.
     """
-    from time import perf_counter
-
     t0 = perf_counter()
     result = await cnpj_service.get_cities(limit, offset)
     t1 = perf_counter()
@@ -473,8 +471,6 @@ async def get_cnpj_establishment(
     Returns:
     - A dictionary with information about the establishment.
     """
-    from time import perf_counter
-
     t0 = perf_counter()
     result = await cnpj_service.get_cnpj_establishment(cnpj)
     print(f"get_cnpj_establishment took {perf_counter()-t0:.4f} seconds")

@@ -234,6 +234,10 @@ class MultiDatabase(BaseDatabase):
         for database in self.databases.values():
             database.init()
 
+    def disconnect(self):
+        for database in self.databases.values():
+            database.disconnect()
+
 
 # Load environment variables from the .env file
 multi_database = None
