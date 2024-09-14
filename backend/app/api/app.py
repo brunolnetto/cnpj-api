@@ -26,7 +26,7 @@ from backend.app.setup.logging import setup_logger
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app_: FastAPI):
     init_database()
     setup_logger()
     log_app_start()
@@ -114,12 +114,12 @@ def setup_app(app_: FastAPI):
 
 def init_app():
     # Get the number of applications from the environment variable
-    app = create_app()
+    app_ = create_app()
 
     # Setup the application
-    setup_app(app)
+    setup_app(app_)
 
-    return app
+    return app_
 
 
 # Initialize the application
