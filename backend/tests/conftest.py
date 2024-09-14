@@ -1,6 +1,7 @@
 from unittest import mock
 
 import pytest
+from fastapi.testclient import TestClient 
 
 from backend.app.api.app import app
 
@@ -8,7 +9,7 @@ from backend.app.api.app import app
 @pytest.fixture(scope="session")
 def test_client():
 
-    with app.test_client() as client:
+    with TestClient(app) as client:
         yield client
 
 
