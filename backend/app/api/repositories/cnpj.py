@@ -28,9 +28,9 @@ from backend.app.api.utils.ml import find_most_possible_tokens
 from backend.app.utils.dataframe import dataframe_to_nested_dict
 from backend.app.api.utils.cnpj import format_cnpj
 from backend.app.api.repositories.constants import (
-    SIZE_DICT,
-    SITUATION_DICT,
-    EST_TYPE_DICT,
+    get_company_size_dict,
+    get_company_situation_dict,
+    get_establishment_type_dict,
 )
 
 
@@ -555,33 +555,6 @@ class CNPJRepository:
             if city_code in self.cities_dict
         }
 
-    def get_company_size_dict(self):
-        """
-        Get the company dictionary.
-
-        Returns:
-        - dict: The company dictionary.
-        """
-        return SIZE_DICT
-
-    def get_establishment_type_dict(self):
-        """
-        Get the establishment type dictionary.
-
-        Returns:
-        - dict: The establishment type dictionary.
-        """
-        return EST_TYPE_DICT
-
-    def get_company_situation_dict(self):
-        """
-        Get the company situation dictionary.
-
-        Returns:
-        - dict: The company situation dictionary.
-        """
-        return SITUATION_DICT
-
     def get_cnpjs_company(self, cnpj_list: CNPJList):
         """
         Get the company for the CNPJ.
@@ -656,7 +629,7 @@ class CNPJRepository:
             company_df["porte_empresa"]
             .apply(number_string_to_number)
             .apply(str)
-            .map(SIZE_DICT)
+            .map(get_company_size_dict())
         )
         del company_df["porte_empresa"]
 
@@ -706,7 +679,7 @@ class CNPJRepository:
         registration_status = establishment_dict["situacao_cadastral"]
         situacao_cadastral = str(number_string_to_number(registration_status))
 
-        establishment_dict["situacao"] = SITUATION_DICT[situacao_cadastral]
+        establishment_dict["situacao"] = get_company_situation_dict()[situacao_cadastral]
         del establishment_dict["situacao_cadastral"]
 
         establishment_dict["fantasia"] = humanize_string(
@@ -769,7 +742,7 @@ class CNPJRepository:
 
         # Get the company type
         identificador = establishment_dict["identificador_matriz_filial"]
-        establishment_dict["tipo"] = EST_TYPE_DICT[identificador]
+        establishment_dict["tipo"] = get_establishment_type_dict()[identificador]
 
         del establishment_dict["identificador_matriz_filial"]
 

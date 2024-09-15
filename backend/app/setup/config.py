@@ -62,7 +62,7 @@ def parse_comma_separated(v: Any) -> Union[List[str], str]:
 
 
 # Project settings
-with open("pyproject.toml", "r") as f:
+with open("pyproject.toml", "r", encoding='utf8') as f:
     config = toml.load(f)
 
 
