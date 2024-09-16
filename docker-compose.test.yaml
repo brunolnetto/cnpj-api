@@ -17,7 +17,7 @@ services:
     env_file: .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./pg_hba.conf:/etc/postgresql/postgresql.conf
+      - ./pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
 
 
 volumes:
