@@ -30,8 +30,8 @@ def cnpj_str_to_obj(cnpj_str: str):
     Returns:
         CNPJ: The CNPJ object.
     """
-
     cnpj_list = parse_cnpj_str(cnpj_str)
+    
     return CNPJ(*cnpj_list)
 
 
@@ -798,6 +798,7 @@ class CNPJService:
                 limit=limit,
                 offset=offset,
             )
+
             cnpj_objs = list(map(cnpj_str_to_obj, cnpjs_raw_list))
 
             if len(cnpj_objs) != 0:
