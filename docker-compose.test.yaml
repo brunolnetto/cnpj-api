@@ -12,7 +12,7 @@ services:
       - .:/app
   db:
     container_name: cnpj_db
-    image: postgres:14
+    image: postgres:16
     restart: unless-stopped
     env_file: .env
     volumes:
