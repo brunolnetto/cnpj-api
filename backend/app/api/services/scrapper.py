@@ -1,12 +1,14 @@
 from urllib import request
 from functools import reduce
 from datetime import datetime
+from functools import partial, reduce
 import re
 
+
 from bs4 import BeautifulSoup
+from fastapi import Depends
 import pytz
 
-from fastapi import Depends
 
 from backend.app.setup.logging import logger
 from backend.app.api.models.base import BaseModel
@@ -36,6 +38,24 @@ class FileInfo(BaseModel):
             "file_size_bytes": self.file_size_bytes,
         }
 
+# Define helper functions
+def or_map(a, b):
+    return a or b
+
+def is_size_type(text, size_types):
+    return reduce(or_map, [text.endswith(size_type) for size_type in size_types])
+
+def collect_date(text, pattern):
+    return text and re.search(pattern, text)
+
+# Partially apply functions
+regex_pattern = r"\d{4}-\d{2}-\d{2}"
+size_types = UNIT_MULTIPLIER.keys()
+TIMEZONE_SAO_PAULO = pytz.timezone("America/Sao_Paulo")
+
+collect_date_partial = partial(collect_date, pattern=regex_pattern)
+is_size_type_partial = partial(is_size_type, size_types=size_types)
+or_map_partial = partial(or_map)
 
 class CNPJScrapService:
     def __init__(self) -> None:
@@ -85,26 +105,14 @@ class CNPJScrapService:
         for row in table_rows:
             # Find cells containing filename (anchor tag) and date
             filename_cell = row.find("a")
-            regex_pattern = r"\d{4}-\d{2}-\d{2}"
 
-            def collect_date(text):
-                return text and re.search(regex_pattern, text)
-
-            date_cell = row.find("td", text=collect_date)
-
-            # Find cell containing file size
-            size_types = UNIT_MULTIPLIER.keys()
+            date_cell = row.find("td", text=collect_date_partial)
 
             def or_map(a, b):
                 return a or b
 
-            def is_size_type(text):
-                return reduce(
-                    or_map, [text.endswith(size_type) for size_type in size_types]
-                )
-
             def is_size_map(text):
-                return text and is_size_type(text)
+                return text and is_size_type_partial(text)
 
             size_cell = row.find("td", text=is_size_map)
 
@@ -120,12 +128,8 @@ class CNPJScrapService:
                     # format if needed)
                     try:
                         updated_at = datetime.strptime(date_text, "%Y-%m-%d %H:%M")
-                        sao_paulo_timezone = pytz.timezone("America/Sao_Paulo")
-                        updated_at = sao_paulo_timezone.localize(updated_at)
-
-                        updated_at = updated_at.replace(
-                            hour=0, minute=0, second=0, microsecond=0
-                        )
+                        updated_at = TIMEZONE_SAO_PAULO.localize(updated_at)
+                        updated_at = updated_at.replace(hour=0, minute=0, second=0, microsecond=0)
 
                     except ValueError:
                         # Handle cases where date format doesn't match

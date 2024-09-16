@@ -6,7 +6,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.base import BaseScheduler
-from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 from typing import Dict, List, Any, Callable
 from datetime import datetime
@@ -112,7 +112,7 @@ def setup_scheduler(
     else:
         raise ValueError("Unsupported schedule_type. Use 'interval' or 'cron'.")
 
-    scheduler.add_job(job_function, trigger)
+    scheduler.add_job(job_function, trigger, id=f"")
 
 
 # Define a function to create the appropriate scheduler
@@ -122,9 +122,9 @@ audit_database = multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
 def create_scheduler(schedule_type):
     jobstores = {"default": SQLAlchemyJobStore(engine=audit_database.engine)}
 
-    executors = {
-        "default": ThreadPoolExecutor(max_workers=20),
-        "process": ProcessPoolExecutor(max_workers=5),
+    executors = executors = {
+        "default": {"type": "threadpool", "max_workers": 20},
+        "process": {"type": "processpool", "max_workers": 5},
     }
 
     if schedule_type == "background":
@@ -206,11 +206,11 @@ class TaskOrchestrator:
             "asyncio": create_scheduler("asyncio"),
         }
 
-    def start(self):
+    async def start(self):
         for scheduler in self.schedulers.values():
             scheduler.start()
 
-    def shutdown(self):
+    async def shutdown(self):
         for scheduler in self.schedulers.values():
             scheduler.shutdown()
 
@@ -247,6 +247,13 @@ class TaskOrchestrator:
             raise ValueError(f"{invalid_message} {available_message}")
 
         return scheduler
+
+    def remote_all_jobs_from(self, schedule_type: str):
+        self.schedulers[schedule_type].remove_all_jobs()
+        
+    def remote_all_jobs(self):
+        for scheduler in self.schedulers.values():
+            scheduler.remove_all_jobs()
 
 
 class TaskRegister:

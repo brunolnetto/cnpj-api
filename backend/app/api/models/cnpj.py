@@ -1,3 +1,6 @@
+from typing import Optional
+from pydantic import BaseModel
+
 from backend.app.api.utils.cnpj import is_cnpj_str_valid
 from .base import BatchModel
 
@@ -5,6 +8,10 @@ from .base import BatchModel
 class CNPJBatch(BatchModel):
     pass
 
+class ModeloSimplesSimei(BaseModel):
+    optante: bool = False
+    data_opcao: Optional[str]
+    data_exclusao: Optional[str]
 
 class CNPJ:
     def __init__(self, basico: str, ordem: str, digitos_verificadores: str):

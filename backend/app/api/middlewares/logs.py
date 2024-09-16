@@ -7,6 +7,7 @@ from io import BytesIO
 from backend.app.api.models.logs import RequestLogCreate
 from backend.app.api.repositories.logs import RequestLogRepository
 from backend.app.database.base import get_session
+from backend.app.scheduler.bundler import task_orchestrator
 from backend.app.setup.config import settings
 
 
@@ -16,6 +17,7 @@ async def capture_request_body(request: Request):
         request.state.body = await request.body()
     return request.state.body.decode() if request.state.body else ""
 
+background_scheduler=task_orchestrator.schedulers['background']
 
 class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -26,22 +28,21 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
 
         process_time = time() - start_time
 
-        # Capture response body from StreamingResponse
+        # Capture the response body for streaming responses
         response_body = b""
-        async for chunk in response.body_iterator:
-            response_body += chunk
+        async def log_body_iterator(body_iterator):
+            nonlocal response_body
+            async for chunk in body_iterator:
+                response_body += chunk
+                yield chunk  # Yield the chunk for the StreamingResponse
 
-        # Create a new StreamingResponse with the body content
-        response = StreamingResponse(
-            BytesIO(response_body),
-            headers=dict(response.headers),
-            status_code=response.status_code,
-            media_type=response.media_type,
-        )
+        # If the response is a StreamingResponse, capture the body
+        if hasattr(response, "body_iterator"):
+            response.body_iterator = log_body_iterator(response.body_iterator)
+
         response_size = len(response_body)
 
-        response = await call_next(request)
-
+        # Prepare log data
         log_data = {
             "relo_method": request.method,
             "relo_url": str(request.url),
@@ -55,10 +56,20 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
             "relo_inserted_at": strftime("%Y-%m-%d %H:%M:%S", localtime(start_time)),
         }
 
-        log = RequestLogCreate(**log_data)
+        # Schedule the log entry as a background task
+        background_scheduler.add_job(
+            self.log_request, 
+            args=[log_data], 
+            id=f"log-{strftime('%Y%m%d%H%M%S', localtime(start_time))}"
+        )
 
+        # Return the original response
+        return response
+
+    @staticmethod
+    def log_request(log_data):
+        # This function runs in the background to log the request details
         with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
+            log = RequestLogCreate(**log_data)
             log_repository = RequestLogRepository(db_session)
             log_repository.create(log)
-
-        return response

@@ -1,8 +1,23 @@
 import time
+import re
 from typing import Callable, Any
 
 from backend.app.utils.misc import is_positive, is_non_negative
 from backend.app.api.constants import UNIT_MULTIPLIER, MAX_LIMIT
+
+
+def zfill_factory(n: int):
+    # Normalize data
+    def zfill_map(value: str, num: int):
+        return value.zfill(num)
+
+    def zfill_n(value: Any):
+        return zfill_map(value, n)
+
+    return zfill_n
+
+def normalize_json(json_str: str):
+    return re.sub(r"(?<!\\)'", '"', json_str)
 
 
 def time_execution(func: Callable[..., Any], *args, **kwargs) -> Any:

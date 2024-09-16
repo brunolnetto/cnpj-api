@@ -1,14 +1,16 @@
 from datetime import datetime
-from typing import Dict, Union, List, Any
+from typing import Tuple, Dict, Union, List, Any, Optional
 from time import perf_counter
 
-
+import re
 import pandas as pd
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
+from json import loads
 
-
+from backend.app.api.models.cnpj import ModeloSimplesSimei
 from backend.app.utils.misc import string_to_json
+from backend.app.api.utils.cnpj import format_cnpj_list
 from backend.app.api.models.cnpj import CNPJ
 from backend.app.utils.repositories import (
     format_database_date,
@@ -26,6 +28,7 @@ from backend.app.utils.misc import (
     number_string_to_number,
     humanize_string,
 )
+from backend.app.api.utils.misc import zfill_factory, normalize_json
 from backend.app.api.utils.ml import find_most_possible_tokens
 from backend.app.utils.dataframe import dataframe_to_nested_dict
 from backend.app.api.utils.cnpj import format_cnpj
@@ -35,16 +38,14 @@ from backend.app.api.repositories.constants import (
     get_establishment_type_dict,
 )
 
-
 # Types
 CNPJList = List[CNPJ]
 JSON = Dict[str, Any]
 CodeType = Union[str, int]
 CodeListType = List[CodeType]
 
-
 class CNPJRepository:
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: Session):
         self.session = session
         self.cnaes_dict = {
             cnae_info["code"]: cnae_info
@@ -567,11 +568,8 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the company.
         """
-        cnpj_basicos = [cnpj_obj.basico_int for cnpj_obj in cnpj_list]
-        cnpj_basicos_str = ",".join(
-            [f"'{str(cnpj_basico)}'" for cnpj_basico in cnpj_basicos]
-        )
-
+        cnpj_basicos_str = format_cnpj_list(cnpj_list)
+        
         columns = [
             "cnpj_basico",
             "razao_social",
@@ -613,14 +611,15 @@ class CNPJRepository:
         empty_df = pd.DataFrame(columns=columns)
         company_df = pd.DataFrame(company_result, columns=columns)
         company_df = empty_df if len(company_result) == 0 else company_df
+        company_df["cnpj_basico"] = company_df["cnpj_basico"].apply(zfill_factory(8))
 
         if len(company_df) == 0:
             return []
+        
+        company_dict=dataframe_to_nested_dict(company_df, "cnpj_basico")
 
-        company_df["efr"] = company_df["ente_federativo_responsavel"]
-        company_df["nome"] = company_df["razao_social"]
-        del company_df["razao_social"]
-        del company_df["ente_federativo_responsavel"]
+        def item_map(item):
+            return item[0], self.__format_company(item[1])
 
         capital_social = company_df["capital_social"]
         capital_social = capital_social.apply(format_decimal)
@@ -646,7 +645,8 @@ class CNPJRepository:
 
         companies_dict = {
             cnpj.to_raw(): company_dict[cnpj_base]
-            for cnpj_base, cnpj in zip(cnpjs_base, cnpj_list)
+            for cnpj_base, cnpj in zip(cnpjs_base, cnpj_list) 
+            if cnpj_base in company_dict
         }
 
         return companies_dict
@@ -788,8 +788,33 @@ class CNPJRepository:
 
         return establishment_dict
 
+<<<<<<< HEAD
     def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
         t0 = perf_counter()
+=======
+    def __format_company(self, company_dict: Dict[str, Any]) -> Dict[str, Any]:
+        company_dict["efr"] = company_dict["ente_federativo_responsavel"]
+        company_dict["nome"] = company_dict["razao_social"]
+        del company_dict["razao_social"]
+        del company_dict["ente_federativo_responsavel"]
+        capital_social = company_dict["capital_social"]
+        capital_social = format_decimal(capital_social)
+
+        company_dict["capital_social"] = capital_social
+
+        company_dict["porte"] = SIZE_DICT[str(
+            number_string_to_number(
+                company_dict["porte_empresa"]
+            )
+        )]
+        del company_dict["porte_empresa"]
+
+        return company_dict
+
+
+    def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
+
+>>>>>>> f607e10 (feat: simples-simei information)
         instants = []
 
         columns = [
@@ -847,8 +872,6 @@ class CNPJRepository:
         establishment_result = self.session.execute(query)
         establishment_result = establishment_result.fetchall()
 
-        instants.append(perf_counter() - t0)
-
         empty_df = pd.DataFrame(columns=columns)
         df_is_empty = len(establishment_result) == 0
         if df_is_empty:
@@ -856,8 +879,6 @@ class CNPJRepository:
 
         establishment_result = replace_invalid_fields_on_list_tuple(establishment_result)
         establishment_result = replace_spaces_on_list_tuple(establishment_result)
-
-        instants.append(perf_counter() - t0)
 
         establishment_df = pd.DataFrame(establishment_result, columns=columns)
         establishment_df = (
@@ -867,8 +888,6 @@ class CNPJRepository:
         registration_status = tuple(set(establishment_df["motivo_situacao_cadastral"]))
         registration_status = [f"'{status}'" for status in registration_status]
         registration_status_str = ",".join(registration_status)
-
-        instants.append(perf_counter() - t0)
 
         query = text(
             f"""
@@ -884,8 +903,6 @@ class CNPJRepository:
         registration_status_result = self.session.execute(query)
         registration_status_result = registration_status_result.fetchall()
 
-        instants.append(perf_counter() - t0)
-
         registration_status_dict = dict(registration_status_result)
 
         registration_status = establishment_df["motivo_situacao_cadastral"]
@@ -896,17 +913,6 @@ class CNPJRepository:
         cnpj_ordem_series = establishment_df["cnpj_ordem"]
         cnpj_dv_series = establishment_df["cnpj_dv"]
 
-        instants.append(perf_counter() - t0)
-
-        def zfill_factory(n: int):
-            # Normalize data
-            def zfill_map(value: str, num: int):
-                return value.zfill(num)
-
-            def zfill_n(value: Any):
-                return zfill_map(value, n)
-
-            return zfill_n
 
         establishment_df["cnpj_"] = (
             cnpj_base_series.apply(zfill_factory(8))
@@ -914,18 +920,17 @@ class CNPJRepository:
             + cnpj_dv_series.apply(zfill_factory(2))
         )
         establishment_dict = dataframe_to_nested_dict(establishment_df, "cnpj_")
+<<<<<<< HEAD
         establishment_items = list(establishment_dict.items())
         
         instants.append(perf_counter() - t0)
+=======
+>>>>>>> f607e10 (feat: simples-simei information)
 
         def item_map(item):
             return item[0], self.__format_establishment(item[1])
 
-        establishment_dict = dict(map(item_map, establishment_items))
-
-        instants.append(perf_counter() - t0)
-
-        print(instants)
+        establishment_dict = dict(map(item_map, establishment_dict.items()))
 
         return establishment_dict
 
@@ -1012,8 +1017,7 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the partners.
         """
-        cnpj_basicos = [f"'{str(cnpj_obj.basico_int)}'" for cnpj_obj in cnpj_list]
-        cnpj_basicos_str = ",".join(cnpj_basicos)
+        cnpj_basicos_str = cnpj_basicos_str = format_cnpj_list(cnpj_list)
 
         query = text(
             f"""
@@ -1060,11 +1064,8 @@ class CNPJRepository:
         partners_df = pd.DataFrame(partners_result, columns=columns)
         partners_df = empty_df if len(partners_df) == 0 else partners_df
 
-        def fill_8_map(cnpj):
-            return cnpj.zfill(8)
-
         partners_df["qsa"] = partners_df["qsa"].apply(string_to_json)
-        partners_df["cnpj_basico"] = partners_df["cnpj_basico"].apply(fill_8_map)
+        partners_df["cnpj_basico"] = partners_df["cnpj_basico"].apply(zfill_factory(8))
         partners_dict = dataframe_to_nested_dict(partners_df, index_col="cnpj_basico")
 
         cnpjs_raw_base = [(cnpj.to_raw(), cnpj.to_tuple()[0]) for cnpj in cnpj_list]
@@ -1077,10 +1078,157 @@ class CNPJRepository:
             )
 
         partners_dict = {
-            cnpj_raw: cnpj_map(cnpj_base) for cnpj_raw, cnpj_base in cnpjs_raw_base
+            cnpj_raw: cnpj_map(cnpj_base) 
+            for cnpj_raw, cnpj_base in cnpjs_raw_base 
+            if cnpj_base in partners_dict
         }
 
         return partners_dict
+    
+    def parse_simples_simei(self, payload: Dict[str, str]) -> Tuple[bool, Optional[str], Optional[str]]:
+        """
+        Parse the payload to ensure correct data types.
+        
+        :param payload: Dictionary with 'optante', 'data_opcao', and 'data_exclusao' keys.
+        :return: Tuple with boolean, and optional strings for dates.
+        """
+        # Convert 'optante' to boolean
+        optante_str = payload.get('optante', 'false').lower()
+        optante = optante_str in ['true', '1']
+        
+        # Extract and validate dates
+        data_opcao = payload.get('data_opcao')
+        data_exclusao = payload.get('data_exclusao')
+        
+        # Handle 'null' as None
+        if data_opcao == 'null':
+            data_opcao = None
+        if data_exclusao == 'null':
+            data_exclusao = None
+
+        return (optante, data_opcao, data_exclusao)
+    
+    def get_cnpjs_simples_simei(self, cnpj_list: CNPJList) -> List:
+        """
+        Get the partners for the CNPJ.
+
+        Parameters:
+        cnpj (CNPJ): The CNPJ object.
+
+        Returns:
+        DataFrame: The DataFrame with the partners.
+        """
+        cnpj_basicos_str = format_cnpj_list(cnpj_list)
+
+        query = text(
+            f"""
+            SELECT
+                cnpj_basico,
+                json_build_object(
+                    'optante', case when opcao_pelo_simples ilike 'S' then 'true' else 'false' end,
+                    'data_opcao', COALESCE(
+                        TO_CHAR(
+                            TO_DATE(
+                                NULLIF(data_opcao_simples, '0'),  -- Replace '0' with NULL
+                                'YYYYMMDD'
+                            ),
+                            'DD/MM/YYYY'
+                        ),
+                        'null'  -- Default value if the date is invalid or NULL
+                    ),
+                    'data_exclusao', COALESCE(
+                        TO_CHAR(
+                            TO_DATE(
+                                NULLIF(data_exclusao_simples, '0'),  -- Replace '0' with NULL
+                                'YYYYMMDD'
+                            ),
+                            'DD/MM/YYYY'
+                        ),
+                        'null'  -- Default value if the date is invalid or NULL
+                    )
+                ) AS simples,
+                json_build_object(
+                    'optante', case when opcao_mei ilike 'S' then 'true' else 'false' end,
+                    'data_opcao', COALESCE(
+                        TO_CHAR(
+                            TO_DATE(
+                                NULLIF(data_opcao_mei, '0'),  -- Replace '0' with NULL
+                                'YYYYMMDD'
+                            ),
+                            'DD/MM/YYYY'
+                        ),
+                        'null'  -- Default value if the date is invalid or NULL
+                    ),
+                    'data_exclusao', COALESCE(
+                        TO_CHAR(
+                            TO_DATE(
+                                NULLIF(data_exclusao_mei, '0'),
+                                'YYYYMMDD'
+                            ),
+                            'DD/MM/YYYY'
+                        ),
+                        'null'
+                    )
+                ) AS simei
+            FROM
+                simples soc
+                where
+                    cnpj_basico IN ({cnpj_basicos_str})
+            """
+        )
+
+        simples_simei_result = self.session.execute(query)
+        simples_simei_result = simples_simei_result.fetchall()
+        simples_simei_result = replace_invalid_fields_on_list_tuple(simples_simei_result)
+        simples_simei_result = replace_spaces_on_list_tuple(simples_simei_result)
+
+        columns = ["cnpj_basico","simples", "simei"]
+        empty_df = pd.DataFrame(columns=columns)
+
+        simples_simei_df = pd.DataFrame(simples_simei_result, columns=columns)
+        simples_simei_df = simples_simei_df \
+            if len(simples_simei_df) == 0 \
+            else simples_simei_df
+        
+        simples_simei_df["cnpj_basico"] = simples_simei_df["cnpj_basico"].apply(zfill_factory(8))
+
+        cnpjs_raw_base = [(cnpj.to_raw(), cnpj.to_tuple()[0]) for cnpj in cnpj_list]
+        
+        not_selected_dict={
+            'optante': False,
+            'data_opcao': None,
+            'data_exclusao': None,
+        }
+        empty_dict = {"simples": not_selected_dict, "simei": not_selected_dict}
+
+        simples_simei_dict = dataframe_to_nested_dict(simples_simei_df, index_col="cnpj_basico")
+
+        def cnpj_map(cnpj_base_):            
+            simples_str=simples_simei_dict.get(cnpj_base_, {}).get('simples', '{}')
+            normalized_json = normalize_json(simples_str)
+            simples_dict=loads(normalized_json)
+
+            simei_str=simples_simei_dict.get(cnpj_base_, {}).get('simei', '{}')
+            normalized_json = normalize_json(simei_str)
+            simei_dict=loads(normalized_json)
+            
+            return (
+                {
+                    'simples': self.parse_simples_simei(simples_dict) \
+                        if simples_dict['optante'] else not_selected_dict,
+                    'simei': self.parse_simples_simei(simei_dict) \
+                        if simei_dict['optante'] else not_selected_dict
+                }
+                if cnpj_base_ in simples_simei_dict 
+                else empty_dict
+            )
+
+        simples_simei_dict = {
+            cnpj_raw: cnpj_map(cnpj_base) 
+            for cnpj_raw, cnpj_base in cnpjs_raw_base
+        }
+
+        return simples_simei_dict
 
     def get_cnpj_activities(self, cnpj: CNPJ):
         """
@@ -1235,6 +1383,7 @@ class CNPJRepository:
         companies_list = list(company_dict)
         partners_list = list(partners_dict)
 
+        # XXX: Review missing information on original methods
         common_keys = list(
             set(establ_list).intersection(companies_list).intersection(partners_list)
         )
@@ -1469,3 +1618,5 @@ class CNPJRepository:
         ]
 
         return self.get_cnpjs_info(cnpjs_str_list)
+
+
