@@ -21,29 +21,29 @@ SITUATION_DICT = {
 EST_TYPE_DICT = {"1": "MATRIZ", "2": "FILIAL"}
 
 
-    def get_company_size_dict():
-        """
-        Get the company dictionary.
+def get_company_size_dict():
+    """
+    Get the company dictionary.
 
-        Returns:
-        - dict: The company dictionary.
-        """
-        return SIZE_DICT
+    Returns:
+    - dict: The company dictionary.
+    """
+    return SIZE_DICT
 
-    def get_establishment_type_dict():
-        """
-        Get the establishment type dictionary.
+def get_establishment_type_dict():
+    """
+    Get the establishment type dictionary.
 
-        Returns:
-        - dict: The establishment type dictionary.
-        """
-        return EST_TYPE_DICT
+    Returns:
+    - dict: The establishment type dictionary.
+    """
+    return EST_TYPE_DICT
 
-    def get_company_situation_dict():
-        """
-        Get the company situation dictionary.
+def get_company_situation_dict():
+    """
+    Get the company situation dictionary.
 
-        Returns:
-        - dict: The company situation dictionary.
-        """
-        return SITUATION_DICT
+    Returns:
+    - dict: The company situation dictionary.
+    """
+    return SITUATION_DICT
