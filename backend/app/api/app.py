@@ -24,7 +24,7 @@ from backend.app.api.dependencies.logs import log_app_start
 from backend.app.database.base import init_database, multi_database
 from backend.app.api.utils.ml import init_nltk
 from backend.app.scheduler.bundler import task_orchestrator
-from backend.app.rate_limiter import limiter
+from backend.app.rate_limiter import rate_limit
 from backend.app.setup.logging import setup_logger
 
 
@@ -114,7 +114,6 @@ def setup_app(app_: FastAPI):
 
     # Add favicon
     @app_.get("/favicon.ico")
-    @limiter.limit(settings.DEFAULT_RATE_LIMIT)
     async def get_favicon(request: Request):
         return FileResponse("static/favicon.ico")
 
