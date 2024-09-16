@@ -7,3 +7,15 @@ from backend.app.setup.config import settings
 limiter = Limiter(
     key_func=get_remote_address, default_limits=settings.DEFAULT_RATE_LIMITS
 )
+
+# Disable rate limiting in development
+DISABLE_RATE_LIMITING=settings.ENVIRONMENT == "development"
+
+# Create a custom decorator with optional rate limit configuration
+def rate_limit(rate_limit_config: str = settings.DEFAULT_RATE_LIMIT):
+    def decorator(func):
+        if not DISABLE_RATE_LIMITING:
+            return limiter.limit(rate_limit_config)(func)
+        else:
+            return func
+    return decorator

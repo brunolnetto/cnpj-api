@@ -79,7 +79,7 @@ class Settings(BaseSettings):
     DESCRIPTION: str = config["tool"]["poetry"]["description"]
     API_V1_STR: str = "/api"
 
-    ENVIRONMENT: Literal["development", "staging", "production"] = "development"
+    ENVIRONMENT: Literal["development", "production"] = "development"
     MACHINE_NAME: str = platform.node()
 
     DOMAIN: str = "localhost:8000"
