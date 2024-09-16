@@ -780,33 +780,8 @@ class CNPJRepository:
 
         return establishment_dict
 
-<<<<<<< HEAD
     def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
         t0 = perf_counter()
-=======
-    def __format_company(self, company_dict: Dict[str, Any]) -> Dict[str, Any]:
-        company_dict["efr"] = company_dict["ente_federativo_responsavel"]
-        company_dict["nome"] = company_dict["razao_social"]
-        del company_dict["razao_social"]
-        del company_dict["ente_federativo_responsavel"]
-        capital_social = company_dict["capital_social"]
-        capital_social = format_decimal(capital_social)
-
-        company_dict["capital_social"] = capital_social
-
-        company_dict["porte"] = SIZE_DICT[str(
-            number_string_to_number(
-                company_dict["porte_empresa"]
-            )
-        )]
-        del company_dict["porte_empresa"]
-
-        return company_dict
-
-
-    def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
-
->>>>>>> f607e10 (feat: simples-simei information)
         instants = []
 
         columns = [
@@ -912,12 +887,9 @@ class CNPJRepository:
             + cnpj_dv_series.apply(zfill_factory(2))
         )
         establishment_dict = dataframe_to_nested_dict(establishment_df, "cnpj_")
-<<<<<<< HEAD
         establishment_items = list(establishment_dict.items())
         
         instants.append(perf_counter() - t0)
-=======
->>>>>>> f607e10 (feat: simples-simei information)
 
         def item_map(item):
             return item[0], self.__format_establishment(item[1])
