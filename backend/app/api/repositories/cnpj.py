@@ -1,5 +1,7 @@
 from datetime import datetime
 from typing import Dict, Union, List, Any
+from time import perf_counter
+
 
 import pandas as pd
 from sqlalchemy import text
@@ -767,11 +769,12 @@ class CNPJRepository:
 
         if is_field_valid(side_activities_str):
             cnae_list = side_activities_str.split(",")
-
-            if len(cnae_list) != 0:
+            has_side_cnaes=len(cnae_list) != 0 and cnae_list[0]!=''
+            
+            side_activity_names=[]
+            if has_side_cnaes:
                 cnae_list = [str(int(cnae_str.strip())) for cnae_str in cnae_list]
                 side_activity_names = self.get_cnae_list(cnae_list)
-                print(side_activity_names)
 
             establishment_dict["atividades_secundarias"] = side_activity_names
         else:
@@ -786,8 +789,6 @@ class CNPJRepository:
         return establishment_dict
 
     def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
-        from time import perf_counter
-
         t0 = perf_counter()
         instants = []
 
@@ -853,9 +854,7 @@ class CNPJRepository:
         if df_is_empty:
             return {}
 
-        establishment_result = replace_invalid_fields_on_list_tuple(
-            establishment_result
-        )
+        establishment_result = replace_invalid_fields_on_list_tuple(establishment_result)
         establishment_result = replace_spaces_on_list_tuple(establishment_result)
 
         instants.append(perf_counter() - t0)
@@ -916,7 +915,7 @@ class CNPJRepository:
         )
         establishment_dict = dataframe_to_nested_dict(establishment_df, "cnpj_")
         establishment_items = list(establishment_dict.items())
-
+        
         instants.append(perf_counter() - t0)
 
         def item_map(item):
@@ -1225,13 +1224,13 @@ class CNPJRepository:
 
         # Get the establishment
         establishment_dict = self.get_cnpjs_establishment(cnpj_list)
-
+        print(':)')
         # Get company info
         company_dict = self.get_cnpjs_company(cnpj_list)
-
+        print(':)')
         # Get partners
         partners_dict = self.get_cnpjs_partners(cnpj_list)
-
+        print(':)')
         establ_list = list(establishment_dict)
         companies_list = list(company_dict)
         partners_list = list(partners_dict)
