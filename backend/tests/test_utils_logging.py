@@ -30,7 +30,7 @@ def test_clear_folder_items_success():
 def test_clear_folder_items_key_name():
     """Tests clear_latest_items with a key name."""
     tmp_path = "tests/tmp"
-    shutil.rmtree(tmp_path, ignore_errors=True)
+    rmtree(tmp_path, ignore_errors=True)
 
     makedirs(tmp_path, exist_ok=True)
     makedirs(f"{tmp_path}/1", exist_ok=True)
@@ -46,7 +46,7 @@ def test_clear_folder_items_key_name():
     assert path.exists(f"{tmp_path}/2")
     assert path.exists(f"{tmp_path}/3")
 
-    shutil.rmtree(tmp_path, ignore_errors=True)
+    rmtree(tmp_path, ignore_errors=True)
 
 
 def test_clear_folder_items_not_found():
@@ -84,7 +84,7 @@ def test_clear_folder_items_not_enough_items():
 def test_clear_folder_items_files():
     """Tests clear_latest_items with files."""
     tmp_path = "tests/tmp"
-    shutil.rmtree(tmp_path, ignore_errors=True)
+    rmtree(tmp_path, ignore_errors=True)
 
     makedirs(tmp_path, exist_ok=True)
     with open(f"{tmp_path}/1.txt", "w") as f:
