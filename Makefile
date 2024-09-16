@@ -76,7 +76,7 @@ cloc-install: ## Installs row-count tool
 	apt install cloc
 
 cloc: ## Row count of code. Usage: make cloc
-	cloc .
+	cloc --by-percent=cmb --progress-rate=100 .
 
 pylint:
 	@pylint backend/
