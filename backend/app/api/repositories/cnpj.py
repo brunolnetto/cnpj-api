@@ -11,7 +11,6 @@ from backend.app.utils.misc import string_to_json
 from backend.app.api.utils.cnpj import format_cnpj_list
 from backend.app.api.utils.misc import paginate_dict
 from backend.app.api.models.cnpj import CNPJ
-
 from backend.app.utils.repositories import (
     format_database_date, format_cep, format_phone,
 )
@@ -36,6 +35,7 @@ from backend.app.api.repositories.constants import (
     get_company_situation_dict,
     get_establishment_type_dict,
 )
+from backend.app.database.base import get_session
 from backend.app.setup.config import settings
 
 # Types
@@ -705,9 +705,6 @@ class CNPJRepository:
         return establishment_dict
 
     def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
-        t0 = perf_counter()
-        instants = []
-
         columns = [
             "cnpj_basico",
             "cnpj_ordem",
@@ -759,7 +756,8 @@ class CNPJRepository:
             """
         )
 
-        establishment_result = self.session.execute(query).fetchall()
+        with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+            establishment_result = session.execute(query).fetchall()
 
         empty_df = pd.DataFrame(columns=columns)
         df_is_empty = len(establishment_result) == 0
@@ -912,8 +910,10 @@ class CNPJRepository:
             """
         )
 
-        partners_result = self.session.execute(query)
-        partners_result = partners_result.fetchall()
+        with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+            partners_result = session.execute(query)
+            partners_result = partners_result.fetchall()
+            print(partners_result)
 
         partners_result = replace_invalid_fields_on_list_tuple(partners_result)
         partners_result = replace_spaces_on_list_tuple(partners_result)
@@ -1044,7 +1044,9 @@ class CNPJRepository:
             """
         )
 
-        simples_simei_result = self.session.execute(query)
+        with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+            simples_simei_result = session.execute(query)
+        
         simples_simei_result = simples_simei_result.fetchall()
         simples_simei_result = replace_invalid_fields_on_list_tuple(
             simples_simei_result)
@@ -1304,7 +1306,7 @@ class CNPJRepository:
             .intersection(partners_set)
             .intersection(simples_simei_set)
         )
-
+        
         cnpj_info_dict = {
             common_key: {
                 **establishment_dict[common_key],

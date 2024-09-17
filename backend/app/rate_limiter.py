@@ -9,11 +9,9 @@ limiter = Limiter(
 )
 
 # Disable rate limiting in development
-DISABLE_RATE_LIMITING = settings.ENVIRONMENT == "production"
+DISABLE_RATE_LIMITING = settings.ENVIRONMENT == "development"
 
 # Create a custom decorator with optional rate limit configuration
-
-
 def rate_limit(rate_limit_config: str = settings.DEFAULT_RATE_LIMIT):
     def decorator(func):
         if DISABLE_RATE_LIMITING:

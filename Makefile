@@ -16,7 +16,7 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 help:
-	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+	@python3 -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 clean-logs: # Removes log info. Usage: make clean-logs
 	rm -fr build/ dist/ .eggs/
@@ -27,6 +27,7 @@ clean-test: # Remove test and coverage artifacts
 
 clean-cache: # remove test and coverage artifacts
 	find . -name '*pycache*' -exec rm -rf {} +
+	find . -name '*_pycache*' -exec rm -rf {} +
 
 sanitize: # Remove dangling images and volumes
 	docker system prune --volumes -f
@@ -42,6 +43,7 @@ install: ## Installs the python requirements. Usage: make install
 	pip install uv
 	uv pip install -r requirements.txt
 	uv pip install -r requirements_dev.txt
+	apt install black pylint
 
 run: ## Run the application. Usage: make run
 	uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
@@ -61,12 +63,12 @@ test: ## Test the application. Usage: make test
 test-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
 	ptw --quiet --spool 200 --clear --nobeep --config pytest.ini --ext=.py --onfail="echo Tests failed, fix the issues"
 
+report: test ## Generate coverage report. Usage: make report
+	coverage report --omit=$(OMIT_PATHS) --show-missing
+
 minimal-requirements: ## Generates minimal requirements. Usage: make requirements
 	python3 scripts/clean_packages.py requirements.txt requirements.txt
-
-lint-install: ## Installs lint dependencies. Usage: make lint-install
-	apt install autopep8 black
-
+	
 lint: ## Perform inplace lint fixes. Usage: make lint
 	@autopep8 --in-place --aggressive --aggressive $(shell git ls-files '*.py')
 	@ruff check --unsafe-fixes --fix .
@@ -81,8 +83,26 @@ cloc: ## Row count of code. Usage: make cloc
 pylint:
 	@pylint backend/
 
-report: test ## Generate coverage report. Usage: make report
-	coverage report --omit=$(OMIT_PATHS) --show-missing
+build-test: ## Build the test container image. Usage: make build
+	docker compose -f docker-compose.test.yaml build
+
+ps-test: ## List all running test containers. Usage: make ps
+	docker compose -f docker-compose.test.yaml ps -a
+
+up-test: ## Start the test application. Usage: make up
+	docker compose -f docker-compose.test.yaml up -d
+
+populate-test: ## Populate the test database. Usage: make populate-test
+	docker cp data/sample_data.sql db:/var/lib/postgresql/data/sample_data.sql
+	docker exec -it db psql -U postgres -d postgres -f /home/sample_data.sql
+
+down-test: ## Stop the application. Usage: make down
+	docker compose -f docker-compose.test.yaml down
+
+logs-test: ## Logs the container. Usage: make logs
+	docker compose -f docker-compose.test.yaml logs -f
+
+restart-test: down-test build-test up-test ## Restart the test application. Usage: make restart
 
 build: ## Build the container image. Usage: make build
 	docker compose build
