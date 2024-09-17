@@ -1,5 +1,5 @@
 services:
-  backend-app:
+  backend:
     container_name: cnpj_app
     build: .
     restart: unless-stopped
@@ -7,7 +7,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    env_file: .env
+    env_file: .env.test
     volumes:
       - .:/app
   db:

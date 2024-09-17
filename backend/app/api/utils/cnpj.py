@@ -1,5 +1,9 @@
 from typing import Dict, List, Union, Tuple
 
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+import pandas as pd
+
 from backend.app.utils.misc import is_number
 
 
@@ -61,7 +65,9 @@ def is_cnpj_str_valid(cnpj: str) -> Dict[str, Union[bool, str]]:
         digit1, digit2 = calculate_cnpj_verification_digits(cnpj)
 
     except ValueError:
-        return {"is_valid": False, "reason": "CNPJ contains non-numeric characters."}
+        return {
+            "is_valid": False,
+            "reason": "CNPJ contains non-numeric characters."}
 
     # Check verification digits
     if cnpj[12] != str(digit1) or cnpj[13] != str(digit2):
@@ -118,12 +124,36 @@ def format_cnpj(cnpj_str: str) -> str:
 
     return f"{basico}/{ordem}-{digitos_verificadores}"
 
+
 def format_cnpj_list(cnpj_list: List[str]) -> List[str]:
     """
     Formats a list of CNPJ strings.
-    
+
     Args:
         cnpj_list (List[str]): The list of CNPJ strings to format.
     """
     cnpj_basicos = [f"'{str(cnpj_obj.basico_int)}'" for cnpj_obj in cnpj_list]
     return ",".join(cnpj_basicos)
+
+
+def get_cnpj_code_description_entries(session: Session, table_name: str):
+    """
+    Get all code-description entrie from the specified table.
+
+    Args:
+        table_name (str): The name of the table to query.
+        limit (int, optional): The number of rows to fetch. Defaults to 10.
+        offset (int, optional): The starting offset for the query. Defaults to 0.
+        enable_pagination (bool, optional): Whether to enable pagination. Defaults to True.
+
+    Returns:
+        dict: A dictionary containing the CNAEs.
+    """
+    entries_result = session.execute(
+        text(f"SELECT codigo, descricao FROM {table_name}"))
+    entries_result = entries_result.fetchall()
+
+    entries_df = pd.DataFrame(entries_result, columns=["code", "text"])
+    entries_dict = entries_df.to_dict(orient="records")
+
+    return entries_dict

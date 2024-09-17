@@ -1,7 +1,7 @@
 from urllib import request
 from functools import reduce
 from datetime import datetime
-from functools import partial, reduce
+from functools import partial
 import re
 
 
@@ -39,14 +39,20 @@ class FileInfo(BaseModel):
         }
 
 # Define helper functions
+
+
 def or_map(a, b):
     return a or b
 
+
 def is_size_type(text, size_types):
-    return reduce(or_map, [text.endswith(size_type) for size_type in size_types])
+    return reduce(or_map, [text.endswith(size_type)
+                  for size_type in size_types])
+
 
 def collect_date(text, pattern):
     return text and re.search(pattern, text)
+
 
 # Partially apply functions
 regex_pattern = r"\d{4}-\d{2}-\d{2}"
@@ -56,6 +62,7 @@ TIMEZONE_SAO_PAULO = pytz.timezone("America/Sao_Paulo")
 collect_date_partial = partial(collect_date, pattern=regex_pattern)
 is_size_type_partial = partial(is_size_type, size_types=size_types)
 or_map_partial = partial(or_map)
+
 
 class CNPJScrapService:
     def __init__(self) -> None:
@@ -127,13 +134,16 @@ class CNPJScrapService:
                     # Try converting date text to datetime object (adjust
                     # format if needed)
                     try:
-                        updated_at = datetime.strptime(date_text, "%Y-%m-%d %H:%M")
+                        updated_at = datetime.strptime(
+                            date_text, "%Y-%m-%d %H:%M")
                         updated_at = TIMEZONE_SAO_PAULO.localize(updated_at)
-                        updated_at = updated_at.replace(hour=0, minute=0, second=0, microsecond=0)
+                        updated_at = updated_at.replace(
+                            hour=0, minute=0, second=0, microsecond=0)
 
                     except ValueError:
                         # Handle cases where date format doesn't match
-                        logger.error(f"Error parsing date for file: {filename}")
+                        logger.error(
+                            f"Error parsing date for file: {filename}")
 
                     size_value_str = size_cell.text.strip()
 
@@ -155,7 +165,9 @@ class CNPJScrapService:
         """
 
         files_info = self.scrap_files_date()
-        max_date = max(files_info.values(), key=lambda x: x["updated_at"])["updated_at"]
+        max_date = max(
+            files_info.values(),
+            key=lambda x: x["updated_at"])["updated_at"]
         return max_date
 
 

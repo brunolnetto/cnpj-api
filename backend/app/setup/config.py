@@ -81,6 +81,7 @@ class Settings(BaseSettings):
 
     ENVIRONMENT: Literal["development", "production"] = "development"
     MACHINE_NAME: str = platform.node()
+    SIGNATURE: str = "Suas Vendas rocks!"
 
     DOMAIN: str = "localhost:8000"
 
@@ -91,6 +92,9 @@ class Settings(BaseSettings):
 
     # 1 day
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1 * 24 * 60
+
+    # Page size
+    PAGE_SIZE: int = 10
 
     @computed_field  # type: ignore[misc]
     @property
@@ -145,12 +149,16 @@ class Settings(BaseSettings):
 
     @field_validator("DEFAULT_RATE_LIMITS", mode="before")
     @classmethod
-    def default_rate_limits(cls, v: Optional[str], values: ValidationInfo) -> List[str]:
+    def default_rate_limits(
+            cls,
+            v: Optional[str],
+            values: ValidationInfo) -> List[str]:
         rate_limit = values.data.get("DEFAULT_RATE_LIMIT")
         burst_rate_limit = values.data.get("DEFAULT_BURST_RATE_LIMIT")
         return [rate_limit, burst_rate_limit]
 
-    def _check_default_secret(self, var_name: str, value: Union[str, None]) -> None:
+    def _check_default_secret(
+            self, var_name: str, value: Union[str, None]) -> None:
         if value == DEFAULT_PASSWORD:
             message = (
                 f'The value of {var_name} is "{DEFAULT_PASSWORD}", '

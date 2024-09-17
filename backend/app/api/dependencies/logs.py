@@ -44,4 +44,3 @@ async def log_app_start():
 
 TaskLogsRepositoryDependency = Depends(get_task_logs_repository)
 RequestLogsRepositoryDependency = Depends(get_request_logs_repository)
-AppStartLogRepositoryDependency = Depends(get_app_start_logs_repository)

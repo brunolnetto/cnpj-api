@@ -1,17 +1,18 @@
 # Description: This file initializes the FastAPI application and sets up
 # configurations.
 from contextlib import asynccontextmanager
-import asyncio
+from asyncio import create_task
+from time import perf_counter
 
 from fastapi import FastAPI, status, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.background import BackgroundTask
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 
 from backend.app.setup.config import settings
+from backend.app.setup.logging import logger
 from backend.app.api.routes.router_bundler import api_router
 from backend.app.api.exceptions import (
     not_found_handler,
@@ -21,6 +22,7 @@ from backend.app.api.exceptions import (
 from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware
 from backend.app.api.middlewares.misc import TimingMiddleware
 from backend.app.api.dependencies.logs import log_app_start
+from backend.app.api.dependencies.cnpj import initialize_CNPJRepository_on_startup
 from backend.app.database.base import init_database, multi_database
 from backend.app.api.utils.ml import init_nltk
 from backend.app.scheduler.bundler import task_orchestrator
@@ -33,25 +35,35 @@ async def lifespan(app: FastAPI):
     """
     The `lifespan` async context manager in Python initializes and cleans up various tasks for a FastAPI
     application.
-    
+
     :param app: The `app` parameter in the `lifespan` async context manager function is of type
     `FastAPI`. It is likely being used to pass in the FastAPI application instance to perform
     initialization and cleanup tasks related to the application's lifespan
     :type app: FastAPI
     """
+    t0=perf_counter()
+    # Data related entities
     await init_database()
+
+    # Logging
     setup_logger()
 
+    # Initialize CNPJ repository
+    await initialize_CNPJRepository_on_startup()
+
     # Run non-essential startup tasks in the background
-    asyncio.create_task(log_app_start())
-    asyncio.create_task(task_orchestrator.start())
-    asyncio.create_task(init_nltk())
+    create_task(log_app_start())
+    create_task(task_orchestrator.start())
+    create_task(init_nltk())
+
+    logger.info(f"Startup took {perf_counter()-t0:.4f} seconds")
 
     yield
 
     # Cleanup tasks
-    asyncio.create_task(task_orchestrator.shutdown())
-    asyncio.create_task(multi_database.disconnect())
+    create_task(task_orchestrator.shutdown())
+    create_task(multi_database.disconnect())
+
 
 def create_app():
     # Generates the FastAPI application
@@ -85,11 +97,12 @@ def setup_app(app_: FastAPI):
     app_.include_router(api_router, prefix=settings.API_V1_STR)
 
     ##########################################################################
-    # Middleware
+    # Middlewares
     ##########################################################################
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
-        urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]
+        urls = [str(origin).strip("/")
+                for origin in settings.BACKEND_CORS_ORIGINS]
 
         app_.add_middleware(
             CORSMiddleware,
@@ -98,36 +111,44 @@ def setup_app(app_: FastAPI):
             allow_methods=["*"],
             allow_headers=["*"],
         )
-    
+
     # Add request logging middleware
     app_.add_middleware(AsyncRequestLoggingMiddleware)
 
     # Add gzip middleware
     app_.add_middleware(GZipMiddleware, minimum_size=1000)
-    
+
     # Add timing middleware
     app_.add_middleware(TimingMiddleware)
 
-    # Add static files
+    ##########################################################################
+    # Static files
+    ##########################################################################
     obj = StaticFiles(directory="static")
-    app_.mount("/static", obj, name="static")  
+    app_.mount("/static", obj, name="static")
 
-    # Add favicon
+    ##########################################################################
+    # Favicon file
+    ##########################################################################
+    @rate_limit()
     @app_.get("/favicon.ico")
     async def get_favicon(request: Request):
         return FileResponse("static/favicon.ico")
 
     ##########################################################################
-    # Exception
+    # Exceptions
     ##########################################################################
     # Add exception handlers
-    # Register the rate limit exceeded handler
     app_.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
     app_.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
     app_.add_exception_handler(Exception, general_exception_handler)
 
 
 def init_app():
+    """
+
+    """
+
     # Get the number of applications from the environment variable
     app_ = create_app()
 

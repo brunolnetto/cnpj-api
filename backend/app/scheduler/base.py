@@ -6,7 +6,6 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.base import BaseScheduler
-from concurrent.futures import ThreadPoolExecutor
 
 from typing import Dict, List, Any, Callable
 from datetime import datetime
@@ -110,9 +109,10 @@ def setup_scheduler(
             timezone=schedule_params.get("timezone"),
         )
     else:
-        raise ValueError("Unsupported schedule_type. Use 'interval' or 'cron'.")
+        raise ValueError(
+            "Unsupported schedule_type. Use 'interval' or 'cron'.")
 
-    scheduler.add_job(job_function, trigger, id=f"")
+    scheduler.add_job(job_function, trigger, id="")
 
 
 # Define a function to create the appropriate scheduler
@@ -122,15 +122,23 @@ audit_database = multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
 def create_scheduler(schedule_type):
     jobstores = {"default": SQLAlchemyJobStore(engine=audit_database.engine)}
 
-    executors = executors = {
+    executors = {
         "default": {"type": "threadpool", "max_workers": 20},
         "process": {"type": "processpool", "max_workers": 5},
     }
 
+    job_defaults = {'misfire_grace_time': 15 * 60}
+
     if schedule_type == "background":
-        return BackgroundScheduler(jobstores=jobstores, executors=executors)
+        return BackgroundScheduler(
+            jobstores=jobstores,
+            executors=executors,
+            job_defaults=job_defaults)
     elif schedule_type == "asyncio":
-        return AsyncIOScheduler(jobstores=jobstores, executors=executors)
+        return AsyncIOScheduler(
+            jobstores=jobstores,
+            executors=executors,
+            job_defaults=job_defaults)
     else:
         raise ValueError(f"Invalid schedule type: {schedule_type}")
 
@@ -167,13 +175,11 @@ class ScheduledTask:
                 if inspect.iscoroutinefunction(self.task_config.task_callable):
                     result = asyncio.run(
                         self.task_config.task_callable(
-                            *self.task_config.task_args, **self.task_config.task_details
-                        )
-                    )
+                            *self.task_config.task_args,
+                            **self.task_config.task_details))
                 else:
                     result = self.task_config.task_callable(
-                        *self.task_config.task_args, **self.task_config.task_details
-                    )
+                        *self.task_config.task_args, **self.task_config.task_details)
 
                 task_log.talo_success = True
                 task_log.talo_status = "success"
@@ -214,6 +220,8 @@ class TaskOrchestrator:
         for scheduler in self.schedulers.values():
             scheduler.shutdown()
 
+        logger.info
+
     async def add_task(self, task_config: TaskConfig):
         scheduler = self.schedulers.get(task_config.schedule_type, None)
 
@@ -250,7 +258,7 @@ class TaskOrchestrator:
 
     def remote_all_jobs_from(self, schedule_type: str):
         self.schedulers[schedule_type].remove_all_jobs()
-        
+
     def remote_all_jobs(self):
         for scheduler in self.schedulers.values():
             scheduler.remove_all_jobs()
