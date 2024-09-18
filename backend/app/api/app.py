@@ -43,7 +43,6 @@ async def lifespan(app_: FastAPI):
     """
     t0 = perf_counter()
     
-    print(':)')
     # Data related entities
     await init_database()
 

@@ -3,8 +3,7 @@ from contextlib import contextmanager
 import asyncio
 
 from psycopg2 import OperationalError
-from sqlalchemy import text, inspect
-from sqlalchemy import create_engine
+from sqlalchemy import text, inspect, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import QueuePool
 from sqlalchemy.engine.url import make_url
@@ -66,10 +65,9 @@ class Database(BaseDatabase):
         self.engine = create_engine(
             uri,
             poolclass=QueuePool,  # Use connection pooling
-            pool_size=20,  # Adjust pool size based on your workload
-            max_overflow=10,  # Adjust maximum overflow connections
-            # Periodically recycle connections (optional)
-            pool_recycle=3600,
+            pool_size=20,       # Adjust pool size based on your workload
+            max_overflow=10,    # Adjust maximum overflow connections
+            pool_recycle=3600,  # Periodically recycle connections (optional)
             isolation_level="AUTOCOMMIT",
         )
         self.session_maker = sessionmaker(
@@ -94,10 +92,11 @@ class Database(BaseDatabase):
         masked_uri = self.mask_sensitive_data()
 
         try:
-            with self.engine.connect() as conn:
+            with self.engine.begin() as conn:                
                 query = text("SELECT 1 FROM pg_database WHERE datname = :dbname")
                 db_data = {"dbname": self.url.database}
                 result = conn.execute(query, db_data)
+                
                 if not result.scalar():
                     query = text(f"CREATE DATABASE {make_url(self.url).database}")
                     conn.execute(query)
@@ -111,7 +110,7 @@ class Database(BaseDatabase):
     def test_connection(self):
         masked_uri = self.mask_sensitive_data()
         try:
-            with self.engine.connect() as conn:
+            with self.engine.begin() as conn:
                 query = text("SELECT 1")
 
                 # Test the connection
@@ -250,7 +249,6 @@ class MultiDatabase(BaseDatabase):
         """
         Initialize all databases concurrently.
         """
-        print(':)')
         tasks = [database.init() for database in self.databases.values()]
         await asyncio.gather(*tasks)
 
