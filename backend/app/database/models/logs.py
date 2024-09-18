@@ -4,6 +4,7 @@ from sqlalchemy import (
     ForeignKey,
     Column,
     Integer,
+    Float,
     String,
     Boolean,
     Text,
@@ -38,7 +39,7 @@ class RequestLog(logs_database.base):
     relo_ip_info = Column(JSONB, default={})
     relo_device_info = Column(String)
     relo_absolute_path = Column(String)
-    relo_request_duration_seconds = Column(Integer, index=True)
+    relo_request_duration_seconds = Column(Float, index=True)
     relo_response_size = Column(Integer, index=True)
 
     def __repr__(self):
