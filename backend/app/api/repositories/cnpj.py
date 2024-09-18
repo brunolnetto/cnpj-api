@@ -10,6 +10,8 @@ from backend.app.utils.misc import string_to_json
 from backend.app.api.utils.cnpj import format_cnpj_list
 from backend.app.api.utils.misc import paginate_dict
 from backend.app.api.models.cnpj import CNPJ
+from backend.app.api.repositories.cnpj import BaseRepository
+
 from backend.app.utils.repositories import (
     format_database_date,
     format_cep,
@@ -52,10 +54,7 @@ CodeListType = List[CodeType]
 PayloadType = Dict[str, str]
 
 
-class CNPJRepository:
-    def __init__(self, session: Session):
-        self.session = session
-
+class CNPJRepository(BaseRepository):
     @classmethod
     def initialize_static_properties(cls, session: Session):
         cls.cnaes_dict = {
