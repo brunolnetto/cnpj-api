@@ -163,7 +163,7 @@ class Database(BaseDatabase):
             Database: A NamedTuple with engine and conn attributes for the database connection.
             None: If there was an error connecting to the database.
         """
-        print("-----------------------------------------------------------------")
+        print("#################################################################")
         try:
             self.create_database()
         except Exception as e:
@@ -183,6 +183,7 @@ class Database(BaseDatabase):
             self.print_tables()
         except Exception as e:
             print(f"Error print available tables: {e}")
+        print("#################################################################")
 
     async def disconnect(self):
         """
