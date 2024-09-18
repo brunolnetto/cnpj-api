@@ -54,6 +54,9 @@ PayloadType = Dict[str, str]
 
 
 class CNPJRepository:
+    def __init__(self, session: Session):
+        self.session = session
+    
     @classmethod
     def initialize_static_properties(cls, session: Session):
         cls.cnaes_dict = {
