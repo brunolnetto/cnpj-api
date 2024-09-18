@@ -25,7 +25,7 @@ from backend.app.api.dependencies.logs import log_app_start
 from backend.app.api.dependencies.cnpj import initialize_CNPJRepository_on_startup
 from backend.app.database.base import init_database, multi_database
 from backend.app.api.utils.ml import init_nltk
-from backend.app.scheduler.bundler import task_orchestrator
+from backend.app.scheduler.bundler import task_orchestrator, add_tasks
 from backend.app.rate_limiter import rate_limit
 from backend.app.setup.logging import setup_logger
 
@@ -42,6 +42,8 @@ async def lifespan(app_: FastAPI):
     :type app: FastAPI
     """
     t0 = perf_counter()
+    
+    print(':)')
     # Data related entities
     await init_database()
 
@@ -54,6 +56,10 @@ async def lifespan(app_: FastAPI):
     # Run non-essential startup tasks in the background
     create_task(log_app_start())
     create_task(task_orchestrator.start())
+    
+    # Add tasks to orchestrator
+    create_task(add_tasks())
+    
     create_task(init_nltk())
 
     logger.info(f"Startup took {perf_counter()-t0:.4f} seconds")

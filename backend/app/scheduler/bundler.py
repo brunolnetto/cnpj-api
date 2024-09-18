@@ -44,6 +44,3 @@ async def add_tasks():
 
     await asyncio.sleep(1)
 
-
-# Add to task orchestrator
-asyncio.create_task(add_tasks())

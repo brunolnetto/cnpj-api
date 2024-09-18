@@ -31,12 +31,34 @@ class BaseDatabase:
 
 class Database(BaseDatabase):
     """
-    This class represents a database connection and session management object.
-    It contains two attributes:
+    Database class for managing PostgreSQL database connections and operations.
 
-    - engine: A callable that represents the database engine.
-    - session_maker: A callable that represents the session maker.
-    """
+
+    Attributes:
+        url (URL): Parsed database URL.
+        base (DeclarativeMeta): SQLAlchemy declarative base.
+        engine (Engine): SQLAlchemy engine for database connection.
+        session_maker (sessionmaker): SQLAlchemy session maker.
+
+    Methods:
+        get_session():
+            Context manager to get a database session.
+        mask_sensitive_data() -> str:
+            Masks sensitive data in the database URI.
+        create_database():
+            Creates the database if it does not exist.
+        test_connection():
+            Tests the connection to the database.
+        create_tables():
+            Creates tables in the database based on the defined models.
+        print_tables():
+            Prints the available tables in the database.
+        init():
+        disconnect():
+            Cleans up and closes the database connection and session maker.
+        __repr__() -> str:
+            Returns a string representation of the Database instance with masked URI.
+    """    
 
     def __init__(self, uri):
         self.url = make_url(uri)
@@ -228,6 +250,7 @@ class MultiDatabase(BaseDatabase):
         """
         Initialize all databases concurrently.
         """
+        print(':)')
         tasks = [database.init() for database in self.databases.values()]
         await asyncio.gather(*tasks)
 
