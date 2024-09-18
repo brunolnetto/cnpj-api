@@ -11,6 +11,7 @@ def test_find_most_possible_tokens():
 
     nltk.download("stopwords")
     nltk.download("punkt")
+    nltk.download("punkt_tab")
 
     most_possible_cities = find_most_possible_tokens(
         user_names, user_municipality, limit_munic_count

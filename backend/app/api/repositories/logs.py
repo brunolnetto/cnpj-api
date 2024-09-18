@@ -18,8 +18,8 @@ from backend.app.api.models.logs import TaskLogCreate
 
 
 class RequestLogRepository(BaseRepository):
-    def create(self, log: RequestLogCreate) -> RequestLog:
-        db_log = RequestLog(**log.model_dump())
+    def create(self, data: RequestLogCreate) -> RequestLog:
+        db_log = RequestLog(**data.model_dump())
         self.session.add(db_log)
         self.session.commit()
         self.session.refresh(db_log)
@@ -85,8 +85,8 @@ class RequestLogRepository(BaseRepository):
 
 
 class TaskLogRepository(BaseRepository):
-    def create(self, task_log_data: TaskLogCreate) -> TaskLog:
-        task_log = TaskLog(**task_log_data)
+    def create(self, data: TaskLogCreate) -> TaskLog:
+        task_log = TaskLog(**data)
         self.session.add(task_log)
         self.session.commit()
         self.session.refresh(task_log)
@@ -140,11 +140,11 @@ class TaskLogRepository(BaseRepository):
 
 
 class AppStartLogRepository(BaseRepository):
-    def create(self, log_data: Dict[str, Any]) -> AppStartLog:
+    def create(self, data: Dict[str, Any]) -> AppStartLog:
         """
         Creates a new AppStartLog entry in the database.
         """
-        app_start_log = AppStartLog(**log_data)
+        app_start_log = AppStartLog(**data)
         self.session.add(app_start_log)
         self.session.commit()
         self.session.refresh(app_start_log)

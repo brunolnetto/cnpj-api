@@ -15,14 +15,14 @@ class TaskRepository(BaseRepository):
     def __init__(self, session: Session):
         self.session = session
 
-    def create(self, task_data: Dict[str, Any]) -> Task:
+    def create(self, data: Dict[str, Any]) -> Task:
         try:
             # Check if the task already exists
             existing_task = (
                 self.session.execute(
                     select(Task).filter_by(
-                        task_name=task_data.get("task_name"),
-                        task_type=task_data.get("task_type"),
+                        task_name=data.get("task_name"),
+                        task_type=data.get("task_type"),
                     )
                 )
                 .scalars()
@@ -31,10 +31,10 @@ class TaskRepository(BaseRepository):
 
             if existing_task:
                 # Update the existing task
-                return self.update(existing_task.task_id, task_data)
+                return self.update(existing_task.task_id, data)
 
             # Create a new task
-            task = Task(**task_data)
+            task = Task(**data)
             self.session.add(task)
             self.session.commit()
             self.session.refresh(task)
@@ -43,14 +43,14 @@ class TaskRepository(BaseRepository):
             self.session.rollback()  # Rollback in case of error
             raise Exception(f"Error creating task: {e}") from e
 
-    def update(self, task_id: UUID, task_data: Dict[str, Any]) -> Optional[Task]:
+    def update(self, item_id: UUID, data: Dict[str, Any]) -> Optional[Task]:
         try:
-            task = self.get_by_id(task_id)
+            task = self.get_by_id(item_id)
             if not task:
                 return None
 
             # Update fields from task_data
-            for key, value in task_data.items():
+            for key, value in data.items():
                 setattr(task, key, value)
 
             self.session.commit()
@@ -60,9 +60,9 @@ class TaskRepository(BaseRepository):
             self.session.rollback()  # Rollback in case of error
             raise Exception(f"Error updating task: {e}") from e
 
-    def get_by_id(self, task_id: UUID) -> Optional[Task]:
+    def get_by_id(self, item_id: UUID) -> Optional[Task]:
         try:
-            return self.session.get(Task, task_id)
+            return self.session.get(Task, item_id)
         except Exception as e:
             raise Exception(f"Error fetching task by id: {e}") from e
 
@@ -76,9 +76,9 @@ class TaskRepository(BaseRepository):
         except Exception as e:
             raise Exception(f"Error fetching all tasks: {e}") from e
 
-    def delete_by_id(self, id_: UUID) -> bool:
+    def delete_by_id(self, item_id: UUID) -> bool:
         try:
-            task = self.get_by_id(id_)
+            task = self.get_by_id(item_id)
             if not task:
                 return False
 
