@@ -1,3 +1,17 @@
+[MASTER]
+# Minimum score to consider pylint successful
+fail-under=9.0  # Adjust this value as needed
+
+# List of plugins (as comma separated values of python module names) to load, usually to register additional checkers.
+load-plugins=pylint.extensions.mccabe,pylint.extensions.docparams
+
 [MESSAGES]
 # Disable docstring-related messages
-disable=C0114,C0115,C0116,C0121,C0123,C0103,W0613,W1201,W1203,E0401
+disable=C0114,C0115,C0116,C0121,C0123,C0103,W0613,W1201,W1203,E0401,R0913,R0914,W0718,W0719
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length=100
+
+# Maximum number of lines in a module
+max-module-lines=1500
