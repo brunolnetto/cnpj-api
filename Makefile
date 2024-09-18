@@ -63,7 +63,7 @@ test: ## Test the application. Usage: make test
 test-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
 	ptw --quiet --spool 200 --clear --nobeep --config pytest.ini --ext=.py --onfail="echo Tests failed, fix the issues"
 
-report: test ## Generate coverage report. Usage: make report
+test-report: test ## Generate coverage report. Usage: make report
 	coverage report --omit=$(OMIT_PATHS) --show-missing
 
 minimal-requirements: ## Generates minimal requirements. Usage: make requirements
@@ -80,8 +80,11 @@ cloc-install: ## Installs row-count tool
 cloc: ## Row count of code. Usage: make cloc
 	cloc --by-percent=cmb --progress-rate=100 .
 
-pylint:
+pylint: ## Run pylint. Usage: make pylint
 	@pylint backend/
+
+pylint-report: ## Report pylint issues. Usage: make pylint-report
+	./scripts/parse_pylint_report.sh
 
 build-test: ## Build the test container image. Usage: make build
 	docker compose -f docker-compose.test.yaml build
