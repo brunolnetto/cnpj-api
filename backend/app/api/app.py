@@ -131,7 +131,7 @@ def setup_app(app_: FastAPI):
     # Favicon file
     ##########################################################################
     @rate_limit()
-    @app_.get("/favicon.ico")
+    @app_.get("/favicon.ico", include_in_schema=False)
     async def get_favicon(request: Request):
         return FileResponse("static/favicon.ico")
 
@@ -145,10 +145,6 @@ def setup_app(app_: FastAPI):
 
 
 def init_app():
-    """
-
-    """
-
     # Get the number of applications from the environment variable
     app_ = create_app()
 
