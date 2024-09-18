@@ -533,7 +533,8 @@ class CNPJRepository:
             """
         )
 
-        company_result = self.session.execute(query).fetchall()
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            company_result = self.session.execute(query).fetchall()
 
         company_result = replace_invalid_fields_on_list_tuple(company_result)
         company_result = replace_spaces_on_list_tuple(company_result)
@@ -688,8 +689,7 @@ class CNPJRepository:
 
             side_activity_names = []
             if has_side_cnaes:
-                cnae_list = [str(int(cnae_str.strip()))
-                             for cnae_str in cnae_list]
+                cnae_list = [str(int(cnae_str.strip())) for cnae_str in cnae_list]
                 side_activity_names = self.get_cnae_list(cnae_list)
 
             establishment_dict["atividades_secundarias"] = side_activity_names
@@ -756,7 +756,7 @@ class CNPJRepository:
             """
         )
 
-        with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
             establishment_result = session.execute(query).fetchall()
 
         empty_df = pd.DataFrame(columns=columns)
@@ -838,8 +838,9 @@ class CNPJRepository:
             """
         )
 
-        establishment_result = self.session.execute(query)
-        establishment_result = establishment_result.fetchall()
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            establishment_result = session.execute(query)
+            establishment_result = establishment_result.fetchall()
 
         establishment_result = replace_invalid_fields_on_list_tuple(
             establishment_result)
@@ -910,10 +911,9 @@ class CNPJRepository:
             """
         )
 
-        with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
             partners_result = session.execute(query)
             partners_result = partners_result.fetchall()
-            print(partners_result)
 
         partners_result = replace_invalid_fields_on_list_tuple(partners_result)
         partners_result = replace_spaces_on_list_tuple(partners_result)
@@ -1044,7 +1044,7 @@ class CNPJRepository:
             """
         )
 
-        with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
             simples_simei_result = session.execute(query)
         
         simples_simei_result = simples_simei_result.fetchall()
@@ -1188,8 +1188,9 @@ class CNPJRepository:
             """
         )
 
-        activities_result = self.session.execute(query)
-        activities_result = activities_result.fetchall()
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            activities_result = self.session.execute(query)
+            activities_result = activities_result.fetchall()
 
         activities_result = replace_invalid_fields_on_list_tuple(
             activities_result)
@@ -1230,7 +1231,6 @@ class CNPJRepository:
         dict: The dictionary with the CNPJ information.
         """
         columns = [
-            "ultima_atualizacao",
             "cnpj",
             "cnpj_raw",
             "abertura",
@@ -1302,9 +1302,9 @@ class CNPJRepository:
         # XXX: Review missing information on original methods
         common_keys = list(
             establ_set
-            .intersection(companies_set)
-            .intersection(partners_set)
-            .intersection(simples_simei_set)
+                .intersection(companies_set)
+                .intersection(partners_set)
+                .intersection(simples_simei_set)
         )
         
         cnpj_info_dict = {
