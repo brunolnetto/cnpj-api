@@ -15,8 +15,7 @@ def dataframe_to_nested_dict(df, index_col=None):
     """
     if index_col is not None:
         if index_col not in df.columns:
-            raise ValueError(
-                f"Column '{index_col}' does not exist in the DataFrame.")
+            raise ValueError(f"Column '{index_col}' does not exist in the DataFrame.")
 
     if index_col is None:
         index_col = df.index

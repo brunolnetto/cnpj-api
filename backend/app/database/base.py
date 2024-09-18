@@ -3,11 +3,10 @@ from contextlib import contextmanager
 import asyncio
 
 from psycopg2 import OperationalError
-from sqlalchemy.pool import QueuePool
-from sqlalchemy import pool, text, inspect
+from sqlalchemy import text, inspect
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.pool import QueuePool
 from sqlalchemy.engine.url import make_url
 
 from backend.app.setup.config import settings
@@ -44,11 +43,12 @@ class Database(BaseDatabase):
         self.base = declarative_base()
         self.engine = create_engine(
             uri,
-            poolclass=QueuePool,            # Use connection pooling
-            pool_size=20,                   # Adjust pool size based on your workload
-            max_overflow=10,                # Adjust maximum overflow connections
-            pool_recycle=3600,              # Periodically recycle connections (optional)
-            isolation_level="AUTOCOMMIT"
+            poolclass=QueuePool,  # Use connection pooling
+            pool_size=20,  # Adjust pool size based on your workload
+            max_overflow=10,  # Adjust maximum overflow connections
+            # Periodically recycle connections (optional)
+            pool_recycle=3600,
+            isolation_level="AUTOCOMMIT",
         )
         self.session_maker = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
@@ -63,19 +63,21 @@ class Database(BaseDatabase):
         if self.url.password:
             parsed_uri = self.url.set(password="******")
 
-        # Return the sanitized URI as a string
-        return str(parsed_uri)
+            # Return the sanitized URI as a string
+            return str(parsed_uri)
+
+        return str(self.url)
 
     def create_database(self):
         masked_uri = self.mask_sensitive_data()
-        
+
         try:
             with self.engine.connect() as conn:
-                query=text("SELECT 1 FROM pg_database WHERE datname = :dbname")
-                db_data={'dbname': self.url.database}
+                query = text("SELECT 1 FROM pg_database WHERE datname = :dbname")
+                db_data = {"dbname": self.url.database}
                 result = conn.execute(query, db_data)
                 if not result.scalar():
-                    query=text(f"CREATE DATABASE {make_url(self.url).database}")
+                    query = text(f"CREATE DATABASE {make_url(self.url).database}")
                     conn.execute(query)
                     print(f"Database {masked_uri} created!")
                 else:
@@ -116,8 +118,7 @@ class Database(BaseDatabase):
             print(f"Tables for database {masked_uri} created!")
 
         except Exception as e:
-            print(
-                f"Error creating tables in the database {masked_uri}: {str(e)}")
+            print(f"Error creating tables in the database {masked_uri}: {str(e)}")
 
     def print_tables(self):
         """
@@ -141,7 +142,7 @@ class Database(BaseDatabase):
             Database: A NamedTuple with engine and conn attributes for the database connection.
             None: If there was an error connecting to the database.
         """
-        print('-----------------------------------------------------------------')
+        print("-----------------------------------------------------------------")
         try:
             self.create_database()
         except Exception as e:
@@ -239,23 +240,10 @@ class MultiDatabase(BaseDatabase):
 
 
 # Load environment variables from the .env file
-multi_database: Optional[MultiDatabase] = None
-
-
-def create_database_obj():
-    global multi_database
-    multi_database = MultiDatabase(settings.postgres_uris_dict)
-
-
-# Create a global database object
-create_database_obj()
+multi_database: Optional[MultiDatabase] = MultiDatabase(settings.postgres_uris_dict)
 
 
 async def init_database():
-    global multi_database
-    if not multi_database:
-        create_database()
-
     await multi_database.init()
 
 

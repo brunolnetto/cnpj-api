@@ -86,11 +86,11 @@ def test_clear_folder_items_files():
     rmtree(tmp_path, ignore_errors=True)
 
     makedirs(tmp_path, exist_ok=True)
-    with open(f"{tmp_path}/1.txt", "w") as f:
+    with open(f"{tmp_path}/1.txt", "w", encoding="utf8") as f:
         f.write("test")
-    with open(f"{tmp_path}/2.txt", "w") as f:
+    with open(f"{tmp_path}/2.txt", "w", encoding="utf8") as f:
         f.write("test")
-    with open(f"{tmp_path}/3.txt", "w") as f:
+    with open(f"{tmp_path}/3.txt", "w", encoding="utf8") as f:
         f.write("test")
 
     clear_folder_items(tmp_path, 2, key=lambda item: item.name)

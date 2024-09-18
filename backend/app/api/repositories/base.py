@@ -9,13 +9,13 @@ class BaseRepository(ABC):
     def create(self, data: Dict[str, Any]) -> Any:
         raise NotImplementedError()
 
-    def update(self, id: Any, data: Dict[str, Any]) -> Optional[Any]:
+    def update(self, item_id: Any, data: Dict[str, Any]) -> Optional[Any]:
         raise NotImplementedError()
 
-    def get_by_id(self, id: Any) -> Optional[Any]:
+    def get_by_id(self, item_id: Any) -> Optional[Any]:
         raise NotImplementedError()
 
-    def delete_by_id(self, id: Any) -> bool:
+    def delete_by_id(self, item_id: Any) -> bool:
         raise NotImplementedError()
 
     def get_all(self, limit: int = 100, offset: int = 0) -> List[Any]:

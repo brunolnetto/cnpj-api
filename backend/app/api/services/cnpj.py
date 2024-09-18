@@ -1,5 +1,4 @@
-from typing import Union, Generator, Any
-from contextlib import asynccontextmanager
+from typing import Union
 
 from fastapi import HTTPException, Depends
 
@@ -7,7 +6,7 @@ from backend.app.api.repositories.cnpj import CNPJRepository
 from backend.app.utils.misc import is_number, are_numbers
 from backend.app.api.utils.cnpj import are_cnpj_str_valid
 from backend.app.setup.config import settings
-from backend.app.api.dependencies.cnpj import get_cnpj_repository, CNPJRepositoryDependency
+from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.app.api.models.cnpj import CNPJ
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
 from backend.app.api.utils.misc import check_limit_and_offset
@@ -28,7 +27,7 @@ def cnpj_str_to_obj(cnpj_str: str):
         CNPJ: The CNPJ object.
     """
     cnpj_list = parse_cnpj_str(cnpj_str)
-    
+
     return CNPJ(*cnpj_list)
 
 
@@ -41,7 +40,10 @@ class CNPJService:
         self.repository: CNPJRepository = cnpj_repository
 
     async def get_cnaes(
-        self, limit: int = settings.PAGE_SIZE, offset: int = 0, enable_pagination: bool = True
+        self,
+        limit: int = settings.PAGE_SIZE,
+        offset: int = 0,
+        enable_pagination: bool = True,
     ):
         """
         Get a list of CNAEs from the database.
@@ -315,7 +317,7 @@ class CNPJService:
         try:
             limit, offset = check_limit_and_offset(limit, offset)
             return self.repository.get_paginated_cities(limit=limit, offset=offset)
-        
+
         except Exception as e:
             logger.error(f"Error getting cities: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -400,7 +402,10 @@ class CNPJService:
         return legal_nature_obj_list[0]
 
     async def get_legal_natures(
-        self, limit: int = settings.PAGE_SIZE, offset: int = 0, enable_pagination: bool = True
+        self,
+        limit: int = settings.PAGE_SIZE,
+        offset: int = 0,
+        enable_pagination: bool = True,
     ):
         """
         Get a list of legal natures from the database.
@@ -528,7 +533,10 @@ class CNPJService:
         return registration_status
 
     async def get_registration_statuses(
-        self, limit: int = settings.PAGE_SIZE, offset: int = 0, enable_pagination: bool = True
+        self,
+        limit: int = settings.PAGE_SIZE,
+        offset: int = 0,
+        enable_pagination: bool = True,
     ):
         """
         Get a list of registration statuses from the database.
@@ -609,7 +617,7 @@ class CNPJService:
             return {"message": f"{error}. {explanation}"}
 
         return cnpj_info[cnpj_obj.to_raw()]
-    
+
     def get_cnpj_simples_simei(self, cnpj: str):
         """
         Get the partners of a CNPJ number.
@@ -636,7 +644,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not cnpj_info:
-            error = f"There is no Simples and SIMEI information associated with CNPJ {cnpj}"
+            error = (
+                f"There is no Simples and SIMEI information associated with CNPJ {cnpj}"
+            )
             return {"message": f"{error}"}
 
         return cnpj_info[cnpj_obj.to_raw()]
@@ -776,8 +786,8 @@ class CNPJService:
 
                 if not has_city:
                     raise ValueError(f"City {city_name} not found.")
-                else:
-                    city_code = city_obj["code"]
+
+                city_code = city_obj["code"]
             else:
                 city_code = ""
 
@@ -792,8 +802,8 @@ class CNPJService:
             if zipcode:
                 try:
                     zipcode = str(int(zipcode))
-                except Exception:
-                    raise ValueError(f"Invalid Zipcode {zipcode}.")
+                except Exception as e:
+                    raise ValueError(f"Invalid Zipcode {zipcode}.") from e
 
             cnpjs_raw_list = self.repository.get_cnpjs_raw(
                 state_abbrev=state_abbrev,
@@ -811,8 +821,8 @@ class CNPJService:
                 cnpjs_info = self.repository.get_cnpjs_info(cnpj_objs)
 
                 return cnpjs_info
-            else:
-                return {}
+
+            return {}
 
         except Exception as e:
             logger.error(f"Error getting CNPJs: {e}")
@@ -837,7 +847,7 @@ class CNPJService:
         except Exception as e:
             logger.error(f"Error getting CNPJ partners: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
-        
+
     def get_cnpjs_simples_simei(self, cnpj_batch: CNPJBatch):
         """
         Get a list of CNPJ partners information from the database.
@@ -965,8 +975,9 @@ class CNPJService:
             "fail": invalid_cnpjs,
         }
 
+
 async def get_cnpj_service(
-    cnpj_repository: CNPJRepository = CNPJRepositoryDependency
+    cnpj_repository: CNPJRepository = CNPJRepositoryDependency,
 ) -> CNPJService:
     return CNPJService(cnpj_repository)
 

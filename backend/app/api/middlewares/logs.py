@@ -16,7 +16,8 @@ async def capture_request_body(request: Request):
         request.state.body = await request.body()
     return request.state.body.decode() if request.state.body else ""
 
-background_scheduler = task_orchestrator.schedulers['background']
+
+background_scheduler = task_orchestrator.schedulers["background"]
 
 
 class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
@@ -46,29 +47,23 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         # Prepare log data
         log_data = {
             "relo_method": request.method,
-            "relo_url": str(
-                request.url),
-            "relo_headers": dict(
-                request.headers),
+            "relo_url": str(request.url),
+            "relo_headers": dict(request.headers),
             "relo_status_code": response.status_code,
             "relo_ip_address": request.client.host,
-            "relo_device_info": request.headers.get(
-                "user-agent",
-                "Unknown"),
-            "relo_absolute_path": str(
-                request.url),
+            "relo_device_info": request.headers.get("user-agent", "Unknown"),
+            "relo_absolute_path": str(request.url),
             "relo_request_duration_seconds": f"{process_time:.6f}",
             "relo_response_size": response_size,
-            "relo_inserted_at": strftime(
-                "%Y-%m-%d %H:%M:%S",
-                localtime(start_time)),
+            "relo_inserted_at": strftime("%Y-%m-%d %H:%M:%S", localtime(start_time)),
         }
 
         # Schedule the log entry as a background task
         background_scheduler.add_job(
             self.log_request,
             args=[log_data],
-            id=f"log-{strftime('%Y%m%d%H%M%S', localtime(start_time))}")
+            id=f"log-{strftime('%Y%m%d%H%M%S', localtime(start_time))}",
+        )
 
         # Return the original response
         return response

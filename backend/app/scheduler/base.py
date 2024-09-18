@@ -109,8 +109,7 @@ def setup_scheduler(
             timezone=schedule_params.get("timezone"),
         )
     else:
-        raise ValueError(
-            "Unsupported schedule_type. Use 'interval' or 'cron'.")
+        raise ValueError("Unsupported schedule_type. Use 'interval' or 'cron'.")
 
     scheduler.add_job(job_function, trigger, id="")
 
@@ -127,18 +126,16 @@ def create_scheduler(schedule_type):
         "process": {"type": "processpool", "max_workers": 5},
     }
 
-    job_defaults = {'misfire_grace_time': 15 * 60}
+    job_defaults = {"misfire_grace_time": 15 * 60}
 
     if schedule_type == "background":
         return BackgroundScheduler(
-            jobstores=jobstores,
-            executors=executors,
-            job_defaults=job_defaults)
+            jobstores=jobstores, executors=executors, job_defaults=job_defaults
+        )
     elif schedule_type == "asyncio":
         return AsyncIOScheduler(
-            jobstores=jobstores,
-            executors=executors,
-            job_defaults=job_defaults)
+            jobstores=jobstores, executors=executors, job_defaults=job_defaults
+        )
     else:
         raise ValueError(f"Invalid schedule type: {schedule_type}")
 
@@ -175,11 +172,13 @@ class ScheduledTask:
                 if inspect.iscoroutinefunction(self.task_config.task_callable):
                     result = asyncio.run(
                         self.task_config.task_callable(
-                            *self.task_config.task_args,
-                            **self.task_config.task_details))
+                            *self.task_config.task_args, **self.task_config.task_details
+                        )
+                    )
                 else:
                     result = self.task_config.task_callable(
-                        *self.task_config.task_args, **self.task_config.task_details)
+                        *self.task_config.task_args, **self.task_config.task_details
+                    )
 
                 task_log.talo_success = True
                 task_log.talo_status = "success"

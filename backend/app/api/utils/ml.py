@@ -69,8 +69,12 @@ def find_most_possible_tokens(
         # (
         #   sum(word_freq_municipality.get(word, 0) for word in nltk.word_tokenize(name)) /
         #   len(name)) * 0.5 + (1 - lev_distance / len(name)) * 0.5
-        score = (lev_distance + sum(word_freq_municipality.get(word, 0)
-                                    for word in nltk.word_tokenize(name))) / 2
+        score = (
+            lev_distance
+            + sum(
+                word_freq_municipality.get(word, 0) for word in nltk.word_tokenize(name)
+            )
+        ) / 2
 
         scored_tokens.append((score, i))  # Store index instead of name
 
@@ -78,8 +82,7 @@ def find_most_possible_tokens(
     sorted_tokens = sorted(
         scored_tokens, key=lambda x: x[0]
     )  # Sort by ascending score (lower score is better)
-    results = {(score, eligible_tokens[i])
-               for score, i in sorted_tokens[:limit_count]}
+    results = {(score, eligible_tokens[i]) for score, i in sorted_tokens[:limit_count]}
     results = sorted(results, key=lambda x: x[0])
     results = [name for score, name in results]
     return results

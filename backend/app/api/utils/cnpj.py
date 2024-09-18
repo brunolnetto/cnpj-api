@@ -65,9 +65,7 @@ def is_cnpj_str_valid(cnpj: str) -> Dict[str, Union[bool, str]]:
         digit1, digit2 = calculate_cnpj_verification_digits(cnpj)
 
     except ValueError:
-        return {
-            "is_valid": False,
-            "reason": "CNPJ contains non-numeric characters."}
+        return {"is_valid": False, "reason": "CNPJ contains non-numeric characters."}
 
     # Check verification digits
     if cnpj[12] != str(digit1) or cnpj[13] != str(digit2):
@@ -104,8 +102,8 @@ def parse_cnpj_str(cnpj: str) -> List[str]:
 
     if not validation_dict["is_valid"]:
         raise ValueError(validation_dict["reason"])
-    else:
-        return [cnpj[:8], cnpj[8:12], cnpj[12:14]]
+
+    return [cnpj[:8], cnpj[8:12], cnpj[12:14]]
 
 
 def format_cnpj(cnpj_str: str) -> str:
@@ -150,7 +148,8 @@ def get_cnpj_code_description_entries(session: Session, table_name: str):
         dict: A dictionary containing the CNAEs.
     """
     entries_result = session.execute(
-        text(f"SELECT codigo, descricao FROM {table_name}"))
+        text(f"SELECT codigo, descricao FROM {table_name}")
+    )
     entries_result = entries_result.fetchall()
 
     entries_df = pd.DataFrame(entries_result, columns=["code", "text"])

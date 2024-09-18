@@ -27,8 +27,7 @@ class CNPJ:
         try:
             self.ordem_int = int(ordem)
         except ValueError as exc:
-            raise ValueError(
-                "Digits 'ordem' contains non-numeric characters.") from exc
+            raise ValueError("Digits 'ordem' contains non-numeric characters.") from exc
 
         try:
             self.digitos_verificadores_int = int(digitos_verificadores)
