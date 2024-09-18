@@ -25,15 +25,15 @@ class RequestLogRepository(BaseRepository):
         self.session.refresh(db_log)
         return db_log
 
-    def update(self, id_: UUID, data: Dict[str, Any]) -> Optional[RequestLog]:
+    def update(self, item_id: UUID, data: Dict[str, Any]) -> Optional[RequestLog]:
         # Not typically used for RequestLog, but implemented for completeness
         return None
 
-    def get_by_id(self, id_: UUID) -> Optional[RequestLog]:
-        return self.session.get(RequestLog, id_)
+    def get_by_id(self, item_id: UUID) -> Optional[RequestLog]:
+        return self.session.get(RequestLog, item_id)
 
-    def delete_by_id(self, id_: UUID) -> bool:
-        log = self.get_by_id(id_)
+    def delete_by_id(self, item_id: UUID) -> bool:
+        log = self.get_by_id(item_id)
         if not log:
             return False
         self.session.delete(log)
@@ -92,8 +92,8 @@ class TaskLogRepository(BaseRepository):
         self.session.refresh(task_log)
         return task_log
 
-    def update(self, id_: UUID, data: TaskLogCreate) -> Optional[TaskLog]:
-        task_log = self.get_by_id(id_)
+    def update(self, item_id: UUID, data: TaskLogCreate) -> Optional[TaskLog]:
+        task_log = self.get_by_id(item_id)
         if not task_log:
             return None
 
@@ -104,11 +104,11 @@ class TaskLogRepository(BaseRepository):
         self.session.refresh(task_log)
         return task_log
 
-    def get_by_id(self, id_: UUID) -> Optional[TaskLog]:
-        return self.session.get(TaskLog, id_)
+    def get_by_id(self, item_id: UUID) -> Optional[TaskLog]:
+        return self.session.get(TaskLog, item_id)
 
-    def delete_by_id(self, id_: UUID) -> bool:
-        task_log = self.get_by_id(id_)
+    def delete_by_id(self, item_id: UUID) -> bool:
+        task_log = self.get_by_id(item_id)
         if not task_log:
             return False
 
@@ -150,11 +150,11 @@ class AppStartLogRepository(BaseRepository):
         self.session.refresh(app_start_log)
         return app_start_log
 
-    def get_by_id(self, id_: UUID) -> Optional[AppStartLog]:
+    def get_by_id(self, item_id: UUID) -> Optional[AppStartLog]:
         """
         Retrieves an AppStartLog entry by its ID.
         """
-        return self.session.get(AppStartLog, id_)
+        return self.session.get(AppStartLog, item_id)
 
     def get_all(self, limit: int = 100, offset: int = 0) -> List[AppStartLog]:
         """
@@ -163,11 +163,11 @@ class AppStartLogRepository(BaseRepository):
         result = self.session.execute(select(AppStartLog).offset(offset).limit(limit))
         return result.scalars().all()
 
-    def delete_by_id(self, id_: UUID) -> bool:
+    def delete_by_id(self, item_id: UUID) -> bool:
         """
         Deletes an AppStartLog entry by its ID.
         """
-        app_start_log = self.get_by_id(id_)
+        app_start_log = self.get_by_id(item_id)
         if not app_start_log:
             return False
         self.session.delete(app_start_log)

@@ -774,6 +774,42 @@ class CNPJService:
 
         return est_info
 
+    # Helper Methods
+    def _validate_city(self, city_name: str) -> str:
+        """Validate and get the city code for a given city name."""
+        if city_name:
+            has_city, city_obj = self.repository.city_exists(city_name)
+            if not has_city:
+                raise ValueError(f"City {city_name} not found.")
+            return city_obj["code"]
+        return ""
+
+    def _validate_state(self, state_abbrev: str):
+        """Validate the state abbreviation."""
+        if state_abbrev and state_abbrev not in STATES_BRAZIL:
+            raise ValueError(f"State {state_abbrev} not found.")
+
+    def _validate_cnae(self, cnae_code: str):
+        """Validate the CNAE code."""
+        if cnae_code and not self.repository.get_cnae(cnae_code):
+            raise ValueError(f"CNAE code {cnae_code} not found.")
+
+    def _validate_zipcode(self, zipcode: str) -> str:
+        """Validate the zipcode."""
+        if zipcode:
+            try:
+                return str(int(zipcode))
+            except ValueError:
+                raise ValueError(f"Invalid Zipcode {zipcode}.")
+        return ""
+
+    def _process_cnpjs(self, cnpjs_raw_list: list) -> dict:
+        """Convert raw CNPJs to objects and fetch additional info if available."""
+        cnpj_objs = list(map(cnpj_str_to_obj, cnpjs_raw_list))
+        if cnpj_objs:
+            return self.repository.get_cnpjs_info(cnpj_objs)
+        return {}
+
     async def get_cnpjs(
         self,
         state_abbrev: str = "",
@@ -797,38 +833,21 @@ class CNPJService:
         def remove_quotes(text):
             return text.replace("'", "").replace('"', "")
 
-        city_name = remove_quotes(city_name)
-        cnae_code = remove_quotes(cnae_code)
-        state_abbrev = remove_quotes(state_abbrev)
-        zipcode = remove_quotes(zipcode)
-
         try:
             limit, offset = check_limit_and_offset(limit, offset)
 
-            if city_name:
-                has_city, city_obj = self.repository.city_exists(city_name)
+            # Clean inputs
+            city_name, cnae_code, state_abbrev, zipcode = map(
+                remove_quotes, [city_name, cnae_code, state_abbrev, zipcode]
+            )
 
-                if not has_city:
-                    raise ValueError(f"City {city_name} not found.")
+            # Validate inputs
+            city_code = self._validate_city(city_name)
+            self._validate_state(state_abbrev)
+            self._validate_cnae(cnae_code)
+            zipcode = self._validate_zipcode(zipcode)
 
-                city_code = city_obj["code"]
-            else:
-                city_code = ""
-
-            if state_abbrev:
-                if state_abbrev not in STATES_BRAZIL:
-                    raise ValueError(f"State {state_abbrev} not found.")
-
-            if cnae_code:
-                if not self.repository.get_cnae(cnae_code):
-                    raise ValueError(f"CNAE code {cnae_code} not found.")
-
-            if zipcode:
-                try:
-                    zipcode = str(int(zipcode))
-                except Exception as e:
-                    raise ValueError(f"Invalid Zipcode {zipcode}.") from e
-
+            # Get raw CNPJs and process them
             cnpjs_raw_list = self.repository.get_cnpjs_raw(
                 state_abbrev=state_abbrev,
                 city_code=city_code,
@@ -839,14 +858,7 @@ class CNPJService:
                 offset=offset,
             )
 
-            cnpj_objs = list(map(cnpj_str_to_obj, cnpjs_raw_list))
-
-            if len(cnpj_objs) != 0:
-                cnpjs_info = self.repository.get_cnpjs_info(cnpj_objs)
-
-                return cnpjs_info
-
-            return {}
+            return self._process_cnpjs(cnpjs_raw_list)
 
         except Exception as e:
             logger.error(f"Error getting CNPJs: {e}")
