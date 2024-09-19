@@ -15,37 +15,37 @@ class TaskRepository(BaseRepository):
     def __init__(self, session: Session):
         self.session = session
 
-    def create(self, data: Dict[str, Any]) -> Task:
+    async def create(self, data: Dict[str, Any]) -> Task:
         try:
-            # Check if the task already exists
-            existing_task = (
-                self.session.execute(
-                    select(Task).filter_by(
-                        task_name=data.get("task_name"),
-                        task_type=data.get("task_type"),
-                    )
-                )
-                .scalars()
-                .first()
+            # Construct the query
+            stmt = select(Task).filter_by(
+                task_name=data.get("task_name"),
+                task_type=data.get("task_type"),
             )
+            
+            # Check if the task already exists
+            result=await self.session.execute(stmt)
+
+            existing_task = result.scalars().first()
 
             if existing_task:
                 # Update the existing task
-                return self.update(existing_task.task_id, data)
+                return await self.update(existing_task.task_id, data)
 
             # Create a new task
             task = Task(**data)
+
             self.session.add(task)
-            self.session.commit()
-            self.session.refresh(task)
+            await self.session.commit()
+            await self.session.refresh(task)
             return task
         except Exception as e:
-            self.session.rollback()  # Rollback in case of error
+            await self.session.rollback()  # Rollback in case of error
             raise Exception(f"Error creating task: {e}") from e
 
-    def update(self, item_id: UUID, data: Dict[str, Any]) -> Optional[Task]:
+    async def update(self, item_id: UUID, data: Dict[str, Any]) -> Optional[Task]:
         try:
-            task = self.get_by_id(item_id)
+            task = await self.get_by_id(item_id)
             if not task:
                 return None
 
@@ -53,45 +53,43 @@ class TaskRepository(BaseRepository):
             for key, value in data.items():
                 setattr(task, key, value)
 
-            self.session.commit()
-            self.session.refresh(task)
+            await self.session.commit()
+            await self.session.refresh(task)
             return task
         except Exception as e:
-            self.session.rollback()  # Rollback in case of error
+            await self.session.rollback()  # Rollback in case of error
             raise Exception(f"Error updating task: {e}") from e
 
-    def get_by_id(self, item_id: UUID) -> Optional[Task]:
+    async def get_by_id(self, item_id: UUID) -> Optional[Task]:
         try:
-            return self.session.get(Task, item_id)
+            return await self.session.get(Task, item_id)
         except Exception as e:
             raise Exception(f"Error fetching task by id: {e}") from e
 
-    def get_all(self, limit: int = 100, offset: int = 0) -> List[Task]:
+    async def get_all(self, limit: int = 100, offset: int = 0) -> List[Task]:
         try:
-            return (
-                self.session.execute(select(Task).offset(offset).limit(limit))
-                .scalars()
-                .all()
-            )
+            result=await self.session.execute(select(Task).offset(offset).limit(limit))
+            return result.scalars().all()
+
         except Exception as e:
             raise Exception(f"Error fetching all tasks: {e}") from e
 
-    def delete_by_id(self, item_id: UUID) -> bool:
+    async def delete_by_id(self, item_id: UUID) -> bool:
         try:
-            task = self.get_by_id(item_id)
+            task = await self.get_by_id(item_id)
             if not task:
                 return False
 
-            self.session.delete(task)
-            self.session.commit()
+            await self.session.delete(task)
+            await self.session.commit()
             return True
         except Exception as e:
-            self.session.rollback()  # Rollback in case of error
+            await self.session.rollback()  # Rollback in case of error
             raise Exception(f"Error deleting task: {e}") from e
 
 
-def get_task_repository():
-    with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+async def get_task_repository():
+    async with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
         return TaskRepository(session)
 
 

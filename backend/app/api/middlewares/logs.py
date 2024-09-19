@@ -14,6 +14,7 @@ async def capture_request_body(request: Request):
     if not hasattr(request.state, "body"):
         # Read the body only once and store it in request.state
         request.state.body = await request.body()
+    
     return request.state.body.decode() if request.state.body else ""
 
 
@@ -69,10 +70,10 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         return response
 
     @staticmethod
-    def log_request(log_data):
-        print(log_data)
+    async def log_request(log_data):
+        
         # This function runs in the background to log the request details
-        with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
+        async with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
             log = RequestLogCreate(**log_data)
             log_repository = RequestLogRepository(db_session)
             log_repository.create(log)
