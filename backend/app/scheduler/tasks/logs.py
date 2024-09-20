@@ -82,8 +82,7 @@ async def cleanup_debug_logs(time_delta: timedelta, max_rows: int = None):
 
 # Schedule the task to run at regular intervals
 cleanup_request_config = TaskConfig(
-    task_id=uuid4(),
-    schedule_type="asyncio",
+    schedule_type="background",
     schedule_params=settings.CLEANUP_CRON_KWARGS,
     task_name="Cleanup request logs",
     task_type="cron",
@@ -96,8 +95,7 @@ cleanup_request_config = TaskConfig(
 
 # Schedule the task to run at regular intervals
 cleanup_task_config = TaskConfig(
-    task_id=uuid4(),
-    schedule_type="asyncio",
+    schedule_type="background",
     schedule_params=settings.CLEANUP_CRON_KWARGS,
     task_name="Cleanup task logs",
     task_type="cron",
@@ -110,8 +108,7 @@ cleanup_task_config = TaskConfig(
 
 # Schedule the task to run at regular intervals
 cleanup_debug_config = TaskConfig(
-    task_id=uuid4(),
-    schedule_type="asyncio",
+    schedule_type="background",
     schedule_params=settings.CLEANUP_CRON_KWARGS,
     task_name="Cleanup debug logs",
     task_type="cron",
@@ -124,8 +121,7 @@ cleanup_debug_config = TaskConfig(
 
 # Augment IPs with metadata
 lookup_and_update_ip_info_config = TaskConfig(
-    task_id=uuid4(),
-    schedule_type="asyncio",
+    schedule_type="background",
     schedule_params=settings.IP_LOOKUP_CRON_KWARGS,
     task_name="Augment IPs with metadata",
     task_type="cron",
