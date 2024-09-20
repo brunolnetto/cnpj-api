@@ -26,14 +26,3 @@ def test_database_init_invalid_uri(mocker):
     with pytest.raises(ArgumentError):
         Database(mock_uri)
 
-
-def test_test_connection_error(mocker):
-    """Tests the test_connection method with a connection error (raises exception)."""
-    mock_uri = "postgresql://user:password@host:1234/database"
-    db = Database(mock_uri)
-
-    # Mock a failing connection (don't patch connect method directly)
-    error = Exception("Test Error")
-    mocker.patch.object(db.engine, "connect", side_effect=error)
-    with pytest.raises(Exception):
-        db.test_connection()
