@@ -1,11 +1,11 @@
-from typing import Dict, List, Any, Callable
+from typing import Union, Dict, List, Any, Callable
 from datetime import datetime
-import copy
+from copy import deepcopy
 import traceback
 import asyncio
 import inspect
 
-from apscheduler import AsyncScheduler, Scheduler
+from apscheduler import AsyncScheduler, Scheduler, ScheduleLookupError
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
@@ -35,14 +35,7 @@ def validate_date_format(date_str: str, date_format: str = "%Y-%m-%d"):
 
 def validate_interval_kwargs(kwargs: Dict[str, Any]):
     allowed_keys = {
-        "weeks",
-        "days",
-        "hours",
-        "minutes",
-        "seconds",
-        "start_date",
-        "end_date",
-        "timezone",
+        "weeks","days","hours","minutes","seconds","start_date","end_date","timezone",
     }
     invalid_keys = set(kwargs) - allowed_keys
     if invalid_keys:
@@ -75,7 +68,7 @@ def validate_cron_kwargs(kwargs: Dict[str, Any]):
 
 # Generic function to set up scheduler
 def setup_scheduler(
-    scheduler: Scheduler,
+    scheduler: Union[Scheduler, AsyncScheduler],
     job_function: Callable,
     schedule_params: Dict[str, Any],
     task_type: str = "interval",
@@ -104,7 +97,7 @@ def setup_scheduler(
             timezone=schedule_params.get("timezone"),
         )
     else:
-        raise ValueError("Unsupported schedule_type. Use 'interval' or 'cron'.")
+        raise ValueError("Unsupported schedule_type. Use 'interval', 'cron' or 'date'.")
 
     scheduler.add_schedule(job_function, trigger, id="")
 
@@ -114,32 +107,25 @@ audit_database = multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
 
 
 def create_scheduler(schedule_type):
-    datastores = {"default": SQLAlchemyDataStore(engine=audit_database.engine)}
-
+    datastore = SQLAlchemyDataStore(engine_or_url=audit_database.engine)
     executors = {
         "default": {"type": "threadpool", "max_workers": 20},
         "process": {"type": "processpool", "max_workers": 5},
     }
 
-    job_defaults = {"misfire_grace_time": 15 * 60}
-
     if schedule_type == "background":
-        return Scheduler(
-            data_store=datastores, job_executors=executors, job_defaults=job_defaults
-        )
+        return Scheduler(data_store=datastore, job_executors=executors)
     elif schedule_type == "asyncio":
-        return AsyncScheduler(
-            data_store=datastores, job_executors=executors, job_defaults=job_defaults
-        )
+        return AsyncScheduler(data_store=datastore, job_executors=executors)
     else:
         raise ValueError(f"Invalid schedule type: {schedule_type}")
 
 
 class ScheduledTask:
     def __init__(self, task_config: TaskConfig):
-        self.task_config = copy.deepcopy(task_config)
+        self.task_config = deepcopy(task_config)
 
-    def run(self):
+    async def run(self):
         """
         Run a task and log its execution details in the TaskLog table.
 
@@ -161,7 +147,7 @@ class ScheduledTask:
                 talo_status="running",
             )
             session.add(task_log)
-            session.commit()
+            await session.commit()
 
             try:
                 if inspect.iscoroutinefunction(self.task_config.task_callable):
@@ -187,7 +173,7 @@ class ScheduledTask:
 
             finally:
                 task_log.talo_end_time = datetime.now()
-                session.commit()
+                await session.commit()
 
     async def schedule(self, scheduler):
         job_function = self.run
@@ -208,13 +194,11 @@ class TaskOrchestrator:
 
     async def start(self):
         for scheduler in self.schedulers.values():
-            await scheduler.start()
+            await scheduler.start_in_background()
 
     async def shutdown(self):
         for scheduler in self.schedulers.values():
-            await scheduler.shutdown()
-
-        logger.info
+            await scheduler.remove_schedule()
 
     async def add_task(self, task_config: TaskConfig):
         scheduler = self.schedulers.get(task_config.schedule_type, None)
@@ -231,8 +215,8 @@ class TaskOrchestrator:
     def remove_task(self, schedule_type: str, task_name: str):
         scheduler = self._get_scheduler(schedule_type)
         try:
-            scheduler.remove_job(task_name)
-        except JobLookupError:
+            scheduler.remove_schedule(task_name)
+        except ScheduleLookupError:
             raise ValueError(
                 f"Task '{task_name}' not found in scheduler '{schedule_type}'."
             )
@@ -250,12 +234,12 @@ class TaskOrchestrator:
 
         return scheduler
 
-    def remote_all_jobs_from(self, schedule_type: str):
-        self.schedulers[schedule_type].remove_all_jobs()
+    def remote_all_schedules_from(self, schedule_type: str):
+        self.schedulers[schedule_type].remove_schedule()
 
-    def remote_all_jobs(self):
+    def remote_all_schedules(self):
         for scheduler in self.schedulers.values():
-            scheduler.remove_all_jobs()
+            scheduler.remove_schedule()
 
 
 class TaskRegister:
