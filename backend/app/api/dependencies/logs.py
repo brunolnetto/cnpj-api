@@ -13,7 +13,7 @@ from backend.app.api.repositories.logs import DebuggingDatabaseHandler
 from backend.app.database.base import multi_database
 
 
-async def get_debug_logs_handler():
+def get_debug_logs_handler():
     audit_database = multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
     session = audit_database.session_maker()
 
@@ -21,25 +21,25 @@ async def get_debug_logs_handler():
     return DebuggingDatabaseHandler(db_session=session)
 
 
-async def get_request_logs_repository():
-    async with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+def get_request_logs_repository():
+    with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
         return RequestLogRepository(session)
 
 
-async def get_task_logs_repository():
-    async with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+def get_task_logs_repository():
+    with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
         return TaskLogRepository(session)
 
 
-async def get_app_start_logs_repository():
-    async with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+def get_app_start_logs_repository():
+    with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
         return AppStartLogRepository(session)
 
 
-async def log_app_start():
-    app_start_logs_repository = await get_app_start_logs_repository()
+def log_app_start():
+    app_start_logs_repository: AppStartLogRepository = get_app_start_logs_repository()
     app_start_log = {"stlo_start_time": datetime.now()}
-    await app_start_logs_repository.create(app_start_log)
+    app_start_logs_repository.create(app_start_log)
 
 
 TaskLogsRepositoryDependency = Depends(get_task_logs_repository)

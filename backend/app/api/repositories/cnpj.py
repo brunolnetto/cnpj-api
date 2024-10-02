@@ -59,12 +59,12 @@ class CNPJRepository:
         self.session = session
 
     @classmethod
-    async def initialize_static_properties(cls, session: AsyncSession):
+    def initialize_static_properties(cls, session: AsyncSession):
         # Run the tasks sequentially to avoid concurrent session operations
-        cnaes = await cls.get_cnaes(session)
-        legal_natures = await cls.get_legal_natures(session)
-        registration_statuses = await cls.get_registration_statuses(session)
-        cities = await cls.get_cities(session)
+        cnaes = cls.get_cnaes(session)
+        legal_natures = cls.get_legal_natures(session)
+        registration_statuses = cls.get_registration_statuses(session)
+        cities = cls.get_cities(session)
 
         # Assign the results to the class properties
         cls.cnaes_dict = {str(cnae_info["code"]): cnae_info for cnae_info in cnaes}
@@ -83,11 +83,11 @@ class CNPJRepository:
         cls.establishment_type_dict = get_establishment_type_dict()
 
     @classmethod
-    async def initialize_on_startup(cls, session: AsyncSession):
+    def initialize_on_startup(cls, session: AsyncSession):
         if not hasattr(cls, "cnaes_dict"):
-            await cls.initialize_static_properties(session)
+            cls.initialize_static_properties(session)
 
-    async def get_cnpjs_raw(
+    def get_cnpjs_raw(
         self,
         state_abbrev: str = "",
         city_code: str = "",
@@ -169,7 +169,7 @@ class CNPJRepository:
         )
 
         cnpjs_result = replace_invalid_fields_on_list_tuple(
-            await self.session.execute(query).fetchall()
+            self.session.execute(query).fetchall()
         )
 
         columns = ["cnpj"]
@@ -227,7 +227,7 @@ class CNPJRepository:
             for cnae_code in filter(is_cnaes_valid_map, cnae_code_list)
         ]
 
-    async def get_cnae_by_token(self, token: str):
+    def get_cnae_by_token(self, token: str):
         """
         Get the CNAE for the token.
 
@@ -246,7 +246,7 @@ class CNPJRepository:
             f"select codigo, descricao from cnae where descricao ilike '%{token}%'"
         )
 
-        cnae_result = await self.session.execute(query).fetchall()
+        cnae_result = self.session.execute(query).fetchall()
 
         # Map the results to the desired format
         cnae_dict = [{"code": codigo, "text": descricao}
@@ -255,14 +255,14 @@ class CNPJRepository:
         return cnae_dict
 
     @staticmethod
-    async def get_cnaes(session):
+    def get_cnaes(session):
         """
         Get all CNAEs from the database.
 
         Returns:
         DataFrame: The DataFrame with the CNAEs.
         """
-        return await get_cnpj_code_description_entries(session, "cnae")
+        return get_cnpj_code_description_entries(session, "cnae")
 
     def get_paginated_cnaes(
         self,
@@ -315,14 +315,14 @@ class CNPJRepository:
         ]
 
     @staticmethod
-    async def get_legal_natures(session):
+    def get_legal_natures(session):
         """
         Get all legal natures from the database.
 
         Returns:
         List: The List with the legal natures text and code.
         """
-        return await get_cnpj_code_description_entries(session, "natju")
+        return get_cnpj_code_description_entries(session, "natju")
 
     def get_paginated_legal_natures(
         self,
@@ -363,14 +363,14 @@ class CNPJRepository:
         ]
 
     @staticmethod
-    async def get_registration_statuses(session):
+    def get_registration_statuses(session):
         """
         Get all registration statuses from the database.
 
         Returns:
         List: The List with the registration statuses.
         """
-        return await get_cnpj_code_description_entries(session, "moti")
+        return get_cnpj_code_description_entries(session, "moti")
 
     def get_paginated_registration_statuses(
         self,
@@ -394,7 +394,7 @@ class CNPJRepository:
             else list(self.__class__.registration_statuses_dict.items())
         )
 
-    async def city_exists(self, city_name: str):
+    def city_exists(self, city_name: str):
         """
         Get the city for the code.
 
@@ -418,7 +418,7 @@ class CNPJRepository:
             """
         )
 
-        city_result = await self.session.execute(query).fetchall()
+        city_result = self.session.execute(query).fetchall()
 
         columns = ["code", "text"]
         empty_df = pd.DataFrame(columns=columns)
@@ -452,7 +452,7 @@ class CNPJRepository:
                 self.__class__.cities_dict) else self.cities_dict[city_code])
 
     @staticmethod
-    async def get_cities(session):
+    def get_cities(session):
         """
         Get the city for the code.
 
@@ -462,7 +462,7 @@ class CNPJRepository:
         Returns:
         str: The name of the city.
         """
-        return await get_cnpj_code_description_entries(session, "munic")
+        return get_cnpj_code_description_entries(session, "munic")
 
     def get_paginated_cities(
             self,
@@ -530,7 +530,7 @@ class CNPJRepository:
 
         return company_dict
 
-    async def get_cnpjs_company(self, cnpj_list: CNPJList):
+    def get_cnpjs_company(self, cnpj_list: CNPJList):
         """
         Get the company for the CNPJ.
 
@@ -575,8 +575,8 @@ class CNPJRepository:
             """
         )
 
-        async with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            company_result = await session.execute(query).fetchall()
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            company_result = session.execute(query).fetchall()
 
         company_result = replace_invalid_fields_on_list_tuple(company_result)
         company_result = replace_spaces_on_list_tuple(company_result)
@@ -748,7 +748,7 @@ class CNPJRepository:
 
         return establishment_dict
 
-    async def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
+    def get_cnpjs_establishment(self, cnpj_list: CNPJList) -> Dict:
         columns = [
             "cnpj_basico",
             "cnpj_ordem",
@@ -802,8 +802,8 @@ class CNPJRepository:
             """
         )
 
-        async with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            establishment_result = await session.execute(query).fetchall()
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            establishment_result = session.execute(query).fetchall()
 
         empty_df = pd.DataFrame(columns=columns)
         df_is_empty = len(establishment_result) == 0
@@ -845,7 +845,7 @@ class CNPJRepository:
 
         return establishment_dict
 
-    async def get_cnpj_establishments(self, cnpj: CNPJ) -> List:
+    def get_cnpj_establishments(self, cnpj: CNPJ) -> List:
         columns = [
             "cnpj_basico",
             "cnpj_ordem",
@@ -886,8 +886,8 @@ class CNPJRepository:
             """
         )
 
-        async with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            establishment_result = await session.execute(query)
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            establishment_result = session.execute(query)
             establishment_result = establishment_result.fetchall()
 
         establishment_result = replace_invalid_fields_on_list_tuple(
@@ -916,7 +916,7 @@ class CNPJRepository:
         return [] if est_is_empty else list(
             map(format_map, establishment_list))
 
-    async def get_cnpjs_partners(self, cnpj_list: CNPJList) -> List:
+    def get_cnpjs_partners(self, cnpj_list: CNPJList) -> List:
         """
         Get the partners for the CNPJ.
 
@@ -961,8 +961,8 @@ class CNPJRepository:
             """
         )
 
-        async with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            partners_result = await session.execute(query)
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            partners_result = session.execute(query)
             partners_result = partners_result.fetchall()
 
         partners_result = replace_invalid_fields_on_list_tuple(partners_result)
@@ -1023,7 +1023,7 @@ class CNPJRepository:
 
         return (optante, data_opcao, data_exclusao)
 
-    async def get_cnpjs_simples_simei(self, cnpj_list: CNPJList) -> List:
+    def get_cnpjs_simples_simei(self, cnpj_list: CNPJList) -> List:
         """
         Get the partners for the CNPJ.
 
@@ -1094,8 +1094,8 @@ class CNPJRepository:
             """
         )
 
-        async with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            simples_simei_result = await session.execute(query)
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            simples_simei_result = session.execute(query)
 
         simples_simei_result = simples_simei_result.fetchall()
         simples_simei_result = replace_invalid_fields_on_list_tuple(
@@ -1172,7 +1172,7 @@ class CNPJRepository:
 
         return simples_simei_dict
 
-    async def get_cnpj_activities(self, cnpj: CNPJ):
+    def get_cnpj_activities(self, cnpj: CNPJ):
         """
         Get the activities for the CNPJ.
 
@@ -1245,8 +1245,8 @@ class CNPJRepository:
             """
         )
 
-        async with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            activities_result = await session.execute(query).fetchall()
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            activities_result = session.execute(query).fetchall()
 
         activities_result = replace_invalid_fields_on_list_tuple(
             activities_result)
@@ -1276,7 +1276,7 @@ class CNPJRepository:
             "atividades_secundarias": side_activities,
         }
 
-    async def get_cnpjs_info(self, cnpj_list: CNPJList) -> JSON:
+    def get_cnpjs_info(self, cnpj_list: CNPJList) -> JSON:
         """
         Get the information for the CNPJ.
 
@@ -1390,7 +1390,7 @@ class CNPJRepository:
             for key in cnpj_infos
         ]
 
-    async def get_cnpj_info(self, cnpj: CNPJ) -> JSON:
+    def get_cnpj_info(self, cnpj: CNPJ) -> JSON:
         """
         Get the information for the CNPJ.
 
@@ -1431,11 +1431,11 @@ class CNPJRepository:
         ]
         pd.DataFrame(columns=columns)
 
-        cnpj_info = (await self.get_cnpjs_info([cnpj]))[0]
+        cnpj_info = (self.get_cnpjs_info([cnpj]))[0]
 
         return cnpj_info if len(cnpj_info) != 0 else []
 
-    async def get_cnpjs_with_cnae(
+    def get_cnpjs_with_cnae(
         self, cnae_code: str, limit: int = settings.PAGE_SIZE, offset: int = 0
     ):
         """
@@ -1469,7 +1469,7 @@ class CNPJRepository:
             """
         )
 
-        result = await self.session.execute(query)
+        result = self.session.execute(query)
         cnpj_tuples = result.fetchall()
 
         cnpjs_str_list = [
@@ -1477,9 +1477,9 @@ class CNPJRepository:
             for cnpj_base, cnpj_order, cnpj_digits in cnpj_tuples
         ]
 
-        return await self.get_cnpjs_info(cnpjs_str_list)
+        return self.get_cnpjs_info(cnpjs_str_list)
 
-    async def get_cnpjs_by_cnaes(
+    def get_cnpjs_by_cnaes(
             self,
             cnaes_list: CodeListType,
             limit: int = settings.PAGE_SIZE,
@@ -1522,7 +1522,7 @@ class CNPJRepository:
             """
         )
 
-        result = await self.session.execute(query)
+        result = self.session.execute(query)
         cnpj_tuples = result.fetchall()
 
         cnpjs_str_list = [
@@ -1530,9 +1530,9 @@ class CNPJRepository:
             for cnpj_base, cnpj_order, cnpj_digits in cnpj_tuples
         ]
 
-        return await self.get_cnpjs_info(cnpjs_str_list)
+        return self.get_cnpjs_info(cnpjs_str_list)
 
-    async def get_cnpjs_by_states(
+    def get_cnpjs_by_states(
         self,
         states_list: CodeListType,
         limit: int = settings.PAGE_SIZE,
@@ -1568,7 +1568,7 @@ class CNPJRepository:
             """
         )
 
-        result = await self.session.execute(query)
+        result = self.session.execute(query)
         cnpj_tuples = result.fetchall()
 
         cnpjs_str_list = [
@@ -1576,4 +1576,4 @@ class CNPJRepository:
             for cnpj_base, cnpj_order, cnpj_digits in cnpj_tuples
         ]
 
-        return await self.get_cnpjs_info(cnpjs_str_list)
+        return self.get_cnpjs_info(cnpjs_str_list)
