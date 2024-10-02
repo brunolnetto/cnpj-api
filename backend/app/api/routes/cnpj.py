@@ -1,15 +1,13 @@
-from typing import Union, Dict
+from typing import Union, Dict, Annotated
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Query
 
-from backend.app.api.services.cnpj import (
-    CNPJService,
-    CNPJServiceDependency,
-)
+from backend.app.api.services.cnpj import CNPJService, CNPJServiceDependency
 from backend.app.rate_limiter import rate_limit
-from backend.app.api.models.cnpj import CNPJBatch
-from backend.app.api.models.base import BatchModel
 from backend.app.api.dependencies.auth import JWTDependency
+from backend.app.api.models.base import BatchModel
+from backend.app.api.models.cnpj import CNPJBatch, CNPJQueryParams
+from backend.app.api.models.misc import LimitOffsetParams, PaginatedLimitOffsetParams 
 from backend.app.setup.config import settings
 
 # Types
@@ -22,11 +20,10 @@ router = APIRouter(tags=["CNPJ"], dependencies=[JWTDependency])
 @router.get("/cnaes")
 async def get_cnaes(
     request: Request,
+    query_params: Annotated[PaginatedLimitOffsetParams, Query()],
     search_token: str = "",
-    limit: int = settings.PAGE_SIZE,
-    offset: int = 0,
-    enable_pagination: bool = True,
-    cnpj_service: CNPJService = CNPJServiceDependency,
+    cnpj_service: CNPJService = CNPJServiceDependency
+    
 ):
     """
     Get a list of CNAEs from the database.
@@ -40,7 +37,9 @@ async def get_cnaes(
     return (
         await cnpj_service.get_cnae_by_token(search_token)
         if search_token != ""
-        else await cnpj_service.get_cnaes(limit, offset, enable_pagination)
+        else await cnpj_service.get_cnaes(
+            query_params.limit, query_params.offset, query_params.enable_pagination
+        )
     )
 
 
@@ -68,8 +67,7 @@ async def get_cnae_objects(
 async def get_cnpjs_by_cnaes(
     request: Request,
     cnae_batch: BatchModel,
-    limit: int = 10,
-    offset: int = 0,
+    query_params: Annotated[LimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -83,7 +81,9 @@ async def get_cnpjs_by_cnaes(
     Returns:
     - A list of establishments as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_by_cnaes(cnae_batch, limit, offset)
+    return await cnpj_service.get_cnpjs_by_cnaes(
+        cnae_batch, query_params.limit, query_params.offset
+    )
 
 
 @rate_limit()
@@ -110,8 +110,7 @@ async def get_cnae_description(
 async def get_cnpjs_with_cnae(
     request: Request,
     cnae_code: CodeType,
-    limit: int = 10,
-    offset: int = 0,
+    query_params: Annotated[LimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -125,7 +124,9 @@ async def get_cnpjs_with_cnae(
     Returns:
     - A list of establishments as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_with_cnae(cnae_code, limit, offset)
+    return await cnpj_service.get_cnpjs_with_cnae(
+        cnae_code, query_params.limit, query_params.offset
+    )
 
 
 @rate_limit()
@@ -133,8 +134,7 @@ async def get_cnpjs_with_cnae(
 async def get_cnpjs_by_state(
     request: Request,
     state_batch: BatchModel,
-    limit: int = 10,
-    offset: int = 0,
+    query_params: Annotated[LimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -148,7 +148,9 @@ async def get_cnpjs_by_state(
     Returns:
     - A list of establishments as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_by_states(state_batch, limit, offset)
+    return await cnpj_service.get_cnpjs_by_states(
+        state_batch, query_params.limit, query_params.offset
+    )
 
 
 @rate_limit()
@@ -219,8 +221,7 @@ async def get_city(
 @router.get("/cities")
 async def get_cities(
     request: Request,
-    limit: int = 10,
-    offset: int = 0,
+    query_params: Annotated[LimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -232,7 +233,7 @@ async def get_cities(
     Returns:
     - A list of cities as dictionaries.
     """
-    return await cnpj_service.get_cities(limit, offset)
+    return await cnpj_service.get_cities(query_params.limit, query_params.offset)
 
 
 @rate_limit()
@@ -278,9 +279,7 @@ async def get_legal_nature(
 @router.get("/legal-natures")
 async def get_legal_natures(
     request: Request,
-    limit: int = 10,
-    offset: int = 0,
-    enable_pagination: bool = True,
+    query_params: Annotated[PaginatedLimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -292,7 +291,9 @@ async def get_legal_natures(
     Returns:
     - A list of legal natures as dictionaries.
     """
-    return await cnpj_service.get_legal_natures(limit, offset, enable_pagination)
+    return await cnpj_service.get_legal_natures(
+        query_params.limit, query_params.offset, query_params.enable_pagination
+    )
 
 
 @rate_limit()
@@ -337,9 +338,7 @@ async def get_registration_status(
 @router.get("/registration-statuses")
 async def get_registration_statuses(
     request: Request,
-    limit: int = 10,
-    offset: int = 0,
-    enable_pagination: bool = True,
+    query_params: Annotated[PaginatedLimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -352,7 +351,7 @@ async def get_registration_statuses(
     - A list of registration statuses as dictionaries.
     """
     return await cnpj_service.get_registration_statuses(
-        limit, offset, enable_pagination
+        query_params.limit, query_params.offset, query_params.enable_pagination
     )
 
 
@@ -514,14 +513,8 @@ async def get_cnpj_establishments(
 @router.get("/cnpjs")
 async def get_cnpjs(
     request: Request,
+    query_params: Annotated[CNPJQueryParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
-    state_abbrev: str = "",
-    city_name: str = "",
-    cnae_code: str = "",
-    zipcode: str = "",
-    is_all: bool = False,
-    limit: int = 10,
-    offset: int = 0,
 ):
     """
     Get a list of CNPJs from the database.
@@ -533,7 +526,13 @@ async def get_cnpjs(
     - A list of CNPJs as dictionaries.
     """
     return await cnpj_service.get_cnpjs(
-        state_abbrev, city_name, cnae_code, zipcode, is_all, limit, offset
+        query_params.state_abbrev, 
+        query_params.city_name, 
+        query_params.cnae_code, 
+        query_params.zipcode, 
+        query_params.is_all, 
+        query_params.limit, 
+        query_params.offset
     )
 
 

@@ -23,7 +23,7 @@ class JWTBearer(OAuth2PasswordBearer):
     def __init__(self, tokenUrl: str = AUTH_TOKEN_URL):
         super().__init__(tokenUrl=tokenUrl)
 
-    async def __call__(self, request: Request):
+    def __call__(self, request: Request):
         token = None
         authorization = request.headers.get("Authorization")
 
