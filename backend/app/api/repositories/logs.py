@@ -72,16 +72,17 @@ class RequestLogRepository(BaseRepository):
         )
 
         for log in logs_without_ip_info:
-            ip_address = log.relo_ip_address
-            if ip_address:
+            ip_address_ = log.relo_ip_address
+            if ip_address_:
                 try:
-                    # Convert the IP address to an ip_address object
-                    ip_obj = ip_address.ip_address(ip_address)
-                    
+                    # Correct the IP address handling
+                    from ipaddress import ip_address
+                    ip_obj = ip_address(ip_address_)
+
                     # Check if the IP is public
                     if not (ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved):
                         # Perform IP lookup only for public IPs
-                        obj = IPWhois(ip_address)
+                        obj = IPWhois(ip_address_)
                         results = obj.lookup_rdap(depth=1)
 
                         # Update the log's IP info
@@ -90,7 +91,7 @@ class RequestLogRepository(BaseRepository):
                         ).update({RequestLog.relo_ip_info: results})
                         await self.session.commit()
                     else:
-                        print(f"Skipping local or inappropriate IP: {ip_address}")
+                        print(f"Skipping local or inappropriate IP: {ip_address_}")
 
                 except Exception as e:
                     print(f"Error looking up IP {ip_address}: {e}")
