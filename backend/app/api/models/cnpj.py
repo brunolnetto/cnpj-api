@@ -1,13 +1,20 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from backend.app.api.utils.cnpj import is_cnpj_str_valid
 from .base import BatchModel
-
+from .misc import LimitOffsetParams
 
 class CNPJBatch(BatchModel):
     pass
 
+
+class CNPJQueryParams(LimitOffsetParams):
+    state_abbrev: str = Field("")
+    city_name: str = Field("")
+    zipcode: str = Field("")
+    cnae_code: str = Field("")
+    is_all: bool = Field(True)
 
 class ModeloSimplesSimei(BaseModel):
     optante: bool = False
