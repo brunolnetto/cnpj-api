@@ -39,8 +39,6 @@ class FileInfo(BaseModel):
 
 
 # Define helper functions
-
-
 def is_size_type(text, size_types_):
     return reduce(
         lambda a, b: a or b, [text.endswith(size_type) for size_type in size_types_]

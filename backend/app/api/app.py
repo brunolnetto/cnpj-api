@@ -41,16 +41,24 @@ async def lifespan(app_: FastAPI):
     initialization and cleanup tasks related to the application's lifespan
     :type app: FastAPI
     """
-    t0 = perf_counter()
     
     # Data related entities
+    t0 = perf_counter()
     await init_database()
-
+    
     # Logging
-    setup_logger()
+    t1 = perf_counter()
+    await setup_logger()
+    
+    logger.info(f"Database initialization took {t1-t0:.4f} seconds")    
+    logger.info(f"Logger setup took {perf_counter()-t1:.4f} seconds")
+
+    t2 = perf_counter()
 
     # Initialize CNPJ repository
     await initialize_CNPJRepository_on_startup()
+
+    logger.info(f"Repository initialization took {perf_counter()-t2:.4f} seconds")
 
     # Run non-essential startup tasks in the background
     create_task(log_app_start())
@@ -59,6 +67,7 @@ async def lifespan(app_: FastAPI):
     # Add tasks to orchestrator
     create_task(add_tasks())
     
+    # Initialize NLTK
     create_task(init_nltk())
 
     logger.info(f"Startup took {perf_counter()-t0:.4f} seconds")

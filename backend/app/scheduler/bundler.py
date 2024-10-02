@@ -18,10 +18,10 @@ async def add_tasks():
     instances of TaskConfig.
     """
 
-    task_repository = get_task_repository()
+    task_repository = await get_task_repository()
 
     # Check if a task with the same name already exists in the database
-    existing_tasks = task_repository.get_all()  # Adjust if needed to filter by name
+    existing_tasks = await task_repository.get_all() 
 
     for index, task_config in enumerate(task_configs):
         # Compare existing tasks with the new one to avoid duplication
@@ -40,7 +40,7 @@ async def add_tasks():
 
         # Save the new task to the database using the repository
         task_register = TaskRegister(task_repository)
-        task_register.register(task_configs)
+        await task_register.register(task_configs)
 
     await asyncio.sleep(1)
 
