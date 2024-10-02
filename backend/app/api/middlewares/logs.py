@@ -70,7 +70,6 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
 
     @staticmethod
     def log_request(log_data):
-        print(log_data)
         # This function runs in the background to log the request details
         with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
             log = RequestLogCreate(**log_data)
