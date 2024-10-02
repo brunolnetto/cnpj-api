@@ -6,8 +6,6 @@ from backend.app.setup.logging import logger
 from backend.app.setup.config import settings
 
 # Define a dependency to create a CNPJRepository instance
-
-
 async def get_cnpj_repository() -> CNPJRepository:
     """
     Create a CNPJRepository instance.
