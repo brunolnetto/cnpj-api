@@ -1386,8 +1386,6 @@ class CNPJRepository:
             for cnpj_key, cnpj_info in cnpj_info_dict.items()
         }
 
-        print(cnpj_infos)
-
         return [
             {key_: cnpj_infos[key][key_] for key_ in columns if key_ in cnpj_infos[key]}
             for key in cnpj_infos
