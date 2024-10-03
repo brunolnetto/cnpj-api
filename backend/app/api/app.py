@@ -20,6 +20,7 @@ from backend.app.api.exceptions import (
     custom_rate_limit_handler,
 )
 from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware
+from backend.app.api.utils.misc import print_execution_time
 from backend.app.api.middlewares.misc import TimingMiddleware
 from backend.app.api.dependencies.logs import log_app_start
 from backend.app.api.dependencies.cnpj import initialize_CNPJRepository_on_startup
@@ -43,40 +44,33 @@ async def lifespan(app_: FastAPI):
     """
     
     # Data related entities
-    t0 = perf_counter()
-    await init_database()
+    await print_execution_time(init_database)()
     
     # Logging
-    t1 = perf_counter()
-    await setup_logger()
+    await print_execution_time(setup_logger)()
     
-    logger.info(f"Database initialization took {t1-t0:.4f} seconds")    
-    logger.info(f"Logger setup took {perf_counter()-t1:.4f} seconds")
-
-    t2 = perf_counter()
-
     # Initialize CNPJ repository
-    await initialize_CNPJRepository_on_startup()
+    print_execution_time(initialize_CNPJRepository_on_startup)()
 
-    logger.info(f"Repository initialization took {perf_counter()-t2:.4f} seconds")
-
-    # Run non-essential startup tasks in the background
-    create_task(log_app_start())
-    create_task(task_orchestrator.start())
+    # Log app startup
+    print_execution_time(log_app_start)()
+    
+    # Start task orchestrator
+    await print_execution_time(task_orchestrator.start)()
     
     # Add tasks to orchestrator
-    create_task(add_tasks())
+    await print_execution_time(add_tasks)()
     
     # Initialize NLTK
-    create_task(init_nltk())
-
-    logger.info(f"Startup took {perf_counter()-t0:.4f} seconds")
+    print_execution_time(init_nltk)()
 
     yield
 
     # Cleanup tasks
-    create_task(task_orchestrator.shutdown())
-    create_task(multi_database.disconnect())
+    await print_execution_time(task_orchestrator.shutdown)()
+    
+    # Disconnect from databases
+    print_execution_time(multi_database.disconnect)()
 
 
 def create_app():

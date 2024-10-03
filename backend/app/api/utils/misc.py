@@ -1,9 +1,32 @@
 import time
 import re
+from functools import wraps
+from inspect import iscoroutinefunction
 from typing import Dict, List, Callable, Any
 
 from backend.app.utils.misc import is_positive, is_non_negative
 from backend.app.api.constants import UNIT_MULTIPLIER, MAX_LIMIT
+
+def print_execution_time(func):
+    @wraps(func)
+    def sync_wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
+        return result
+
+    @wraps(func)
+    async def async_wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = await func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
+        return result
+
+    return async_wrapper if iscoroutinefunction(func) else sync_wrapper
 
 
 def zfill_factory(n: int):

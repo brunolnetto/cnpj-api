@@ -62,18 +62,17 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         # Schedule the log entry as a background task
         background_scheduler.add_job(
             self.log_request,
-            args=[log_data],
-            id=f"log-{strftime('%Y%m%d%H%M%S', localtime(start_time))}",
+            args=[log_data]
         )
 
         # Return the original response
         return response
 
     @staticmethod
-    async def log_request(log_data):
+    def log_request(log_data):
         
         # This function runs in the background to log the request details
-        async with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
+        with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
             log = RequestLogCreate(**log_data)
             log_repository = RequestLogRepository(db_session)
-            await log_repository.create(log)
+            log_repository.create(log)

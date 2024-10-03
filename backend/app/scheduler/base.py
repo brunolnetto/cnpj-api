@@ -108,15 +108,11 @@ audit_database = multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
 
 def create_scheduler(schedule_type):
     datastore = SQLAlchemyDataStore(engine_or_url=audit_database.engine)
-    executors = {
-        "default": {"type": "threadpool", "max_workers": 20},
-        "process": {"type": "processpool", "max_workers": 5},
-    }
 
     if schedule_type == "background":
-        return Scheduler(data_store=datastore, job_executors=executors)
+        return Scheduler(data_store=datastore)
     elif schedule_type == "asyncio":
-        return AsyncScheduler(data_store=datastore, job_executors=executors)
+        return AsyncScheduler(data_store=datastore)
     else:
         raise ValueError(f"Invalid schedule type: {schedule_type}")
 
@@ -147,7 +143,7 @@ class ScheduledTask:
                 talo_status="running",
             )
             session.add(task_log)
-            await session.commit()
+            session.commit()
 
             try:
                 if inspect.iscoroutinefunction(self.task_config.task_callable):
@@ -173,7 +169,7 @@ class ScheduledTask:
 
             finally:
                 task_log.talo_end_time = datetime.now()
-                await session.commit()
+                session.commit()
 
     async def schedule(self, scheduler):
         job_function = self.run
@@ -193,12 +189,10 @@ class TaskOrchestrator:
         }
 
     async def start(self):
-        for scheduler in self.schedulers.values():
-            await scheduler.start_in_background()
+        self.schedulers['background'].start_in_background()
 
     async def shutdown(self):
-        for scheduler in self.schedulers.values():
-            await scheduler.remove_schedule()
+        self.schedulers['background'].remove_schedule()
 
     async def add_task(self, task_config: TaskConfig):
         scheduler = self.schedulers.get(task_config.schedule_type, None)
@@ -235,18 +229,20 @@ class TaskOrchestrator:
         return scheduler
 
     def remote_all_schedules_from(self, schedule_type: str):
-        self.schedulers[schedule_type].remove_schedule()
-
-    def remote_all_schedules(self):
-        for scheduler in self.schedulers.values():
+        scheduler = self.schedulers.get(schedule_type)
+        
+        if scheduler:
             scheduler.remove_schedule()
+
+    async def remote_all_schedules(self):
+        self.schedulers['background'].remove_schedule()
 
 
 class TaskRegister:
     def __init__(self, task_repository: TaskRepository):
         self.task_repository = task_repository
 
-    async def register(self, task_configs: List[TaskConfig]):
+    def register(self, task_configs: List[TaskConfig]):
         for config in task_configs:
             # Prepare task data using TaskCreate Pydantic model
             task_data = TaskCreate(
@@ -263,7 +259,7 @@ class TaskRegister:
 
             try:
                 # Register the task using the repository's create method
-                await self.task_repository.create(task_data.model_dump())
+                self.task_repository.create(task_data.model_dump())
             except Exception as e:
                 logger.error(
                     f"Error trying to register TaskConfig {task_data.task_name}: {e}"

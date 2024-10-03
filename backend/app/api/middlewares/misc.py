@@ -9,9 +9,9 @@ from backend.app.database.base import get_session
 
 
 class TimingMiddleware(BaseHTTPMiddleware):
-    async def save_request_timing(self, request: Request, process_time: float):
+    def save_request_timing(self, request: Request, process_time: float):
         # Save the request timing in the database
-        async with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+        with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
             request_timing = RequestTimingLog(
                 rtlo_url_path=request.url.path,
                 rtlo_method=request.method,
