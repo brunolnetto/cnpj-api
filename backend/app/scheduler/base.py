@@ -246,7 +246,7 @@ class TaskRegister:
     def __init__(self, task_repository: TaskRepository):
         self.task_repository = task_repository
 
-    async def register(self, task_configs: List[TaskConfig]):
+    def register(self, task_configs: List[TaskConfig]):
         for config in task_configs:
             # Prepare task data using TaskCreate Pydantic model
             task_data = TaskCreate(
@@ -263,7 +263,7 @@ class TaskRegister:
 
             try:
                 # Register the task using the repository's create method
-                await self.task_repository.create(task_data.model_dump())
+                self.task_repository.create(task_data.model_dump())
             except Exception as e:
                 logger.error(
                     f"Error trying to register TaskConfig {task_data.task_name}: {e}"
