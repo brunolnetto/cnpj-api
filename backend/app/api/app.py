@@ -46,11 +46,12 @@ async def lifespan(app_: FastAPI):
     t0 = perf_counter()
     await init_database()
     
+    logger.info(f"Database initialization took {perf_counter()-t0:.4f} seconds")    
+    
     # Logging
     t1 = perf_counter()
     await setup_logger()
     
-    logger.info(f"Database initialization took {t1-t0:.4f} seconds")    
     logger.info(f"Logger setup took {perf_counter()-t1:.4f} seconds")
 
     t2 = perf_counter()

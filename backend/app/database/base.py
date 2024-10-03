@@ -154,8 +154,8 @@ class Database(BaseDatabase):
         try:
             with self.engine.begin() as conn:
                 # Use run_sync to handle synchronous code inside an async connection
-                def get_tables(connection):
-                    inspector = inspect(connection)
+                def get_tables():
+                    inspector = inspect(conn)
                     return inspector.get_table_names()
 
                 tables = get_tables()
