@@ -48,7 +48,7 @@ class RequestLog(logs_database.base):
 
 
 class Task(logs_database.base):
-    __tablename__ = "tasks"
+    __tablename__ = "my_tasks"
     task_id = Column(
         UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4
     )
@@ -80,7 +80,7 @@ class TaskLog(logs_database.base):
     # Foreign key referencing the task_id in Task
     talo_task_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("tasks.task_id", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("my_tasks.task_id", ondelete="CASCADE", onupdate="CASCADE"),
         index=True,
         nullable=False,
     )

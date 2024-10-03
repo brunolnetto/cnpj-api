@@ -11,7 +11,7 @@ from backend.app.api.models.tasks import TaskConfig
 from backend.app.setup.config import settings
 
 
-async def cleanup_request_logs(time_delta: timedelta, max_rows: int = None):
+def cleanup_request_logs(time_delta: timedelta, max_rows: int = None):
     """
     Cleans up requests logs based on either time or table row count.
 
@@ -24,12 +24,12 @@ async def cleanup_request_logs(time_delta: timedelta, max_rows: int = None):
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         request_log_repository = RequestLogRepository(db_session)
         if max_rows is not None:
-            await request_log_repository.delete_excess_logs(max_rows)
+            request_log_repository.delete_excess_logs(max_rows)
         else:
-            await request_log_repository.delete_old_logs(time_delta)
+            request_log_repository.delete_old_logs(time_delta)
 
 
-async def lookup_and_update_ip_info_task():
+def lookup_and_update_ip_info_task():
     """
     Cleans up requests logs based on either time or table row count.
 
@@ -41,10 +41,10 @@ async def lookup_and_update_ip_info_task():
     """
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         request_log_repository = RequestLogRepository(db_session)
-        await request_log_repository.lookup_and_update_ip_info()
+        request_log_repository.lookup_and_update_ip_info()
 
 
-async def cleanup_task_logs(time_delta: timedelta, max_rows: int = None):
+def cleanup_task_logs(time_delta: timedelta, max_rows: int = None):
     """
     Cleans up tasks logs based on either time or table row count.
 
@@ -57,12 +57,12 @@ async def cleanup_task_logs(time_delta: timedelta, max_rows: int = None):
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         task_log_repository = TaskLogRepository(db_session)
         if max_rows is not None:
-            await task_log_repository.delete_excess_logs(max_rows)
+            task_log_repository.delete_excess_logs(max_rows)
         else:
-            await task_log_repository.delete_old_logs(time_delta)
+            task_log_repository.delete_old_logs(time_delta)
 
 
-async def cleanup_debug_logs(time_delta: timedelta, max_rows: int = None):
+def cleanup_debug_logs(time_delta: timedelta, max_rows: int = None):
     """
     Cleans up tasks logs based on either time or table row count.
 
@@ -75,9 +75,9 @@ async def cleanup_debug_logs(time_delta: timedelta, max_rows: int = None):
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         debug_log_repository = DebuggingDatabaseHandler(db_session)
         if max_rows is not None:
-            await debug_log_repository.delete_excess_logs(max_rows)
+            debug_log_repository.delete_excess_logs(max_rows)
         else:
-            await debug_log_repository.delete_old_logs(time_delta)
+            debug_log_repository.delete_old_logs(time_delta)
 
 
 # Schedule the task to run at regular intervals

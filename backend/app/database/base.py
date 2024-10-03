@@ -128,7 +128,7 @@ class Database(BaseDatabase):
             print(f"Error connecting to the database {masked_uri}: {e}")
 
     def create_tables(self):
-        """
+        """w
         Connects to a PostgreSQL database using environment variables for connection details.
 
         Returns:
@@ -140,7 +140,7 @@ class Database(BaseDatabase):
         try:
             # Create all tables defined using the Base class (if not already created)
             with self.engine.begin() as conn:
-                self.base.metadata.create_all
+                self.base.metadata.create_all(conn)
 
             print(f"Tables for database {masked_uri} created!")
 
