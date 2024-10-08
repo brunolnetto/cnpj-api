@@ -268,7 +268,7 @@ class DebuggingDatabaseHandler(logging.Handler):
     async def close(self):
         self.stop_event.set()
         await self.queue.join()  # Awaiting the queue join
-        super().close() 
+        await super().close() 
 
     async def delete_old_logs(self, time_delta: timedelta):
         """

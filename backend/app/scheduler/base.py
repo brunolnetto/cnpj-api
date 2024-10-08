@@ -192,7 +192,7 @@ class TaskOrchestrator:
         self.schedulers['background'].start_in_background()
 
     async def shutdown(self):
-        self.schedulers['background'].remove_schedule()
+        self.schedulers['background'].remove_schedule("")
 
     async def add_task(self, task_config: TaskConfig):
         scheduler = self.schedulers.get(task_config.schedule_type, None)
@@ -235,7 +235,7 @@ class TaskOrchestrator:
             scheduler.remove_schedule()
 
     async def remote_all_schedules(self):
-        self.schedulers['background'].remove_schedule()
+        self.schedulers['background'].remove_schedule("")
 
 
 class TaskRegister:
