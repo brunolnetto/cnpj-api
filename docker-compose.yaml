@@ -1,7 +1,8 @@
 services:
   backend-app:
-    image: brunolnetto1234/cnpj_api:latest
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "8000:8000"
