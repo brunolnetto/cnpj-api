@@ -41,8 +41,8 @@ env: ## Creates a virtual environment. Usage: make env
 
 install: ## Installs the python requirements. Usage: make install
 	pip install uv
-	uv pip install -r requirements.txt
-	uv pip install -r requirements_dev.txt
+	uv pip install -r requirements.txt --no-cache-dir
+	uv pip install -r requirements_dev.txt --no-cache-dir
 	apt install black pylint
 
 run: ## Run the application. Usage: make run

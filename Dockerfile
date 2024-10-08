@@ -1,5 +1,5 @@
 # Use the official Python image as the base image
-FROM python:3.11-slim-buster
+FROM python:3.9-slim-buster
 
 # Set the working directory
 WORKDIR /app
@@ -32,7 +32,6 @@ COPY .env .
 CMD [\
     "uvicorn", "backend.app.main:app", \
     "--reload", \
-    #"--workers", "5", \
     "--host", "0.0.0.0", \
     "--port", "8000"\
 ]

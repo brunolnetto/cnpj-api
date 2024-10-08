@@ -248,18 +248,18 @@ class MultiDatabase(BaseDatabase):
         for database in self.databases.values():
             database.test_connection()
 
-    async def create_tables(self):
+    def create_tables(self):
         for database in self.databases.values():
             database.create_tables()
 
-    async def print_tables(self):
+    def print_tables(self):
         """
         Print the available tables in a specific database.
         """
         for database in self.databases.values():
             database.print_tables()
 
-    async def init(self):
+    def init(self):
         """
         Initialize all databases concurrently.
         """
@@ -269,7 +269,7 @@ class MultiDatabase(BaseDatabase):
             except Exception as e:
                 print(f"Error during initialization: {str(e)}")
 
-    async def disconnect(self):
+    def disconnect(self):
         """
         Disconnect all databases concurrently.
         """
@@ -281,8 +281,8 @@ class MultiDatabase(BaseDatabase):
 multi_database: Optional[MultiDatabase] = MultiDatabase(settings.postgres_uris_dict)
 
 
-async def init_database():
-    await multi_database.init()
+def init_database():
+    multi_database.init()
 
 
 @contextmanager
