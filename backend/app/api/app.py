@@ -44,7 +44,7 @@ async def lifespan(app_: FastAPI):
     """
     
     # Data related entities
-    await print_execution_time(init_database)()
+    print_execution_time(init_database)()
     
     # Logging
     await print_execution_time(setup_logger)()
@@ -54,13 +54,13 @@ async def lifespan(app_: FastAPI):
 
     # Log app startup
     print_execution_time(log_app_start)()
-    
+
     # Start task orchestrator
     await print_execution_time(task_orchestrator.start)()
-    
+
     # Add tasks to orchestrator
     await print_execution_time(add_tasks)()
-    
+
     # Initialize NLTK
     print_execution_time(init_nltk)()
 
@@ -68,7 +68,7 @@ async def lifespan(app_: FastAPI):
 
     # Cleanup tasks
     await print_execution_time(task_orchestrator.shutdown)()
-    
+
     # Disconnect from databases
     print_execution_time(multi_database.disconnect)()
 
