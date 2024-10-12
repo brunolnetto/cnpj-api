@@ -183,7 +183,6 @@ class TaskOrchestrator:
     def __init__(self):
         self.schedulers = {
             "background": create_scheduler("background"),
-            "asyncio": create_scheduler("asyncio"),
         }
 
     async def start(self):
@@ -197,7 +196,7 @@ class TaskOrchestrator:
 
         if scheduler:
             task = ScheduledTask(task_config)
-            await task.schedule(scheduler)
+            task.schedule(scheduler)
 
         else:
             invalid_message = f"Invalid scheduler type: {task_config.schedule_type}."
