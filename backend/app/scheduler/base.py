@@ -68,7 +68,7 @@ def validate_cron_kwargs(kwargs: Dict[str, Any]):
 
 # Generic function to set up scheduler
 def setup_scheduler(
-    scheduler: Union[Scheduler, AsyncScheduler],
+    scheduler: Scheduler,
     job_function: Callable,
     schedule_params: Dict[str, Any],
     task_type: str = "interval",
@@ -111,17 +111,15 @@ def create_scheduler(schedule_type):
 
     if schedule_type == "background":
         return Scheduler(data_store=datastore)
-    elif schedule_type == "asyncio":
-        return AsyncScheduler(data_store=datastore)
     else:
-        raise ValueError(f"Invalid schedule type: {schedule_type}")
+        raise ValueError(f"Unsupported scheduler type: {schedule_type}")
 
 
 class ScheduledTask:
     def __init__(self, task_config: TaskConfig):
         self.task_config = deepcopy(task_config)
 
-    async def run(self):
+    def run(self):
         """
         Run a task and log its execution details in the TaskLog table.
 
@@ -171,7 +169,7 @@ class ScheduledTask:
                 task_log.talo_end_time = datetime.now()
                 session.commit()
 
-    async def schedule(self, scheduler):
+    def schedule(self, scheduler):
         job_function = self.run
         setup_scheduler(
             scheduler,
