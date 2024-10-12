@@ -187,6 +187,7 @@ class TaskOrchestrator:
             "background": create_scheduler("background"),
             "asyncio": create_scheduler("asyncio"),
         }
+        print(self.schedulers)
 
     async def start(self):
         self.schedulers['background'].start_in_background()

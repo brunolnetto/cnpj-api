@@ -35,7 +35,7 @@ def lookup_and_update_ip_info_task():
 
     Args:
         time_delta (timedelta): The time difference from now. Logs older than this
-        will be deleted.
+        will be deleted.    
         max_rows (int, optional): The maximum number of rows to retain. If specified,
         logs will be deleted based on their creation time and this count.
     """

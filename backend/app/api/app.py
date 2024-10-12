@@ -58,6 +58,13 @@ async def lifespan(app_: FastAPI):
     # Start task orchestrator
     await print_execution_time(task_orchestrator.start)()
 
+    t3 = perf_counter()
+    log_app_start()
+
+    logger.info(f"App logging startup took {perf_counter()-t3:.4f} seconds")
+
+    create_task(task_orchestrator.start())
+    
     # Add tasks to orchestrator
     await print_execution_time(add_tasks)()
 

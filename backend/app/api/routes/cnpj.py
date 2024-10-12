@@ -1,6 +1,6 @@
-from typing import Union, Dict, Annotated
+from typing import Union, Dict, Annotated, Optional
 
-from fastapi import APIRouter, Request, Query
+from fastapi import APIRouter, Request, Query, Depends
 
 from backend.app.api.services.cnpj import CNPJService, CNPJServiceDependency
 from backend.app.rate_limiter import rate_limit
@@ -20,10 +20,9 @@ router = APIRouter(tags=["CNPJ"], dependencies=[JWTDependency])
 @router.get("/cnaes")
 def get_cnaes(
     request: Request,
-    query_params: Annotated[PaginatedLimitOffsetParams, Query()],
-    search_token: str = "",
+    query_params: PaginatedLimitOffsetParams = Depends(),
+    search_token: Optional[str] = "",
     cnpj_service: CNPJService = CNPJServiceDependency
-    
 ):
     """
     Get a list of CNAEs from the database.
@@ -67,7 +66,7 @@ def get_cnae_objects(
 def get_cnpjs_by_cnaes(
     request: Request,
     cnae_batch: BatchModel,
-    query_params: Annotated[LimitOffsetParams, Query()],
+    query_params: PaginatedLimitOffsetParams = Depends(),
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -110,7 +109,7 @@ def get_cnae_description(
 def get_cnpjs_with_cnae(
     request: Request,
     cnae_code: CodeType,
-    query_params: Annotated[LimitOffsetParams, Query()],
+    query_params: PaginatedLimitOffsetParams = Depends(),
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -134,7 +133,7 @@ def get_cnpjs_with_cnae(
 def get_cnpjs_by_state(
     request: Request,
     state_batch: BatchModel,
-    query_params: Annotated[LimitOffsetParams, Query()],
+    query_params: PaginatedLimitOffsetParams = Depends(),
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -221,7 +220,7 @@ def get_city(
 @router.get("/cities")
 def get_cities(
     request: Request,
-    query_params: Annotated[LimitOffsetParams, Query()],
+    query_params: PaginatedLimitOffsetParams = Depends(),
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -279,7 +278,7 @@ def get_legal_nature(
 @router.get("/legal-natures")
 def get_legal_natures(
     request: Request,
-    query_params: Annotated[PaginatedLimitOffsetParams, Query()],
+    query_params: PaginatedLimitOffsetParams = Depends(),
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -338,7 +337,7 @@ def get_registration_status(
 @router.get("/registration-statuses")
 def get_registration_statuses(
     request: Request,
-    query_params: Annotated[PaginatedLimitOffsetParams, Query()],
+    query_params: PaginatedLimitOffsetParams = Depends(),
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -513,7 +512,7 @@ def get_cnpj_establishments(
 @router.get("/cnpjs")
 def get_cnpjs(
     request: Request,
-    query_params: Annotated[CNPJQueryParams, Query()],
+    query_params: PaginatedLimitOffsetParams = Depends(),
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """

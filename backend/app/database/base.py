@@ -128,7 +128,7 @@ class Database(BaseDatabase):
             print(f"Error connecting to the database {masked_uri}: {e}")
 
     def create_tables(self):
-        """w
+        """
         Connects to a PostgreSQL database using environment variables for connection details.
 
         Returns:
