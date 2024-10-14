@@ -68,7 +68,7 @@ class Database(BaseDatabase):
             pool_size=30,          # Increase the base pool size
             max_overflow=20,        # Increase the overflow pool
             pool_timeout=60,        # Increase timeout to wait for a connection
-            pool_recycle=1800       # Recycle connections after a certain number of seconds
+            pool_recycle=1800,       # Recycle connections after a certain number of seconds
             pool_pre_ping=True,     # Ensure stale connections are checked before reuse
             isolation_level="AUTOCOMMIT",
         )
