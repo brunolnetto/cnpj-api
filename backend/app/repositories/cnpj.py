@@ -225,6 +225,7 @@ class CNPJRepository:
         if not token:
             return []
 
+
         # Use parameterized queries to safely include the token in the query
         cnae_result = self.session.query(CNAE).filter(CNAE.descricao.ilike(f'%{token}%')).all()
 
@@ -233,7 +234,7 @@ class CNPJRepository:
             return {"code": cnae.id, "text": cnae.descricao}
 
         # Map the results to the desired format
-        cnae_dict = list(map(wrap_values_map, cnae_result))
+        cnae_dict = [{"code": cnae.codigo, "text": cnae.descricao} for cnae in cnae_result]
 
         return cnae_dict
 
