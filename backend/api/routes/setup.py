@@ -6,6 +6,7 @@ from backend.setup.config import settings
 
 router = APIRouter()
 
+
 @router.get("/request-info")
 async def get_request_info(request: Request):
     """
@@ -18,7 +19,7 @@ async def get_request_info(request: Request):
     - A dictionary with information about the request.
     """
     headers = request.headers
-    
+
     # Access other request attributes as needed (e.g., headers, body)
     return {
         "client": request.client,
@@ -29,7 +30,7 @@ async def get_request_info(request: Request):
         "path_params": request.path_params,
         "headers": headers,
         "cookies": request.cookies,
-        "body": await request.body()
+        "body": await request.body(),
     }
 
 
@@ -39,8 +40,9 @@ async def health_check():
         "name": settings.PROJECT_NAME,
         "version": settings.VERSION,
         "status": "OK",
-        "message": f"Visit {settings.API_V1_STR}/docs for more information."
+        "message": f"Visit {settings.API_V1_STR}/docs for more information.",
     }
+
 
 @router.get("/info")
 async def info():

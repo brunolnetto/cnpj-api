@@ -15,41 +15,49 @@ logger = logging.getLogger(__name__)
 # Configure logging with a single handler
 # Set the overall logging level
 load_dotenv()
-ENVIRONMENT = getenv('ENVIRONMENT', 'development')
+ENVIRONMENT = getenv("ENVIRONMENT", "development")
 
 fields = [
-    "name", "process", "processName", "threadName", "thread", "taskName", 
-    "asctime", "created", "relativeCreated", "msecs", 
-    "pathname", "module", "filename", "funcName", "levelno", "levelname","message",
+    "name",
+    "process",
+    "processName",
+    "threadName",
+    "thread",
+    "taskName",
+    "asctime",
+    "created",
+    "relativeCreated",
+    "msecs",
+    "pathname",
+    "module",
+    "filename",
+    "funcName",
+    "levelno",
+    "levelname",
+    "message",
 ]
 
-logging_format=" ".join(map(lambda field_name: f"%({field_name})s", fields))
+logging_format = " ".join(map(lambda field_name: f"%({field_name})s", fields))
 fmt = jsonlogger.JsonFormatter(logging_format)
 
-if ENVIRONMENT == 'development':
+if ENVIRONMENT == "development":
     # Create a handler for stdout and stderr
-    stdout_stream_handler=logging.StreamHandler(sys.stdout)
-    stderr_stream_handler=logging.StreamHandler(sys.stderr)
+    stdout_stream_handler = logging.StreamHandler(sys.stdout)
+    stderr_stream_handler = logging.StreamHandler(sys.stderr)
 
     # Set the format for the handlers
     stdout_stream_handler.setFormatter(fmt)
     stderr_stream_handler.setFormatter(fmt)
 
-    logging.basicConfig(
-        level=logging.INFO,
-        handlers=[stdout_stream_handler]
-    )
-    
-    logging.basicConfig(
-        level=logging.WARN,  
-        handlers=[stderr_stream_handler]
-    )
+    logging.basicConfig(level=logging.INFO, handlers=[stdout_stream_handler])
+
+    logging.basicConfig(level=logging.WARN, handlers=[stderr_stream_handler])
 
 # Create separate log files for errors and info
 date_str = datetime.now().strftime("%Y-%m-%d")
 time_str = datetime.now().strftime("%H_%M")
 
-log_root_path = f'logs/{date_str}'
+log_root_path = f"logs/{date_str}"
 
 # Clear the latest 5 files (adjust 'n' as needed)
 LOG_FILES_HORIZON = 5
@@ -81,5 +89,3 @@ for log_file, log_level in log_infos:
     logger.addHandler(log_handler)
 
 logger.info("Logging started.")
-
-

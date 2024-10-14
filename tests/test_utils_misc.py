@@ -26,45 +26,52 @@ from backend.utils.misc import (
     are_non_positive,
 )
 
+
 def test_are_positive():
     """Tests the are_positive function."""
     assert are_positive([1, 2, 3, 4, 5])
     assert not are_positive([1, 2, 3, 4, -5])
-    assert not are_positive([-1, 2, 3, 4, 5]) 
+    assert not are_positive([-1, 2, 3, 4, 5])
     assert not are_positive([1, 2, 3, 4, 0])
     assert not are_positive([1, 2, 3, 4, 0])
+
 
 def test_are_non_negative():
     """Tests the are_non_negative function."""
     assert are_non_negative([1, 2, 3, 4, 5])
     assert not are_non_negative([1, 2, 3, 4, -5])
-    assert not are_non_negative([-1, 2, 3, 4, 5]) 
+    assert not are_non_negative([-1, 2, 3, 4, 5])
     assert are_non_negative([1, 2, 3, 4, 0])
+
 
 def test_are_negative():
     """Tests the are_negative function."""
     assert not are_negative([1, 2, 3, 4, 5])
-    assert are_negative([-1, -2, -3, -4, -5]) 
+    assert are_negative([-1, -2, -3, -4, -5])
     assert not are_negative([1, 2, 3, 4, 0])
+
 
 def test_are_non_positive():
     """Tests the are_non_positive function."""
-    assert are_non_positive([-1, -2, -3, -4, -5]) 
+    assert are_non_positive([-1, -2, -3, -4, -5])
     assert not are_non_positive([1, 2, 3, 4, 5])
-    assert not are_non_positive([-1, 2, 3, 4, 5]) 
+    assert not are_non_positive([-1, 2, 3, 4, 5])
     assert are_non_positive([-1, -2, -3, -4, 0])
+
 
 def test_date_str():
     """Tests the date_str function."""
-    with patch('backend.utils.misc.datetime') as mock_datetime:
+    with patch("backend.utils.misc.datetime") as mock_datetime:
         mock_datetime.now().strftime.return_value = "2024-06-13"
         assert date_str() == "2024-06-13"
 
+
 def test_time_str():
     """Tests the time_str function."""
-    with patch('backend.utils.misc.datetime') as mock_datetime:
+    with patch("backend.utils.misc.datetime") as mock_datetime:
         mock_datetime.now().strftime.return_value = "12:34:56"
         assert time_str() == "12:34:56"
+
 
 def test_is_number():
     """Tests the is_number function."""
@@ -94,12 +101,14 @@ def test_is_database_field_valid():
     assert not is_field_valid("NULL")
     assert not is_field_valid("None")  # Case-insensitive
 
+
 def test_format_database_date():
     """Tests the format_database_date function."""
 
     assert format_database_date("20240613") == "13/06/2024"
     assert format_database_date("invalid_date") is None
     assert format_database_date("20240613", delimiter="/") == "13/06/2024"
+
 
 def test_format_phone():
     """Tests the format_phone function."""
@@ -108,12 +117,12 @@ def test_format_phone():
     assert format_phone("12", "34567890", ddd_ldelimiter="") == "12) 3456-7890"
     assert format_phone("12", "34567890", ddd_rdelimiter="") == "(12 3456-7890"
     assert format_phone("12", "34567890", phone_delimiter="") == "(12) 34567890"
-    assert format_phone(
-        "12", "34567890", 
-        ddd_rdelimiter="",
-        ddd_ldelimiter="", 
-        phone_delimiter=""
-    ) == "12 34567890"
+    assert (
+        format_phone(
+            "12", "34567890", ddd_rdelimiter="", ddd_ldelimiter="", phone_delimiter=""
+        )
+        == "12 34567890"
+    )
 
     assert format_phone("nan", "invalid_phone") == ""
 
@@ -126,12 +135,14 @@ def test_format_cep():
     assert format_cep("00000000") == "00.000-000"  # Leading zeros
     assert format_cep("invalid_cep") == ""
 
+
 def test_replace_spaces_on_list_tuple():
     """Tests the replace_spaces_on_list_tuple function."""
 
     data = [("  text  ", "another"), ("  multiple   ", "spaces")]
     expected = [("text", "another"), ("multiple", "spaces")]
     assert replace_spaces_on_list_tuple(data) == expected
+
 
 def test_replace_invalid_fields_on_list_dict():
     """Tests the replace_invalid_fields_on_list_dict function."""
@@ -163,16 +174,16 @@ def test_replace_nan_on_list_tuple():
 # Test with pytest.mock
 def test_makedir(mocker):
     # Mock logger methods
-    mocker.patch('backend.setup.logging.logger.info')
-    mocker.patch('backend.setup.logging.logger.warning')
+    mocker.patch("backend.setup.logging.logger.info")
+    mocker.patch("backend.setup.logging.logger.warning")
 
     # Test case 1: Folder created (no warning)
     folder_name = "new_folder"
     makedir(folder_name, is_verbose=True)
     rmdir(folder_name)
-    
+
     # Assert logger.info was called with the correct message
-    from backend.setup.logging import logger 
+    from backend.setup.logging import logger
 
     assert logger.info.call_count == 1
     assert logger.info.call_args[0][0] == f"Folder: '{folder_name}'"
@@ -190,7 +201,6 @@ def test_makedir(mocker):
     rmdir(folder_name)  # Remove the created folder
 
 
-
 def test_replace_spaces():
     """Tests the replace_spaces function."""
 
@@ -205,62 +215,86 @@ def test_remove_leading_zeros():
     assert remove_leading_zeros("no leading zeros") == "no leading zeros"
     assert remove_leading_zeros("0") == "0"  # Handles single zero
 
+
 def test_format_decimal_default_decimal_places():
-  """Tests the format_decimal function with a default number of decimal places."""
-  decimal_number = '3.14159'
-  formatted_number = format_decimal(decimal_number)
-  assert formatted_number == '3.14'
+    """Tests the format_decimal function with a default number of decimal places."""
+    decimal_number = "3.14159"
+    formatted_number = format_decimal(decimal_number)
+    assert formatted_number == "3.14"
+
 
 def test_format_decimal_custom_decimal_places():
-  """Tests the format_decimal function with a custom number of decimal places."""
-  decimal_number = '3.14159'
-  formatted_number = format_decimal(decimal_number, 3)
-  assert formatted_number == '3.142'
+    """Tests the format_decimal function with a custom number of decimal places."""
+    decimal_number = "3.14159"
+    formatted_number = format_decimal(decimal_number, 3)
+    assert formatted_number == "3.142"
+
 
 def test_string_to_json_valid_string():
-  """Tests the string_to_json function with a valid JSON string."""
-  valid_string = '{"key": "value"}'
-  json_data = string_to_json(valid_string)
-  assert json_data == {'key': 'value'}
+    """Tests the string_to_json function with a valid JSON string."""
+    valid_string = '{"key": "value"}'
+    json_data = string_to_json(valid_string)
+    assert json_data == {"key": "value"}
+
 
 def test_string_to_json_invalid_json():
-  """Tests the string_to_json function with an invalid JSON string (raises json.JSONDecodeError)."""
-  invalid_string = '{"key": "value" unbalanced'
-  with pytest.raises(JSONDecodeError):
-    string_to_json(invalid_string)
+    """Tests the string_to_json function with an invalid JSON string (raises json.JSONDecodeError)."""
+    invalid_string = '{"key": "value" unbalanced'
+    with pytest.raises(JSONDecodeError):
+        string_to_json(invalid_string)
+
 
 def test_string_to_json_empty_string():
-  """Tests the string_to_json function with an empty string."""
-  empty_string = ''
-  with pytest.raises(JSONDecodeError):
-    string_to_json(empty_string)
+    """Tests the string_to_json function with an empty string."""
+    empty_string = ""
+    with pytest.raises(JSONDecodeError):
+        string_to_json(empty_string)
+
 
 def test_humanize_string_basic():
-    assert humanize_string("QUADRA101 SALA03 SALA04 LOTE0016") == "Quadra 101 Sala 3 Sala 4 Lote 16."
+    assert (
+        humanize_string("QUADRA101 SALA03 SALA04 LOTE0016")
+        == "Quadra 101 Sala 3 Sala 4 Lote 16."
+    )
+
 
 def test_humanize_string_no_numbers():
     assert humanize_string("QUADRA SALA LOTE") == "Quadra Sala Lote."
 
+
 def test_humanize_string_only_numbers():
     assert humanize_string("101 03 04 0016") == "101 3 4 16."
 
+
 def test_humanize_string_mixed_case():
-    assert humanize_string("Quadra101 SaLa03 sala04 lotE0016") == "Quadra 101 Sala 3 Sala 4 Lote 16."
+    assert (
+        humanize_string("Quadra101 SaLa03 sala04 lotE0016")
+        == "Quadra 101 Sala 3 Sala 4 Lote 16."
+    )
+
 
 def test_humanize_string_multiple_spaces():
-    assert humanize_string("QUADRA  101   SALA  03  SALA   04  LOTE  0016") == "Quadra 101 Sala 3 Sala 4 Lote 16."
+    assert (
+        humanize_string("QUADRA  101   SALA  03  SALA   04  LOTE  0016")
+        == "Quadra 101 Sala 3 Sala 4 Lote 16."
+    )
+
 
 def test_humanize_string_leading_zeros():
     assert humanize_string("LOTE00016") == "Lote 16."
 
+
 def test_humanize_string_no_trailing_dot():
     assert humanize_string("Quadra101") == "Quadra 101."
+
 
 def test_humanize_string_already_has_dot():
     assert humanize_string("Quadra101.") == "Quadra 101."
 
+
 def test_humanize_string_empty_string():
     assert humanize_string("") == "."
+
 
 def test_humanize_string_special_characters():
     assert humanize_string("QUADRA#101") == "Quadra# 101."

@@ -11,6 +11,7 @@ import sentry_sdk
 from backend.setup.config import settings
 from backend.api.routes.router_bundler import api_router
 
+
 def custom_generate_unique_id(route: APIRoute) -> str:
     tag = "" if not route.tags else route.tags[0]
     name = route.name
@@ -43,13 +44,13 @@ def setup_app(app_):
 
     Returns:
         FastAPI: FastAPI application instance with the necessary configurations
-    """ 
-    
+    """
+
     # Add routers here
     app_.include_router(api_router, prefix=settings.API_V1_STR)
 
     # Add static files
-    obj=StaticFiles(directory="static")
+    obj = StaticFiles(directory="static")
     app_.mount("/static", obj, name="static")
 
     # Add favicon
@@ -64,7 +65,6 @@ def setup_app(app_):
         redirect_url = f"{settings.API_V1_STR}/docs"  # Or "/redoc"
         return RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
 
-
     # Sentry configuration
     if settings.SENTRY_DSN:
         sentry_sdk.init(
@@ -78,7 +78,6 @@ def setup_app(app_):
             profiles_sample_rate=1.0,
         )
 
-    
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
         app_.add_middleware(
@@ -93,6 +92,7 @@ def setup_app(app_):
 
     return app_
 
+
 def init_app():
     # Get the number of applications from the environment variable
     app = create_app()
@@ -101,6 +101,7 @@ def init_app():
     app = setup_app(app)
 
     return app
+
 
 # Initialize the application
 app = init_app()
