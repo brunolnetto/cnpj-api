@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from os import getenv
 
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 
+from backend.app.setup.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -17,7 +17,7 @@ def create_token(data: dict, expires_delta: timedelta = ACCESS_TOKEN_EXPIRE_MINU
 
     Args:
         data (dict): The data to be encoded in the JWT.
-        expires_delta (timedelta | None, optional): The expiration time for the JWT. 
+        expires_delta (timedelta | None, optional): The expiration time for the JWT.
         Defaults to ACCESS_TOKEN_EXPIRE_MINUTES.
 
     Returns:
@@ -33,6 +33,8 @@ def create_token(data: dict, expires_delta: timedelta = ACCESS_TOKEN_EXPIRE_MINU
     time_data = {"exp": expire, "iat": datetime.now()}
     to_encode.update(time_data)
 
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
 
     return encoded_jwt

@@ -1,5 +1,6 @@
-import requests
 import math
+
+import requests
 
 
 def get_lat_lon_by_cep(cep):

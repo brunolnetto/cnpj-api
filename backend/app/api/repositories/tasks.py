@@ -1,9 +1,9 @@
+from typing import Dict, List, Any, Annotated, Optional
+
 from fastapi import Depends
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import UUID
-
-from typing import Dict, List, Any, Annotated, Optional
 
 from backend.app.setup.config import settings
 from backend.app.database.base import get_session

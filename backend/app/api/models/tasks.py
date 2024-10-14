@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field, UUID4
 from typing import List, Dict, Callable, Optional, Any
 from uuid import uuid4
 
+from pydantic import BaseModel, Field, UUID4
 
 class TaskBase(BaseModel):
     task_id: UUID4 = Field(

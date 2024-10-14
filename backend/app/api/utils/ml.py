@@ -1,8 +1,8 @@
-import nltk
-from nltk.corpus import stopwords
 from collections import Counter
 from typing import List
 
+import nltk
+from nltk.corpus import stopwords
 from nltk.metrics import edit_distance
 
 from backend.app.setup.logging import logger
@@ -32,7 +32,7 @@ def find_most_possible_tokens(
     eligible_tokens: List[str], token: str, limit_count: int
 ) -> List[str]:
     """
-    This function finds the most possible city names from a list of eligible tokens based on a 
+    This function finds the most possible city names from a list of eligible tokens based on a
     given token,
     using a combination of word overlap and Levenshtein distance.
 
@@ -65,9 +65,9 @@ def find_most_possible_tokens(
         # Combine score (optional, adjust weights as needed)
         # You can experiment with different weights for word overlap and Levenshtein distance
         # based on your specific needs. Here, we use a simple average.
-        # score = 
+        # score =
         # (
-        #   sum(word_freq_municipality.get(word, 0) for word in nltk.word_tokenize(name)) / 
+        #   sum(word_freq_municipality.get(word, 0) for word in nltk.word_tokenize(name)) /
         #   len(name)) * 0.5 + (1 - lev_distance / len(name)) * 0.5
         score = (
             lev_distance
