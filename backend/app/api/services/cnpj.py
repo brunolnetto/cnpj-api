@@ -139,6 +139,26 @@ class CNPJService:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
+    async def get_cnae_by_token(self, search_token):
+        """
+        Get a list of CNAEs from the database.
+
+        Parameters:
+        - search_token: The search token to look for in the CNAE description.
+
+        Returns:
+        - A list of CNAEs as dictionaries.
+        """
+        try:
+            cnaes = self.repository.get_cnae_by_token(search_token)
+
+            return cnaes
+
+        except Exception as e:
+            logger.error(f"Error getting CNAEs: {e}")
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+
     async def get_cnpjs_with_cnae(
         self, cnae_code: CodeType, limit: int = 10, offset: int = 0
     ):

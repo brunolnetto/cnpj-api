@@ -226,9 +226,7 @@ class CNPJRepository:
             return []
 
         # Use parameterized queries to safely include the token in the query
-        cnae_result = (
-            self.session.query(CNAE).filter(CNAE.descricao.ilike(f"%{token}%")).all()
-        )
+        cnae_result = self.session.query(CNAE).filter(CNAE.descricao.ilike(f'%{token}%')).all()
 
         # Define a function to map the query results to a dictionary format
         def wrap_values_map(cnae):
@@ -239,9 +237,7 @@ class CNPJRepository:
 
         return cnae_dict
 
-    def get_cnaes(
-        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
-    ):
+    def get_cnaes(self, limit: int = 10, offset: int = 0, enable_pagination: bool = True):
         """
         Get all CNAEs from the database.
 
