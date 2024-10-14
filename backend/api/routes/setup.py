@@ -13,7 +13,11 @@ async def health_check():
         "name": settings.PROJECT_NAME,
         "version": settings.VERSION,
         "status": "OK",
+<<<<<<< HEAD
         "message": f"Visit {settings.API_V1_STR}/docs for more information.",
+=======
+        "message": f"Visit {settings.API_V1_STR}/docs for more information."
+>>>>>>> 136adc8 (stylistic improvements)
     }
 
 @router.get("/info")
