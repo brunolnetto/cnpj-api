@@ -45,11 +45,9 @@ class Database():
             autoflush=False, 
             bind=self.engine
         )
-        
-        # Create the database, test connection and tables
-        self.create_database()
-        self.test_connection()
-        self.create_tables()
+
+    def get_session(self):
+        yield self.session_maker()
 
     def create_database(self):
         # Create the database if it does not exist
@@ -87,19 +85,55 @@ class Database():
             # Create all tables defined using the Base class (if not already created)
             Base.metadata.create_all(self.engine)
 
-        except:
-            logger.error("Error creating tables in the database")
+        except Exception as e:
+            logger.error(f"Error creating tables in the database: {str(e)}")
+
+    def init(self):
+        """
+        Initializes the database connection and creates the tables.
+
+        Args:
+            uri (str): The database URI.
+
+        Returns:
+            Database: A NamedTuple with engine and conn attributes for the database connection.
+            None: If there was an error connecting to the database.
+        """
+
+        try:
+            self.create_database()
+        except Exception as e:
+            logger.error(f"Error creating database: {e}")
+        
+        try:
+            self.test_connection()
+        except Exception as e:
+            logger.error(f"Error testing connection: {e}")
+
+        try:
+            self.create_tables()
+        except Exception as e:
+            logger.error(f"Error creating tables: {e}")
+
             
-# Define a dependency to create a database connection
 async def get_db():
+    """
+    Define a dependency to create a database connection
+
+    Returns:
+        Database: A NamedTuple with engine and conn attributes for the database connection.
+        None: If there was an error connecting to the database.
+    """
+
     uri = get_db_uri()
     
     if uri is None:
         # Handle the case where URI is not available (raise exception, log error, etc.)
-        logger.error(f"Database URI {uri} not found")
-        raise Exception("Database URI {uri} not found")
+        error_message=f"Database URI {uri} not found"
+        logger.error(error_message)
+        raise Exception(error_message)
     
-    db = Database(uri)
-    
-    yield db
+    database=Database(uri)
+    database.init()
 
+    yield database
