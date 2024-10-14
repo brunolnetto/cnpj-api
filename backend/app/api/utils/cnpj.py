@@ -117,3 +117,13 @@ def format_cnpj(cnpj_str: str) -> str:
     digitos_verificadores = f"{digitos_verificadores}"
 
     return f"{basico}/{ordem}-{digitos_verificadores}"
+
+def format_cnpj_list(cnpj_list: List[str]) -> List[str]:
+    """
+    Formats a list of CNPJ strings.
+    
+    Args:
+        cnpj_list (List[str]): The list of CNPJ strings to format.
+    """
+    cnpj_basicos = [f"'{str(cnpj_obj.basico_int)}'" for cnpj_obj in cnpj_list]
+    return ",".join(cnpj_basicos)

@@ -1,4 +1,5 @@
-from typing import Union
+from typing import Union, Generator, Any
+from contextlib import asynccontextmanager
 
 from fastapi import HTTPException, Depends
 
@@ -6,7 +7,7 @@ from backend.app.api.repositories.cnpj import CNPJRepository
 from backend.app.utils.misc import is_number, are_numbers
 from backend.app.api.utils.cnpj import are_cnpj_str_valid
 from backend.app.setup.config import settings
-from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
+from backend.app.api.dependencies.cnpj import get_cnpj_repository, CNPJRepositoryDependency
 from backend.app.api.models.cnpj import CNPJ
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
 from backend.app.api.utils.misc import check_limit_and_offset
@@ -634,6 +635,37 @@ class CNPJService:
             return {"message": f"{error}. {explanation}"}
 
         return cnpj_info[cnpj_obj.to_raw()]
+    
+    def get_cnpj_simples_simei(self, cnpj: str):
+        """
+        Get the partners of a CNPJ number.
+
+        Parameters:
+        - cnpj: The CNPJ number to search for.
+
+        Returns:
+        - A list of partners associated with the CNPJ.
+        """
+        try:
+            if not is_number(cnpj):
+                raise ValueError(
+                    f"CNPJ {cnpj} is not a number. Provide only the 14 digits."
+                )
+
+            cnpj_obj = cnpj_str_to_obj(cnpj)
+            cnpj_list = [cnpj_obj]
+
+            cnpj_info = self.repository.get_cnpjs_simples_simei(cnpj_list)
+
+        except Exception as e:
+            logger.error(f"Error getting CNPJ Simples and SIMEI: {e}")
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        if not cnpj_info:
+            error = f"There is no Simples and SIMEI information associated with CNPJ {cnpj}"
+            return {"message": f"{error}"}
+
+        return cnpj_info[cnpj_obj.to_raw()]
 
     async def get_cnpj_company(self, cnpj: str):
         """
@@ -831,6 +863,26 @@ class CNPJService:
         except Exception as e:
             logger.error(f"Error getting CNPJ partners: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
+        
+    def get_cnpjs_simples_simei(self, cnpj_batch: CNPJBatch):
+        """
+        Get a list of CNPJ partners information from the database.
+
+        Parameters:
+        - cnpj_batch: The batch of CNPJs to search for.
+
+        Returns:
+        - A list of CNPJs as dictionaries.
+        """
+        try:
+
+            cnpj_objs = set(map(cnpj_str_to_obj, cnpj_batch.batch))
+
+            return self.repository.get_cnpjs_simples_simei(cnpj_objs)
+
+        except Exception as e:
+            logger.error(f"Error getting CNPJ Simples and SIMEI: {e}")
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
     async def get_cnpjs_company(self, cnpj_batch: CNPJBatch):
         """
@@ -939,9 +991,8 @@ class CNPJService:
             "fail": invalid_cnpjs,
         }
 
-
-def get_cnpj_service(repository: CNPJRepository = CNPJRepositoryDependency):
-    return CNPJService(repository)
+async def get_cnpj_service(cnpj_repository: CNPJRepository = CNPJRepositoryDependency) -> CNPJService:
+    return CNPJService(cnpj_repository)
 
 
 CNPJServiceDependency = Depends(get_cnpj_service)

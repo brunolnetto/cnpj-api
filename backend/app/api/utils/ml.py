@@ -8,7 +8,7 @@ from nltk.metrics import edit_distance
 from backend.app.setup.logging import logger
 
 
-def init_nltk():
+async def init_nltk():
     """
     This function initializes the NLTK library.
     """

@@ -36,7 +36,7 @@ def get_app_start_logs_repository():
         return AppStartLogRepository(session)
 
 
-def log_app_start():
+async def log_app_start():
     app_start_logs_repository = get_app_start_logs_repository()
     app_start_log = {"stlo_start_time": datetime.now()}
     app_start_logs_repository.create(app_start_log)

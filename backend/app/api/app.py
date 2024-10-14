@@ -1,10 +1,12 @@
 # Description: This file initializes the FastAPI application and sets up
 # configurations.
 from contextlib import asynccontextmanager
+import asyncio
 
 from fastapi import FastAPI, status, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.background import BackgroundTask
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
@@ -16,6 +18,7 @@ from backend.app.api.exceptions import (
     general_exception_handler,
     custom_rate_limit_handler,
 )
+from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware
 from backend.app.api.middlewares.misc import TimingMiddleware
 from backend.app.api.dependencies.logs import log_app_start
 from backend.app.database.base import init_database, multi_database
@@ -26,18 +29,29 @@ from backend.app.setup.logging import setup_logger
 
 
 @asynccontextmanager
-async def lifespan(app_: FastAPI):
-    init_database()
+async def lifespan(app: FastAPI):
+    """
+    The `lifespan` async context manager in Python initializes and cleans up various tasks for a FastAPI
+    application.
+    
+    :param app: The `app` parameter in the `lifespan` async context manager function is of type
+    `FastAPI`. It is likely being used to pass in the FastAPI application instance to perform
+    initialization and cleanup tasks related to the application's lifespan
+    :type app: FastAPI
+    """
+    await init_database()
     setup_logger()
-    log_app_start()
-    task_orchestrator.start()
-    init_nltk()
+
+    # Run non-essential startup tasks in the background
+    asyncio.create_task(log_app_start())
+    asyncio.create_task(task_orchestrator.start())
+    asyncio.create_task(init_nltk())
 
     yield
 
-    task_orchestrator.shutdown()
-    multi_database.disconnect()
-
+    # Cleanup tasks
+    asyncio.create_task(task_orchestrator.shutdown())
+    asyncio.create_task(multi_database.disconnect())
 
 def create_app():
     # Generates the FastAPI application
@@ -73,13 +87,6 @@ def setup_app(app_: FastAPI):
     ##########################################################################
     # Middleware
     ##########################################################################
-    # XXX: Review Async RequestLoggingMiddleware with task
-    # app_.add_middleware(AsyncRequestLoggingMiddleware)
-
-    # Add timing middleware
-    app_.add_middleware(TimingMiddleware)
-    app_.add_middleware(GZipMiddleware, minimum_size=1000)
-
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
         urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]
@@ -91,10 +98,19 @@ def setup_app(app_: FastAPI):
             allow_methods=["*"],
             allow_headers=["*"],
         )
+    
+    # Add request logging middleware
+    app_.add_middleware(AsyncRequestLoggingMiddleware)
+
+    # Add gzip middleware
+    app_.add_middleware(GZipMiddleware, minimum_size=1000)
+    
+    # Add timing middleware
+    app_.add_middleware(TimingMiddleware)
 
     # Add static files
     obj = StaticFiles(directory="static")
-    app_.mount("/static", obj, name="static")
+    app_.mount("/static", obj, name="static")  
 
     # Add favicon
     @app_.get("/favicon.ico")

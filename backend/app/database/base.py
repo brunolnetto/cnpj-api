@@ -1,5 +1,6 @@
-from typing import Dict
+from typing import Dict, Optional, ContextManager
 from contextlib import contextmanager
+import asyncio
 
 from urllib.parse import urlparse
 from psycopg2 import OperationalError
@@ -14,7 +15,7 @@ from backend.app.setup.config import settings
 
 
 class BaseDatabase:
-    def get_session(self):
+    def get_session(self) -> ContextManager:
         raise NotImplementedError()
 
     def create_database(self):
@@ -137,7 +138,7 @@ class Database(BaseDatabase):
         except Exception as e:
             print(f"Error fetching table names: {str(e)}")
 
-    def init(self):
+    async def init(self):
         """
         Initializes the database connection and creates the tables.
 
@@ -169,7 +170,7 @@ class Database(BaseDatabase):
         except Exception as e:
             print(f"Error print available tables: {e}")
 
-    def disconnect(self):
+    async def disconnect(self):
         """
         Clean up and close the database connection and session maker.
         """
@@ -201,7 +202,7 @@ class MultiDatabase(BaseDatabase):
         }
 
     @contextmanager
-    def get_session(self, db_name):
+    def get_session(self, db_name) -> ContextManager:
         """
         Get a session for a specific database.
         """
@@ -230,17 +231,23 @@ class MultiDatabase(BaseDatabase):
         for database in self.databases.values():
             database.print_tables()
 
-    def init(self):
-        for database in self.databases.values():
-            database.init()
+    async def init(self):
+        """
+        Initialize all databases concurrently.
+        """
+        tasks = [database.init() for database in self.databases.values()]
+        await asyncio.gather(*tasks)
 
-    def disconnect(self):
-        for database in self.databases.values():
-            database.disconnect()
+    async def disconnect(self):
+        """
+        Disconnect all databases concurrently.
+        """
+        tasks = [database.disconnect() for database in self.databases.values()]
+        await asyncio.gather(*tasks)
 
 
 # Load environment variables from the .env file
-multi_database = None
+multi_database: Optional[MultiDatabase]  = None
 
 
 def create_database_obj():
@@ -251,16 +258,12 @@ def create_database_obj():
 create_database_obj()
 
 
-def init_database():
+async def init_database():
     global multi_database
     if not multi_database:
         create_database()
 
-    multi_database.init()
-
-
-init_database()
-
+    await multi_database.init()
 
 @contextmanager
 def get_session(db_name: str):
