@@ -108,7 +108,9 @@ stack_deploy() {
         echo -e "Erro ao efetuar deploy. Resposta HTTP: $http_code"
         echo "Mensagem de erro: $(cat "$erro_output")"
         echo "Detalhes: $(echo "$response_body" | jq .)"
+        exit 1  # Exits with a status code of 1 (error)
     fi
+
 
     # Remover arquivos temporários
     rm "$erro_output" "$response_output"
