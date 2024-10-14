@@ -1,5 +1,4 @@
 # Description: This file contains the setup routes for the FastAPI application.
-import time
 
 import toml
 from fastapi import APIRouter, Request
@@ -18,7 +17,6 @@ class ExampleResponse(BaseModel):
 
 @rate_limit()
 @router.get("/health")
-@limiter.limit(settings.DEFAULT_RATE_LIMIT)
 async def health_check(request: Request):
     return {
         "name": settings.PROJECT_NAME,

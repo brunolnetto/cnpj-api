@@ -43,7 +43,10 @@ class TaskRepository(BaseRepository):
             self.session.rollback()  # Rollback in case of error
             raise Exception(f"Error creating task: {e}")
 
-    def update(self, task_id: UUID, task_data: Dict[str, Any]) -> Optional[Task]:
+    def update(self,
+               task_id: UUID,
+               task_data: Dict[str,
+                               Any]) -> Optional[Task]:
         try:
             task = self.get_by_id(task_id)
             if not task:
@@ -89,9 +92,11 @@ class TaskRepository(BaseRepository):
             self.session.rollback()  # Rollback in case of error
             raise Exception(f"Error deleting task: {e}")
 
+
 def get_task_repository():
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
         return TaskRepository(session)
 
 
-TaskRepositoryDependency = Annotated[TaskRepository, Depends(get_task_repository)]
+TaskRepositoryDependency = Annotated[TaskRepository, Depends(
+    get_task_repository)]

@@ -30,6 +30,7 @@ def get_company_size_dict():
     """
     return SIZE_DICT
 
+
 def get_establishment_type_dict():
     """
     Get the establishment type dictionary.
@@ -38,6 +39,7 @@ def get_establishment_type_dict():
     - dict: The establishment type dictionary.
     """
     return EST_TYPE_DICT
+
 
 def get_company_situation_dict():
     """

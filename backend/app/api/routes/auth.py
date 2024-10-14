@@ -11,7 +11,6 @@ router = APIRouter(tags=["Authentication"], dependencies=[JWTDependency])
 @rate_limit()
 @router.get("/token")
 async def get_token(request: Request):
-    signature_dict = {"message": "Suas Vendas rocks!"}
     return {
-        "access_token": create_token(signature_dict),
+        "access_token": create_token({"message": settings.SIGNATURE}),
     }

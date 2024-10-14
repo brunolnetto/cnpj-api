@@ -45,9 +45,9 @@ class Database(BaseDatabase):
         self.base = declarative_base()
         self.engine = create_engine(
             uri,
-            poolclass=pool.QueuePool,  # Use connection pooling
-            pool_size=20,  # Adjust pool size based on your workload
-            max_overflow=10,  # Adjust maximum overflow connections
+            poolclass=pool.QueuePool,   # Use connection pooling
+            pool_size=20,               # Adjust pool size based on your workload
+            max_overflow=10,            # Adjust maximum overflow connections
             # Periodically recycle connections (optional)
             pool_recycle=3600,
         )
@@ -125,7 +125,8 @@ class Database(BaseDatabase):
             print(f"Tables for database {masked_uri} created!")
 
         except Exception as e:
-            print(f"Error creating tables in the database {masked_uri}: {str(e)}")
+            print(
+                f"Error creating tables in the database {masked_uri}: {str(e)}")
 
     def print_tables(self):
         """
@@ -149,7 +150,7 @@ class Database(BaseDatabase):
             Database: A NamedTuple with engine and conn attributes for the database connection.
             None: If there was an error connecting to the database.
         """
-
+        print('-------------')
         try:
             self.create_database()
         except Exception as e:
@@ -247,7 +248,7 @@ class MultiDatabase(BaseDatabase):
 
 
 # Load environment variables from the .env file
-multi_database: Optional[MultiDatabase]  = None
+multi_database: Optional[MultiDatabase] = None
 
 
 def create_database_obj():
@@ -255,6 +256,7 @@ def create_database_obj():
     multi_database = MultiDatabase(settings.postgres_uris_dict)
 
 
+# Create a global database object
 create_database_obj()
 
 
@@ -264,6 +266,7 @@ async def init_database():
         create_database()
 
     await multi_database.init()
+
 
 @contextmanager
 def get_session(db_name: str):

@@ -1,6 +1,5 @@
 from os import makedirs, listdir, path
 from shutil import rmtree
-import shutil
 
 from backend.app.utils.logging import clear_folder_items
 

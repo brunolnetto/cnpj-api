@@ -1,6 +1,6 @@
 import time
 import re
-from typing import Callable, Any
+from typing import Dict, List, Callable, Any
 
 from backend.app.utils.misc import is_positive, is_non_negative
 from backend.app.api.constants import UNIT_MULTIPLIER, MAX_LIMIT
@@ -15,6 +15,7 @@ def zfill_factory(n: int):
         return zfill_map(value, n)
 
     return zfill_n
+
 
 def normalize_json(json_str: str):
     return re.sub(r"(?<!\\)'", '"', json_str)
@@ -83,3 +84,40 @@ def convert_to_bytes(size_str):
             return None  # Handle invalid units
     except ValueError:
         return None
+
+
+def comma_stringify_list(lst: List[Any]) -> str:
+    return ",".join(f"'{str(item)}'" for item in lst)
+
+
+def commify_list(lst: List[Any]) -> str:
+    return ",".join(item for item in lst)
+
+
+def paginate_dict(data_dict: Dict, page_size: int, page_number: int):
+    """
+    Paginate a dictionary.
+
+    Args:
+    - data_dict (dict): The dictionary to paginate.
+    - page_size (int): The number of items per page.
+    - page_number (int): The page number to retrieve (1-based index).
+
+    Returns:
+    - dict: A dictionary containing the key-value pairs for the specified page.
+    """
+
+    # Convert dictionary keys to a list for easy slicing
+    keys_list = list(data_dict.keys())
+
+    # Calculate start and end indices
+    start_index = (page_number + 1) * page_size
+    end_index = start_index + page_size
+
+    # Get the slice of keys for the current page
+    page_keys = keys_list[start_index:end_index]
+
+    # Build the paginated dictionary
+    paginated_dict = {key: data_dict[key] for key in page_keys}
+
+    return paginated_dict

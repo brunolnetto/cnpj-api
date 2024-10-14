@@ -8,10 +8,12 @@ from .base import BatchModel
 class CNPJBatch(BatchModel):
     pass
 
+
 class ModeloSimplesSimei(BaseModel):
     optante: bool = False
     data_opcao: Optional[str]
     data_exclusao: Optional[str]
+
 
 class CNPJ:
     def __init__(self, basico: str, ordem: str, digitos_verificadores: str):
@@ -25,7 +27,8 @@ class CNPJ:
         try:
             self.ordem_int = int(ordem)
         except ValueError as exc:
-            raise ValueError("Digits 'ordem' contains non-numeric characters.") from exc
+            raise ValueError(
+                "Digits 'ordem' contains non-numeric characters.") from exc
 
         try:
             self.digitos_verificadores_int = int(digitos_verificadores)
