@@ -11,6 +11,7 @@ from backend.app.utils.misc import string_to_json
 from backend.app.api.utils.cnpj import format_cnpj_list
 from backend.app.api.utils.misc import paginate_dict
 from backend.app.api.models.cnpj import CNPJ
+from backend.app.database.models.cnpj import CNAE
 
 from backend.app.utils.repositories import (
     format_database_date,
@@ -242,15 +243,13 @@ class CNPJRepository:
             return []
 
         # Use parameterized queries to safely include the token in the query
-        query = text(
-            f"select codigo, descricao from cnae where descricao ilike '%{token}%'"
-        )
-
-        cnae_result = self.session.execute(query).fetchall()
+        cnae_result = self.session.query(CNAE).filter(CNAE.descricao.ilike(f'%{token}%')).all()
 
         # Map the results to the desired format
-        cnae_dict = [{"code": codigo, "text": descricao}
-                     for codigo, descricao in cnae_result]
+        cnae_dict = [
+            {"code": codigo, "text": descricao}
+            for codigo, descricao in cnae_result
+        ]
 
         return cnae_dict
 
