@@ -2,9 +2,8 @@ from typing import Dict, Optional, ContextManager
 from contextlib import contextmanager
 import asyncio
 
-from urllib.parse import urlparse
 from psycopg2 import OperationalError
-from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy.pool import QueuePool
 from sqlalchemy import pool, text, inspect
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -41,57 +40,49 @@ class Database(BaseDatabase):
     """
 
     def __init__(self, uri):
-        self.uri = uri
+        self.url = make_url(uri)
         self.base = declarative_base()
         self.engine = create_engine(
             uri,
-            poolclass=pool.QueuePool,   # Use connection pooling
-            pool_size=20,               # Adjust pool size based on your workload
-            max_overflow=10,            # Adjust maximum overflow connections
-            # Periodically recycle connections (optional)
-            pool_recycle=3600,
+            poolclass=QueuePool,            # Use connection pooling
+            pool_size=20,                   # Adjust pool size based on your workload
+            max_overflow=10,                # Adjust maximum overflow connections
+            pool_recycle=3600,              # Periodically recycle connections (optional)
+            isolation_level="AUTOCOMMIT"
         )
         self.session_maker = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
         )
-
-    def mask_password(self, uri):
-        parsed_uri = urlparse(uri)
-        userinfo = parsed_uri.username
-        password = parsed_uri.password
-        masked_password = "*" * len(password) if password else ""
-        masked_uri = parsed_uri._replace(
-            netloc=f"{userinfo}:{masked_password}@{parsed_uri.hostname}"
-        )
-        return masked_uri.geturl()
 
     @contextmanager
     def get_session(self):
         return self.session_maker()
 
     def mask_sensitive_data(self) -> str:
-        # Parse the URI using SQLAlchemy's make_url
-        parsed_uri = make_url(self.uri)
-
         # Mask the password if it's present
-        if parsed_uri.password:
-            parsed_uri = parsed_uri.set(password="******")
+        if self.url.password:
+            parsed_uri = self.url.set(password="******")
 
         # Return the sanitized URI as a string
         return str(parsed_uri)
 
     def create_database(self):
         masked_uri = self.mask_sensitive_data()
-        # Create the database if it does not exist
+        
         try:
-            if not database_exists(self.uri):
-                # Create the database engine and session maker
-                create_database(self.uri)
-
-            print(f"Database {masked_uri} created!")
+            with self.engine.connect() as conn:
+                query=text("SELECT 1 FROM pg_database WHERE datname = :dbname")
+                db_data={'dbname': self.url.database}
+                result = conn.execute(query, db_data)
+                if not result.scalar():
+                    query=text(f"CREATE DATABASE {make_url(self.url).database}")
+                    conn.execute(query)
+                    print(f"Database {masked_uri} created!")
+                else:
+                    print(f"Database {masked_uri} already exists!")
 
         except OperationalError as e:
-            print(f"Error creating to database {masked_uri}: {e}")
+            print(f"Error creating database {masked_uri}: {e}")
 
     def test_connection(self):
         masked_uri = self.mask_sensitive_data()
@@ -150,7 +141,7 @@ class Database(BaseDatabase):
             Database: A NamedTuple with engine and conn attributes for the database connection.
             None: If there was an error connecting to the database.
         """
-        print('-------------')
+        print('-----------------------------------------------------------------')
         try:
             self.create_database()
         except Exception as e:
