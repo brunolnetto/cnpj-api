@@ -1,19 +1,18 @@
-services:
-  backend-app:
-    build: .
-    restart: unless-stopped
-    ports:
-      - "80:8000"
-    networks:
-      - SuasVendasNet
-    volumes:
-      - .:/app
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
+backend-app:
+  build: .
+  restart: unless-stopped
+  ports:
+    - "80:8000"
+  networks:
+    - cnpjapinet
+    - ConexxoHubNet
+  volumes:
+    - .:/app
+  deploy:
+    mode: replicated
+    replicas: 1
+    restart_policy:
+      condition: on-failure
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend-app.entrypoints=websecure"
