@@ -111,7 +111,8 @@ def replace_invalid_fields_on_list_tuple(lst: List[Tuple]) -> List[Tuple]:
     Returns:
         The list with NaN values replaced by None.
     """
-    clean_field_map=lambda el: '' if not is_field_valid(el) else el
+    def clean_field_map(el):
+        return "" if not is_field_valid(el) else el
     return operate_on_list_tuple(lst, clean_field_map)
 
 def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
@@ -124,7 +125,8 @@ def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
     Returns:
         The list with NaN values replaced by None.
     """
-    clean_field_map=lambda el: '' if not is_field_valid(el) else el
+    def clean_field_map(el):
+        return "" if not is_field_valid(el) else el
     return operate_on_list_dict(lst, clean_field_map)
 
 # Define a function to format the date
@@ -190,16 +192,10 @@ def format_phone(
     Returns:
         str: The formatted phone number.
     """
-    is_phone_valid=lambda phone_: (
-        is_number(phone_) and \
-        is_database_field_valid(phone_) and \
-        (len(phone_) in (8, 9))
-    )
-    is_ddd_valid=lambda ddd_: (
-        is_number(ddd_) and \
-        is_database_field_valid(ddd_) and \
-        (len(ddd_) in (1, 2))
-    )
+    def is_phone_valid(phone_):
+        return is_number(phone_) and is_field_valid(phone_) and len(phone_) in (8, 9)
+    def is_ddd_valid(ddd_):
+        return is_number(ddd_) and is_field_valid(ddd_) and len(ddd_) in (1, 2)
 
     are_fields_valid=is_phone_valid(phone_num) and is_ddd_valid(ddd_num)
     
@@ -227,7 +223,8 @@ def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:
     Returns:
         The list with the operation performed.
     """
-    tuple_map=lambda tuple_: tuple(map(operation, tuple_))
+    def tuple_map(tuple_):
+        return tuple(map(operation, tuple_))
     return list(map(tuple_map, lst))
 
 def operate_on_list_dict(lst: List[Tuple], operation: callable) -> List[Any]:
@@ -242,8 +239,10 @@ def operate_on_list_dict(lst: List[Tuple], operation: callable) -> List[Any]:
     Returns:
         The list with the operation performed.
     """
-    item_map=lambda item: (item[0], operation(item[1]))
-    dict_map=lambda dict_: dict(map(item_map, dict_.items()))
+    def item_map(item):
+        return item[0], operation(item[1])
+    def dict_map(dict_):
+        return dict(map(item_map, dict_.items()))
     return list(map(dict_map, lst))
 
 def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
@@ -256,7 +255,8 @@ def replace_spaces_on_list_tuple(lst: List[Tuple]) -> List[str]:
     Returns:
         The list with multiple spaces replaced by a single space.
     """
-    clean_spaces_map=lambda el: " ".join(str(el).split())
+    def clean_spaces_map(el):
+        return " ".join(str(el).split())
     return operate_on_list_tuple(lst, clean_spaces_map) 
 
 

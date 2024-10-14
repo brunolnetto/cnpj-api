@@ -1,9 +1,7 @@
 import os
-from unittest.mock import patch
 import shutil
 
 from backend.utils.logging import clear_folder_items
-from backend.utils.misc import date_str, time_str
 
 def test_clear_folder_items_success():
     """Tests clear_latest_items with successful removal."""
@@ -32,7 +30,8 @@ def test_clear_folder_items_key_name():
     os.makedirs(f"{tmp_path}/2", exist_ok=True)
     os.makedirs(f"{tmp_path}/3", exist_ok=True)
 
-    key = lambda item: item.name
+    def key(item):
+        return item.name
     clear_folder_items(tmp_path, 2, key=key)
 
     assert not os.path.exists(f"{tmp_path}/1")

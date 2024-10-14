@@ -38,28 +38,28 @@ def test_is_cnpj_str_valid_valid_cnpj():
   """Tests the is_cnpj_str_valid function with a valid CNPJ."""
   valid_cnpj = "12345678901230"
   validation_result = is_cnpj_str_valid(valid_cnpj)
-  assert validation_result['is_valid'] == True
+  assert validation_result['is_valid'] is True
   assert validation_result['reason'] == ''
 
 def test_is_cnpj_str_valid_invalid_length():
   """Tests the is_cnpj_str_valid function with an invalid length CNPJ."""
   invalid_cnpj = "123456789012345"
   validation_result = is_cnpj_str_valid(invalid_cnpj)
-  assert validation_result['is_valid'] == False
+  assert validation_result['is_valid'] is False
   assert validation_result['reason'] == 'Invalid length. CNPJ should have 14 digits.'
 
 def test_is_cnpj_str_valid_non_numeric():
   """Tests the is_cnpj_str_valid function with a CNPJ containing non-numeric characters."""
   invalid_cnpj = "12345678901a34"
   validation_result = is_cnpj_str_valid(invalid_cnpj)
-  assert validation_result['is_valid'] == False
+  assert validation_result['is_valid'] is False
   assert validation_result['reason'] == 'CNPJ contains non-numeric characters.'
 
 def test_is_cnpj_str_valid_invalid_verification_digits():
   """Tests the is_cnpj_str_valid function with a CNPJ with invalid verification digits."""
   invalid_cnpj = "12345678901234"
   validation_result = is_cnpj_str_valid(invalid_cnpj)
-  assert validation_result['is_valid'] == False
+  assert validation_result['is_valid'] is False
   assert validation_result['reason'] == 'Invalid verification digits.'
 
 def test_parse_cnpj_str_valid_cnpj():
