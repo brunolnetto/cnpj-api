@@ -2,7 +2,7 @@ alembic==1.13.3
 asyncpg==0.29.0
 APScheduler==4.0.0a5
 bs4==0.0.2
-fastapi==0.115.0
+fastapi==0.115.2
 fireducks==1.0.6
 gunicorn==23.0.0
 ipwhois==1.2.0
@@ -22,4 +22,4 @@ python-dotenv==1.0.1
 python-json-logger==2.0.7
 toml==0.10.2
 urllib3==2.2.3
-uvicorn==0.31.0
+uvicorn==0.31.1
