@@ -22,7 +22,6 @@ services:
         - "traefik.http.routers.backend-app.rule=Host(`cnpjapi.conexxohub.com.br`)"
         - "traefik.http.services.backend-app.loadbalancer.server.port=8000"
         - "traefik.http.routers.backend-app.service=backend-app"
-    env_file: .env
       
 
 networks:
