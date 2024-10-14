@@ -12,8 +12,9 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      restart_policy:
-        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.backend-app.entrypoints=websecure"
@@ -26,5 +27,4 @@ services:
 networks:
   ConexxoHubNet:
     external: true
-    attachable: true
 
