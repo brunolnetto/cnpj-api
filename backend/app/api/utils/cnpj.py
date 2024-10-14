@@ -2,6 +2,7 @@ from typing import Dict, List, Union, Tuple
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 import pandas as pd
 
 from backend.app.utils.misc import is_number
@@ -134,7 +135,7 @@ def format_cnpj_list(cnpj_list: List[str]) -> List[str]:
     return ",".join(cnpj_basicos)
 
 
-def get_cnpj_code_description_entries(session: Session, table_name: str):
+async def get_cnpj_code_description_entries(session: AsyncSession, table_name: str):
     """
     Get all code-description entrie from the specified table.
 
@@ -147,7 +148,7 @@ def get_cnpj_code_description_entries(session: Session, table_name: str):
     Returns:
         dict: A dictionary containing the CNAEs.
     """
-    entries_result = session.execute(
+    entries_result = await session.execute(
         text(f"SELECT codigo, descricao FROM {table_name}")
     )
     entries_result = entries_result.fetchall()

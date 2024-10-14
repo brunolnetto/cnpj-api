@@ -37,10 +37,10 @@ logging_format = " ".join(map(lambda field_name: f"%({field_name})s", fields))
 fmt = jsonlogger.JsonFormatter(logging_format)
 
 
-def setup_logger():
+async def setup_logger():
     try:
         # Set up database logging handler
-        db_handler = get_debug_logs_handler()
+        db_handler = await get_debug_logs_handler()
         db_handler.setLevel(logging.INFO)
         db_handler.setFormatter(fmt)
         logger.addHandler(db_handler)
