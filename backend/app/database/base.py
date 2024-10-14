@@ -235,6 +235,56 @@ class Database(BaseDatabase):
         return f"<Database(uri={masked_uri})>"
 
 
+class MultiDatabase(BaseDatabase):
+    """
+    This class represents a multi-database connection and session management object.
+    It contains methods to handle multiple databases.
+    """
+
+    def __init__(self, database_uris: Dict[str, str]):
+        """
+        Initialize with a dictionary of database URIs.
+        """
+        self.databases = {
+            db_name: Database(uri)
+            for db_name, uri in database_uris.items()
+        }
+    
+    @contextmanager
+    def get_session(self, db_name):
+        """
+        Get a session for a specific database.
+        """
+        if db_name not in self.databases:
+            raise ValueError(f"No such database: {db_name}")
+
+        with self.databases[db_name].session_maker() as session:
+            yield session
+
+    def create_database(self, db_name):
+        for database in self.databases.values():
+            database.create_database()
+
+    def test_connection(self, db_name):
+        for database in self.databases.values():
+            database.test_connection()
+
+    def create_tables(self):
+        for database in self.databases.values():
+            database.create_tables()
+
+    def print_tables(self, db_name):
+        """
+        Print the available tables in a specific database.
+        """
+        for database in self.databases.values():
+            database.print_tables()
+            
+    def init(self):
+        for database in self.databases.values():
+            database.init()
+
+
 # Load environment variables from the .env file
 multi_database = None
 
@@ -245,7 +295,6 @@ def create_database_obj():
 
 
 create_database_obj()
-
 
 def init_database():
     global multi_database
@@ -269,8 +318,8 @@ def get_session(db_name: str):
     if multi_database is None:
         init_database()
 
-    session = multi_database.get_session(db_name)
-    try:
-        yield session
-    finally:
-        session.close()
+    with multi_database.get_session(db_name) as session:
+        try:
+            yield session
+        finally:
+            session.close()
