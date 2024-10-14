@@ -9,6 +9,7 @@ from backend.app.api.repositories.logs import RequestLogRepository
 from backend.app.database.base import get_session
 from backend.app.setup.config import settings
 
+
 class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start_time = time()
@@ -33,7 +34,7 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         response_size = len(response_body)
 
         # Capture request body
-        body=(await request.body()).decode() if await request.body() else ""
+        body = (await request.body()).decode() if await request.body() else ""
 
         log_data = {
             "relo_method": request.method,

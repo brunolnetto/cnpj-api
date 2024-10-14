@@ -36,7 +36,6 @@ class FileInfo(BaseModel):
 
 
 class CNPJScrapService:
-
     def __init__(self) -> None:
         self.base_url = BASE_URL
 
@@ -114,7 +113,8 @@ class CNPJScrapService:
                     # Extract date and format it
                     date_text = date_cell.text.strip()
 
-                    # Try converting date text to datetime object (adjust format if needed)
+                    # Try converting date text to datetime object (adjust
+                    # format if needed)
                     try:
                         updated_at = datetime.strptime(date_text, "%Y-%m-%d %H:%M")
                         sao_paulo_timezone = pytz.timezone("America/Sao_Paulo")

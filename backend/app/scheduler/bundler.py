@@ -1,5 +1,6 @@
 # This code snippet is setting up a scheduler in Python using the `asyncio` library for scheduling a
-# task to clean up logs at regular intervals. Here's a breakdown of what the code is doing:
+# task to clean up logs at regular intervals. Here's a breakdown of what
+# the code is doing:
 import asyncio
 
 from backend.app.scheduler.base import TaskOrchestrator, TaskRegister
@@ -29,7 +30,7 @@ async def add_tasks():
             if existing_task == task_config:
                 duplicate_task = existing_task
                 break
-        
+
         # Add the task to the orchestrator
         await task_orchestrator.add_task(task_configs[index])
 

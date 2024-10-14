@@ -12,7 +12,6 @@ from pydantic import (
     field_validator,
     ValidationInfo,
 )
-import os
 
 from typing import Optional, Dict
 
@@ -26,10 +25,11 @@ DEFAULT_PASSWORD = "postgres"
 POSTGRES_DSN_SCHEME = "postgresql+psycopg2"
 BASE_URI_TEMPLATE = "{dsn_scheme}://{user}:{password}@{host}:{port}/{database}"
 
+
 def generate_db_uri(dsn_scheme, user, password, host, port, database):
     """
     Generate a database URI using a template.
-    
+
     Args:
         user (str): The database user.
         password (str): The database password.
@@ -46,7 +46,7 @@ def generate_db_uri(dsn_scheme, user, password, host, port, database):
         password=password,
         host=host,
         port=port,
-        database=database
+        database=database,
     )
 
 
@@ -101,7 +101,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    
+
     POSTGRES_DBNAME_RFB: str = ""
     POSTGRES_DBNAME_AUDIT: str = ""
 
@@ -117,7 +117,7 @@ class Settings(BaseSettings):
         "month": "*",  # Every month
         "day_of_week": "*",  # Every day of the week
     }
-    REQUEST_CLEANUP_MAX_ROWS: int = 10*10**6
+    REQUEST_CLEANUP_MAX_ROWS: int = 10 * 10**6
 
     # Define the age of request logs to be cleaned up
     REQUEST_CLEANUP_AGE: Dict[str, Any] = {"days": 30}
@@ -158,16 +158,14 @@ class Settings(BaseSettings):
     def postgres_uris_dict(self) -> str:
         return {
             db_name: generate_db_uri(
-                POSTGRES_DSN_SCHEME, 
-                self.POSTGRES_USER, 
-                self.POSTGRES_PASSWORD, 
-                self.POSTGRES_HOST, 
-                self.POSTGRES_PORT, 
-                db_name
-            ) for db_name in [
-                self.POSTGRES_DBNAME_RFB,
-                self.POSTGRES_DBNAME_AUDIT
-            ]
+                POSTGRES_DSN_SCHEME,
+                self.POSTGRES_USER,
+                self.POSTGRES_PASSWORD,
+                self.POSTGRES_HOST,
+                self.POSTGRES_PORT,
+                db_name,
+            )
+            for db_name in [self.POSTGRES_DBNAME_RFB, self.POSTGRES_DBNAME_AUDIT]
         }
 
     @model_validator(mode="after")

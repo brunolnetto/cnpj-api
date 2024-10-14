@@ -7,7 +7,6 @@ from os import getenv, makedirs, path
 from pythonjsonlogger import jsonlogger
 
 from backend.app.utils.logging import clear_folder_items
-from backend.app.setup.config import settings
 
 # Use the logger
 logger = logging.getLogger(__name__)

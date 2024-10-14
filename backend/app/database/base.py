@@ -1,5 +1,3 @@
-from os import getenv, path, getcwd
-from dotenv import load_dotenv
 from typing import Dict
 from contextlib import contextmanager
 
@@ -16,13 +14,14 @@ from sqlalchemy.engine.url import make_url
 from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 
+
 class BaseDatabase:
     def get_session(self):
         raise NotImplementedError()
 
     def create_database(self):
         raise NotImplementedError()
-    
+
     def test_connection(self):
         raise NotImplementedError()
 
@@ -31,6 +30,7 @@ class BaseDatabase:
 
     def print_tables(self):
         raise NotImplementedError()
+
 
 class MultiDatabase(BaseDatabase):
     """
@@ -43,10 +43,9 @@ class MultiDatabase(BaseDatabase):
         Initialize with a dictionary of database URIs.
         """
         self.databases = {
-            db_name: Database(uri)
-            for db_name, uri in database_uris.items()
+            db_name: Database(uri) for db_name, uri in database_uris.items()
         }
-    
+
     def get_session(self, db_name):
         """
         Get a session for a specific database.
@@ -73,7 +72,7 @@ class MultiDatabase(BaseDatabase):
         """
         for name, database in self.databases.items():
             database.print_tables()
-            
+
     def init(self):
         for name, database in self.databases.items():
             database.init()
@@ -81,6 +80,7 @@ class MultiDatabase(BaseDatabase):
     def disconnect(self):
         for name, database in self.databases.items():
             database.disconnect()
+
 
 class Database(BaseDatabase):
     """
@@ -96,10 +96,11 @@ class Database(BaseDatabase):
         self.base = declarative_base()
         self.engine = create_engine(
             uri,
-            poolclass=pool.QueuePool,   # Use connection pooling
-            pool_size=20,               # Adjust pool size based on your workload
-            max_overflow=10,            # Adjust maximum overflow connections
-            pool_recycle=3600,          # Periodically recycle connections (optional)
+            poolclass=pool.QueuePool,  # Use connection pooling
+            pool_size=20,  # Adjust pool size based on your workload
+            max_overflow=10,  # Adjust maximum overflow connections
+            # Periodically recycle connections (optional)
+            pool_recycle=3600,
         )
         self.session_maker = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
@@ -129,7 +130,7 @@ class Database(BaseDatabase):
         return str(parsed_uri)
 
     def create_database(self):
-        masked_uri=self.mask_sensitive_data()
+        masked_uri = self.mask_sensitive_data()
         # Create the database if it does not exist
         try:
             if not database_exists(self.uri):
@@ -142,7 +143,7 @@ class Database(BaseDatabase):
             logger.error(f"Error creating to database {masked_uri}: {e}")
 
     def test_connection(self):
-        masked_uri=self.mask_sensitive_data()
+        masked_uri = self.mask_sensitive_data()
         try:
             with self.engine.connect() as conn:
                 query = text("SELECT 1")
@@ -164,15 +165,18 @@ class Database(BaseDatabase):
             None: If there was an error connecting to the database.
 
         """
-        masked_uri=self.mask_sensitive_data()
+        masked_uri = self.mask_sensitive_data()
         try:
-            # Create all tables defined using the Base class (if not already created)
+            # Create all tables defined using the Base class (if not already
+            # created)
             self.base.metadata.create_all(self.engine)
 
             logger.info(f"Tables for database {masked_uri} created!")
 
         except Exception as e:
-            logger.error(f"Error creating tables in the database {masked_uri}: {str(e)}")
+            logger.error(
+                f"Error creating tables in the database {masked_uri}: {str(e)}"
+            )
 
     def print_tables(self):
         """
@@ -221,7 +225,7 @@ class Database(BaseDatabase):
         """
         Clean up and close the database connection and session maker.
         """
-        masked_uri=self.mask_sensitive_data(self.uri)
+        masked_uri = self.mask_sensitive_data(self.uri)
         try:
             # Close all connections in the pool
             self.engine.dispose()
@@ -230,17 +234,21 @@ class Database(BaseDatabase):
             print(f"Error closing database connections: {str(e)}")
 
     def __repr__(self):
-        masked_uri=self.mask_sensitive_data(self.uri)
+        masked_uri = self.mask_sensitive_data(self.uri)
         return f"<Database(uri={masked_uri})>"
+
 
 # Load environment variables from the .env file
 multi_database = None
 
-def create_database():
+
+def create_database_obj():
     global multi_database
     multi_database = MultiDatabase(settings.postgres_uris_dict)
 
-create_database()
+
+create_database_obj()
+
 
 def init_database():
     global multi_database
@@ -264,7 +272,7 @@ def get_session(db_name: str):
     if multi_database is None:
         init_database()
 
-    session=multi_database.get_session(db_name)
+    session = multi_database.get_session(db_name)
     try:
         yield session
     finally:

@@ -3,7 +3,6 @@ from sqlalchemy import text
 import pandas as pd
 from datetime import datetime
 
-from backend.app.setup.config import settings
 from backend.app.utils.misc import string_to_json
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.api.models.cnpj import CNPJ
@@ -72,7 +71,7 @@ class CNPJRepository:
                 f"""(
             (
                 cnae_fiscal_principal = '{cnae_code}' or
-                cnae_fiscal_secundaria @> Array[{cnae_code}] 
+                cnae_fiscal_secundaria @> Array[{cnae_code}]
             ) and situacao_cadastral = '2'
         ) -- ATIVA"""
                 if is_all
@@ -120,7 +119,7 @@ class CNPJRepository:
                 from estabelecimento_uf_cidade
                 where
                     {cnae_condition}
-                limit 
+                limit
                     {limit}
                 offset
                     {offset}
@@ -153,12 +152,12 @@ class CNPJRepository:
 
         query = text(
             f"""
-            select 
-                descricao 
-            from 
-                cnae 
-            where 
-                codigo::text = '{cnae_code}'             
+            select
+                descricao
+            from
+                cnae
+            where
+                codigo::text = '{cnae_code}'
         """
         )
 
@@ -191,13 +190,13 @@ class CNPJRepository:
 
         query = text(
             f"""
-            select 
-                distinct 
+            select
+                distinct
                 codigo,
-                descricao 
-            from 
-                cnae 
-            where 
+                descricao
+            from
+                cnae
+            where
                 codigo::text in ({cnae_code_str})
         """
         )
@@ -254,11 +253,11 @@ class CNPJRepository:
                 f"""
                     select
                         codigo, descricao
-                    from 
+                    from
                         cnae
-                    limit 
+                    limit
                         {limit}
-                    offset 
+                    offset
                         {offset}
                 """
             )
@@ -267,7 +266,7 @@ class CNPJRepository:
                 """
                     select
                         codigo, descricao
-                    from 
+                    from
                         cnae
                 """
             )
@@ -294,11 +293,11 @@ class CNPJRepository:
 
         query = text(
             f"""
-            select 
-                descricao 
-            from 
-                natju 
-            where 
+            select
+                descricao
+            from
+                natju
+            where
                 codigo::text = '{legal_nature_code}'
             """
         )
@@ -331,12 +330,12 @@ class CNPJRepository:
 
         query = text(
             f"""
-                select 
-                    distinct 
-                        codigo, descricao 
-                from 
-                    natju 
-                where 
+                select
+                    distinct
+                        codigo, descricao
+                from
+                    natju
+                where
                     codigo::text in ({legal_nature_str})
             """
         )
@@ -365,11 +364,11 @@ class CNPJRepository:
                 f"""
                     select
                         codigo, descricao
-                    from 
+                    from
                         natju
-                    limit 
+                    limit
                         {limit}
-                    offset 
+                    offset
                         {offset}
                 """
             )
@@ -378,7 +377,7 @@ class CNPJRepository:
                 """
                     select
                         codigo, descricao
-                    from 
+                    from
                         natju
                 """
             )
@@ -413,13 +412,13 @@ class CNPJRepository:
 
         query = text(
             f"""
-                select 
-                    distinct 
+                select
+                    distinct
                         codigo,
-                        descricao 
-                from 
-                    moti 
-                where 
+                        descricao
+                from
+                    moti
+                where
                     codigo::text in ({registration_status_str})
             """
         )
@@ -449,7 +448,7 @@ class CNPJRepository:
                 f"""
                     select
                         codigo, descricao
-                    from 
+                    from
                         moti
                     limit {limit}
                     offset {offset}
@@ -460,7 +459,7 @@ class CNPJRepository:
                 """
                     select
                         codigo, descricao
-                    from 
+                    from
                         moti
                 """
             )
@@ -491,11 +490,11 @@ class CNPJRepository:
 
         query = text(
             f"""
-                select 
-                    codigo, descricao 
-                from 
-                    munic 
-                where 
+                select
+                    codigo, descricao
+                from
+                    munic
+                where
                     descricao = '{city_name}'
             """
         )
@@ -533,11 +532,11 @@ class CNPJRepository:
 
         query = text(
             f"""
-                select 
-                    distinct codigo, descricao 
-                from 
-                    munic 
-                where 
+                select
+                    distinct codigo, descricao
+                from
+                    munic
+                where
                     codigo = '{city_code}'
             """
         )
@@ -569,7 +568,7 @@ class CNPJRepository:
             f"""
                 select
                     codigo, descricao
-                from 
+                from
                     munic
                 limit {limit}
                 offset {offset}
@@ -607,7 +606,7 @@ class CNPJRepository:
             """
                 select
                     descricao
-                from 
+                from
                     munic
             """
         )
@@ -645,9 +644,9 @@ class CNPJRepository:
             f"""
                 select
                     codigo, descricao
-                from 
+                from
                     munic
-                where 
+                where
                     codigo::text in ({cities_code_str})
             """
         )
@@ -729,7 +728,7 @@ class CNPJRepository:
                 porte_empresa,
                 capital_social,
                 concat(natju.codigo, '-', natju.descricao) as natureza_juridica
-            from 
+            from
                 empresa_ emp
             left join natju on natju.codigo::text = emp.natureza_juridica::text
             """
@@ -961,9 +960,9 @@ class CNPJRepository:
         query = text(
             f"""
                 select
-                    distinct on (cnpj_basico) 
+                    distinct on (cnpj_basico)
                     {columns_str}
-                from 
+                from
                     estabelecimento est
                 where
                     est.cnpj_basico::text in ({cnpjs_basicos_str}) AND
@@ -998,7 +997,7 @@ class CNPJRepository:
             f"""
                 select
                     codigo, descricao
-                from 
+                from
                     moti
                 where
                     codigo::text in ({registration_status_str})
@@ -1044,17 +1043,17 @@ class CNPJRepository:
             f"""
                 select
                     distinct cnpj_basico, cnpj_ordem, cnpj_dv, correio_eletronico,
-                    data_inicio_atividade, data_situacao_cadastral, situacao_cadastral, 
-                    motivo_situacao_cadastral, nome_fantasia, 
+                    data_inicio_atividade, data_situacao_cadastral, situacao_cadastral,
+                    motivo_situacao_cadastral, nome_fantasia,
                     tipo_logradouro, logradouro, numero, complemento, bairro, municipio, cep, uf,
-                    cnae_fiscal_principal, cnae_fiscal_secundaria, identificador_matriz_filial, 
+                    cnae_fiscal_principal, cnae_fiscal_secundaria, identificador_matriz_filial,
                     situacao_especial, data_situacao_especial,
                     ddd_1, telefone_1, ddd_2, telefone_2
                 from
                     estabelecimento est
                 where
                     est.cnpj_basico = '{cnpj.basico_int}'
-                order by 
+                order by
                     1, 2
             """
         )
@@ -1132,14 +1131,14 @@ class CNPJRepository:
                         cnpj_basico,
                         qualificacao_socio,
                         nome_socio_razao_social
-                    from 
+                    from
                         socios
-                    where 
+                    where
                         cnpj_basico IN ({cnpj_basicos_str})
-                    group by 
+                    group by
                         1, 2, 3
                 )
-                SELECT 
+                SELECT
                     cnpj_basico,
                     json_agg(
                         json_build_object(
@@ -1147,13 +1146,13 @@ class CNPJRepository:
                             'qual', concat(qualificacao_socio,'-', qual_socio.descricao)
                         )
                     ) AS qsa
-                FROM 
+                FROM
                     socios_ soc
-                left join 
+                left join
                     quals qual_socio
-                on 
+                on
                     qual_socio.codigo::text = soc.qualificacao_socio::text
-                GROUP BY 
+                GROUP BY
                     cnpj_basico
             """
         )
@@ -1245,7 +1244,7 @@ class CNPJRepository:
                         cnpj_basico,
                         json_agg(
                             json_build_object(
-                                'code', codigo, 
+                                'code', codigo,
                                 'text', descricao
                             )
                         ) as atividades_secundarias
@@ -1256,11 +1255,11 @@ class CNPJRepository:
                     a_s.cnpj_basico as cnpj_basico,
                     a_p.atividade_principal as atividade_principal,
                     a_s.atividades_secundarias as atividades_secundarias
-                from 
+                from
                     atividades_secundarias a_s
-                inner join 
+                inner join
                     atividade_principal a_p
-                on 
+                on
                     a_s.cnpj_basico::text = a_p.cnpj_basico::text
             """
         )
@@ -1457,22 +1456,22 @@ class CNPJRepository:
         """
         query = text(
             f"""
-                select 
+                select
                     distinct on (cnpj_basico)
                     cnpj_basico, cnpj_ordem, cnpj_dv
-                from 
+                from
                     estabelecimento
-                where 
+                where
                     (
                         cnae_fiscal_principal = '{cnae_code}' or
                         cnae_fiscal_secundaria like '%{cnae_code}%'
-                    ) and 
+                    ) and
                     situacao_cadastral = '2' -- ATIVA
                 order by
                     1, 2
-                limit 
-                    {limit} 
-                offset 
+                limit
+                    {limit}
+                offset
                     {offset}
             """
         )
@@ -1508,22 +1507,22 @@ class CNPJRepository:
 
         query = text(
             f"""
-                select 
+                select
                     distinct on (cnpj_basico)
                     cnpj_basico, cnpj_ordem, cnpj_dv
-                from 
+                from
                     estabelecimento
-                where 
+                where
                     (
-                        {main_cnae_str_condition} or 
+                        {main_cnae_str_condition} or
                         {side_cnae_str_condition}
-                    ) and 
+                    ) and
                     situacao_cadastral::text = '2' -- ATIVA
-                order by 
+                order by
                     1, 2
-                limit 
-                    {limit} 
-                offset 
+                limit
+                    {limit}
+                offset
                     {offset}
             """
         )
@@ -1554,19 +1553,19 @@ class CNPJRepository:
 
         query = text(
             f"""
-                select 
+                select
                     distinct on (cnpj_basico)
                     cnpj_basico, cnpj_ordem, cnpj_dv
-                from 
+                from
                     estabelecimento
-                where 
-                    uf in ({states_str}) and 
+                where
+                    uf in ({states_str}) and
                     situacao_cadastral::text = '2' -- ATIVA
-                order by 
+                order by
                     1, 2
-                limit 
-                    {limit} 
-                offset 
+                limit
+                    {limit}
+                offset
                     {offset}
             """
         )

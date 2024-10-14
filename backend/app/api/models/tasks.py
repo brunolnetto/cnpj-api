@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, UUID4
 from typing import List, Dict, Callable, Optional, Any
-from datetime import datetime
 from uuid import uuid4
+
 
 class TaskBase(BaseModel):
     task_id: UUID4 = Field(
@@ -34,7 +34,6 @@ class TaskCreate(TaskBase):
 
 
 class TaskRead(TaskBase):
-
     class Config:
         from_atributes = True
 
@@ -42,6 +41,7 @@ class TaskRead(TaskBase):
 class TaskResponse(TaskBase):
     class Config:
         from_atributes = True
+
 
 class TaskConfig(BaseModel):
     task_id: UUID4 = Field(default_factory=uuid4)
@@ -68,7 +68,8 @@ class TaskConfig(BaseModel):
         )
 
     def __hash__(self):
-        # Implementing __hash__ allows TaskConfig to be used in sets or as dict keys
+        # Implementing __hash__ allows TaskConfig to be used in sets or as dict
+        # keys
         return hash(
             (
                 self.schedule_type,

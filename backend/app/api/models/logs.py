@@ -1,8 +1,7 @@
 # app/schemas.py
-from pydantic import BaseModel, Field, UUID4
-from typing import List, Dict, Callable, Optional, Any
+from pydantic import BaseModel, Field
+from typing import Dict, Optional
 from datetime import datetime
-from uuid import uuid4
 
 
 class RequestLogBase(BaseModel):
@@ -26,6 +25,7 @@ class RequestLogBase(BaseModel):
 
 class RequestLogCreate(RequestLogBase):
     pass
+
 
 class TaskLogCreate(BaseModel):
     talo_name: str
