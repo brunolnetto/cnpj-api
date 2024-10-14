@@ -74,6 +74,9 @@ pylint:
 report: test ## Generate coverage report. Usage: make report
 	coverage report --omit=$(OMIT_PATHS) --show-missing
 
+build: ## Build the container image. Usage: make build
+	docker compose build
+
 ps: ## List all running containers. Usage: make ps
 	docker compose ps -a
 
