@@ -9,9 +9,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH="/app"
 
-# Create non-root user
-RUN adduser --disabled-password appuser
-
 # Install uv
 RUN pip install uv
 
@@ -19,7 +16,8 @@ RUN pip install uv
 COPY requirements.txt .
 
 # Install the dependencies
-RUN uv pip install --no-cache-dir -r requirements.txt --system
+RUN uv pip install --no-cache-dir -r requirements.txt --system && \
+    pip install --upgrade pip
 
 # Create directories for backend and static files
 RUN mkdir -p /app/backend /app/static
