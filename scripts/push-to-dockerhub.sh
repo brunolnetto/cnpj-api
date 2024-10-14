@@ -32,7 +32,7 @@ while true; do
     case "$1" in
     -u | --username )    DOCKERHUB_USERNAME="$2"; shift 2 ;;
     -p | --password )    DOCKERHUB_PASSWORD="$2"; shift 2 ;;
-    -f | --compose-file )    COMPOSE_FILE="$2"; shift 2 ;;
+    -f | --dockerfile )    DOCKERFILE="$2"; shift 2 ;;
     -i | --image-name )  IMAGE_NAME="$2"; shift 2 ;;
     -t | --tag )         TAG="$2"; shift 2 ;;
     -- ) shift; break ;;
@@ -67,7 +67,7 @@ fi
 
 # Build the Docker image
 echo "[2] Building the Docker image..."
-docker build -t "$IMAGE_NAME" "$COMPOSE_FILE"
+docker build -t "$IMAGE_NAME" "$DOCKERFILE"
 
 # Tag the Docker image
 echo "[3] Tagging the Docker image..."
