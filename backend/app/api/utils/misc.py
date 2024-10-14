@@ -65,13 +65,13 @@ def check_limit_and_offset(limit: int, offset: int) -> None:
 
 def convert_to_bytes(size_str):
     """
-    This function converts a size string (e.g., "22K", "321M") into bytes.
+    Converts a size string (e.g., "22K", "321M") into bytes.
 
     Args:
         size_str (str): The size string to convert.
 
     Returns:
-        int: The size in bytes, or None if the format is invalid.
+        int: The size in bytes. Returns 0 if the format is invalid.
     """
     try:
         size_value = float(size_str[:-1])  # Extract numerical value
@@ -80,10 +80,11 @@ def convert_to_bytes(size_str):
         if size_unit in UNIT_MULTIPLIER:
             multiplier = UNIT_MULTIPLIER[size_unit]
             return int(size_value * multiplier)
-        else:
-            return None  # Handle invalid units
+
     except ValueError:
-        return None
+        pass  # Continue to return the default value
+
+    return 0  # Default value for invalid format
 
 
 def comma_stringify_list(lst: List[Any]) -> str:

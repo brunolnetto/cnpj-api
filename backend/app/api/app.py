@@ -31,17 +31,17 @@ from backend.app.setup.logging import setup_logger
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app_: FastAPI):
     """
-    The `lifespan` async context manager in Python initializes and cleans up various tasks for a FastAPI
-    application.
+    The `lifespan` async context manager in Python initializes and cleans up various
+    tasks for a FastAPI application.
 
     :param app: The `app` parameter in the `lifespan` async context manager function is of type
     `FastAPI`. It is likely being used to pass in the FastAPI application instance to perform
     initialization and cleanup tasks related to the application's lifespan
     :type app: FastAPI
     """
-    t0=perf_counter()
+    t0 = perf_counter()
     # Data related entities
     await init_database()
 
@@ -101,8 +101,7 @@ def setup_app(app_: FastAPI):
     ##########################################################################
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
-        urls = [str(origin).strip("/")
-                for origin in settings.BACKEND_CORS_ORIGINS]
+        urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]
 
         app_.add_middleware(
             CORSMiddleware,

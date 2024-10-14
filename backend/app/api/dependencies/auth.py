@@ -28,7 +28,7 @@ class JWTBearer(OAuth2PasswordBearer):
         authorization = request.headers.get("Authorization")
 
         if authorization:
-            scheme, token = authorization.split()
+            token = authorization.split()[1]
         if not token:
             raise MissingTokenException()
         try:
@@ -39,10 +39,8 @@ class JWTBearer(OAuth2PasswordBearer):
             }
 
             payload = jwt.decode(
-                token,
-                JWT_SECRET_KEY,
-                algorithms=[JWT_ALGORITHM],
-                options=check_claims)
+                token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM], options=check_claims
+            )
 
             if payload["exp"] <= time():
                 raise ExpiredTokenException()

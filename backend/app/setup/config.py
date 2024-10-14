@@ -55,14 +55,15 @@ def generate_db_uri(dsn_scheme, user, password, host, port, database):
 def parse_comma_separated(v: Any) -> Union[List[str], str]:
     if isinstance(v, str) and not v.startswith("["):
         return [i.strip() for i in v.split(",")]
-    elif isinstance(v, (list, str)):
+
+    if isinstance(v, (list, str)):
         return v
 
     raise ValueError(v)
 
 
 # Project settings
-with open("pyproject.toml", "r", encoding='utf8') as f:
+with open("pyproject.toml", "r", encoding="utf8") as f:
     config = toml.load(f)
 
 
@@ -149,16 +150,12 @@ class Settings(BaseSettings):
 
     @field_validator("DEFAULT_RATE_LIMITS", mode="before")
     @classmethod
-    def default_rate_limits(
-            cls,
-            v: Optional[str],
-            values: ValidationInfo) -> List[str]:
+    def default_rate_limits(cls, v: Optional[str], values: ValidationInfo) -> List[str]:
         rate_limit = values.data.get("DEFAULT_RATE_LIMIT")
         burst_rate_limit = values.data.get("DEFAULT_BURST_RATE_LIMIT")
         return [rate_limit, burst_rate_limit]
 
-    def _check_default_secret(
-            self, var_name: str, value: Union[str, None]) -> None:
+    def _check_default_secret(self, var_name: str, value: Union[str, None]) -> None:
         if value == DEFAULT_PASSWORD:
             message = (
                 f'The value of {var_name} is "{DEFAULT_PASSWORD}", '

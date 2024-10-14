@@ -13,7 +13,7 @@ from backend.app.api.repositories.base import BaseRepository
 
 class TaskRepository(BaseRepository):
     def __init__(self, session: Session):
-        super().__init__(session)
+        self.session = session
 
     def create(self, task_data: Dict[str, Any]) -> Task:
         try:
@@ -41,12 +41,9 @@ class TaskRepository(BaseRepository):
             return task
         except Exception as e:
             self.session.rollback()  # Rollback in case of error
-            raise Exception(f"Error creating task: {e}")
+            raise Exception(f"Error creating task: {e}") from e
 
-    def update(self,
-               task_id: UUID,
-               task_data: Dict[str,
-                               Any]) -> Optional[Task]:
+    def update(self, task_id: UUID, task_data: Dict[str, Any]) -> Optional[Task]:
         try:
             task = self.get_by_id(task_id)
             if not task:
@@ -61,13 +58,13 @@ class TaskRepository(BaseRepository):
             return task
         except Exception as e:
             self.session.rollback()  # Rollback in case of error
-            raise Exception(f"Error updating task: {e}")
+            raise Exception(f"Error updating task: {e}") from e
 
     def get_by_id(self, task_id: UUID) -> Optional[Task]:
         try:
             return self.session.get(Task, task_id)
         except Exception as e:
-            raise Exception(f"Error fetching task by id: {e}")
+            raise Exception(f"Error fetching task by id: {e}") from e
 
     def get_all(self, limit: int = 100, offset: int = 0) -> List[Task]:
         try:
@@ -77,11 +74,11 @@ class TaskRepository(BaseRepository):
                 .all()
             )
         except Exception as e:
-            raise Exception(f"Error fetching all tasks: {e}")
+            raise Exception(f"Error fetching all tasks: {e}") from e
 
-    def delete_by_id(self, id: UUID) -> bool:
+    def delete_by_id(self, id_: UUID) -> bool:
         try:
-            task = self.get_by_id(id)
+            task = self.get_by_id(id_)
             if not task:
                 return False
 
@@ -90,7 +87,7 @@ class TaskRepository(BaseRepository):
             return True
         except Exception as e:
             self.session.rollback()  # Rollback in case of error
-            raise Exception(f"Error deleting task: {e}")
+            raise Exception(f"Error deleting task: {e}") from e
 
 
 def get_task_repository():
@@ -98,5 +95,4 @@ def get_task_repository():
         return TaskRepository(session)
 
 
-TaskRepositoryDependency = Annotated[TaskRepository, Depends(
-    get_task_repository)]
+TaskRepositoryDependency = Annotated[TaskRepository, Depends(get_task_repository)]

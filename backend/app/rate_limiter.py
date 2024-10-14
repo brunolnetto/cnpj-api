@@ -12,11 +12,13 @@ limiter = Limiter(
 DISABLE_RATE_LIMITING = settings.ENVIRONMENT == "development"
 
 # Create a custom decorator with optional rate limit configuration
+
+
 def rate_limit(rate_limit_config: str = settings.DEFAULT_RATE_LIMIT):
     def decorator(func):
         if DISABLE_RATE_LIMITING:
             return func
-        else:
-            return limiter.limit(rate_limit_config)(func)
+
+        return limiter.limit(rate_limit_config)(func)
 
     return decorator

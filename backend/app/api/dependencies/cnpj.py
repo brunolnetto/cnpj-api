@@ -1,4 +1,3 @@
-
 from fastapi import Depends
 
 from backend.app.database.base import get_session

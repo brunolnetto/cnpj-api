@@ -41,9 +41,8 @@ def run_pip_compile(input_file: str, output_file: str) -> int:
 
 
 def find_packages_with_comment(
-        requirements_file: str,
-        pip_compile_output_file: str,
-        requirements_output_file: str) -> int:
+    requirements_file: str, pip_compile_output_file: str, requirements_output_file: str
+) -> int:
     """
     Finds packages with a specific comment in a requirements file and writes them to a new file.
 
@@ -91,10 +90,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "requirements_file", type=str, help="Path to the requirements file."
     )
-    parser.add_argument(
-        "output_file",
-        type=str,
-        help="Path to the output file.")
+    parser.add_argument("output_file", type=str, help="Path to the output file.")
 
     args = parser.parse_args()
 

@@ -59,12 +59,8 @@ def setup_logger():
         stderr_stream_handler.setFormatter(fmt)
 
         # Apply basic configuration with these handlers
-        logging.basicConfig(
-            level=logging.INFO,
-            handlers=[stdout_stream_handler])
-        logging.basicConfig(
-            level=logging.WARN,
-            handlers=[stderr_stream_handler])
+        logging.basicConfig(level=logging.INFO, handlers=[stdout_stream_handler])
+        logging.basicConfig(level=logging.WARN, handlers=[stderr_stream_handler])
 
 
 logger.info("Logging started.")

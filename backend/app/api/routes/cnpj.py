@@ -1,12 +1,10 @@
 from typing import Union, Dict
-from time import perf_counter
 
 from fastapi import APIRouter, Request
 
 from backend.app.api.services.cnpj import (
     CNPJService,
     CNPJServiceDependency,
-    get_cnpj_service,
 )
 from backend.app.rate_limiter import rate_limit
 from backend.app.api.models.cnpj import CNPJBatch
@@ -41,7 +39,8 @@ async def get_cnaes(
     """
     return (
         await cnpj_service.get_cnae_by_token(search_token)
-        if search_token != "" else await cnpj_service.get_cnaes(limit, offset, enable_pagination)
+        if search_token != ""
+        else await cnpj_service.get_cnaes(limit, offset, enable_pagination)
     )
 
 
@@ -353,7 +352,9 @@ async def get_registration_statuses(
     Returns:
     - A list of registration statuses as dictionaries.
     """
-    return await cnpj_service.get_registration_statuses(limit, offset, enable_pagination)
+    return await cnpj_service.get_registration_statuses(
+        limit, offset, enable_pagination
+    )
 
 
 @rate_limit()
@@ -378,7 +379,8 @@ async def get_registration_statuses_list(
 @rate_limit()
 @router.get("/cnpj/{cnpj}")
 async def get_cnpj_info(
-    request: Request, cnpj: str,
+    request: Request,
+    cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -397,7 +399,8 @@ async def get_cnpj_info(
 @rate_limit()
 @router.get("/cnpj/{cnpj}/activities")
 async def get_cnpj_activities(
-    request: Request, cnpj: str,
+    request: Request,
+    cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -415,7 +418,8 @@ async def get_cnpj_activities(
 @rate_limit()
 @router.get("/cnpj/{cnpj}/partners")
 async def get_cnpj_partners(
-    request: Request, cnpj: str,
+    request: Request,
+    cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -433,7 +437,8 @@ async def get_cnpj_partners(
 @rate_limit()
 @router.get("/cnpj/{cnpj}/simples-simei")
 async def get_cnpj_simples_simei(
-    request: Request, cnpj: str,
+    request: Request,
+    cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -451,7 +456,8 @@ async def get_cnpj_simples_simei(
 @rate_limit()
 @router.get("/cnpj/{cnpj}/company")
 async def get_cnpj_company(
-    request: Request, cnpj: str,
+    request: Request,
+    cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -469,7 +475,8 @@ async def get_cnpj_company(
 @rate_limit()
 @router.get("/cnpj/{cnpj}/establishment")
 async def get_cnpj_establishment(
-    request: Request, cnpj: str,
+    request: Request,
+    cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -487,7 +494,8 @@ async def get_cnpj_establishment(
 @rate_limit()
 @router.get("/cnpj/{cnpj}/establishments")
 async def get_cnpj_establishments(
-    request: Request, cnpj: str,
+    request: Request,
+    cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -535,7 +543,7 @@ async def get_cnpjs(
 async def get_cnpjs_info(
     request: Request,
     cnpj_batch: BatchModel,
-    cnpj_service: CNPJService = CNPJServiceDependency
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNPJs from the database.
@@ -554,7 +562,7 @@ async def get_cnpjs_info(
 async def get_cnpjs_partners(
     request: Request,
     cnpj_batch: CNPJBatch,
-    cnpj_service: CNPJService = CNPJServiceDependency
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNPJ partners information from the database.
@@ -573,7 +581,7 @@ async def get_cnpjs_partners(
 async def get_cnpjs_company(
     request: Request,
     cnpj_batch: CNPJBatch,
-    cnpj_service: CNPJService = CNPJServiceDependency
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNPJ partners information from the database.
@@ -592,7 +600,7 @@ async def get_cnpjs_company(
 async def get_cnpjs_establishment(
     request: Request,
     cnpj_batch: CNPJBatch,
-    cnpj_service: CNPJService = CNPJServiceDependency
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNPJ partners information from the database.
@@ -611,7 +619,7 @@ async def get_cnpjs_establishment(
 async def get_cnpjs_simples_simei(
     request: Request,
     cnpj_batch: CNPJBatch,
-    cnpj_service: CNPJService = CNPJServiceDependency
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ) -> Dict[str, dict]:
     """
 

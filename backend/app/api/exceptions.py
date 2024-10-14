@@ -23,9 +23,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 
     # Return a generic error response to the client
     code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    return JSONResponse(
-        f"An unexpected error occurred: {exc}.",
-        status_code=code)
+    return JSONResponse(f"An unexpected error occurred: {exc}.", status_code=code)
 
 
 async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):

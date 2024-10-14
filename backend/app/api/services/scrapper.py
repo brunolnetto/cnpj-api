@@ -1,7 +1,6 @@
 from urllib import request
-from functools import reduce
+from functools import reduce, partial
 from datetime import datetime
-from functools import partial
 import re
 
 
@@ -38,16 +37,14 @@ class FileInfo(BaseModel):
             "file_size_bytes": self.file_size_bytes,
         }
 
+
 # Define helper functions
 
 
-def or_map(a, b):
-    return a or b
-
-
-def is_size_type(text, size_types):
-    return reduce(or_map, [text.endswith(size_type)
-                  for size_type in size_types])
+def is_size_type(text, size_types_):
+    return reduce(
+        lambda a, b: a or b, [text.endswith(size_type) for size_type in size_types_]
+    )
 
 
 def collect_date(text, pattern):
@@ -61,7 +58,7 @@ TIMEZONE_SAO_PAULO = pytz.timezone("America/Sao_Paulo")
 
 collect_date_partial = partial(collect_date, pattern=regex_pattern)
 is_size_type_partial = partial(is_size_type, size_types=size_types)
-or_map_partial = partial(or_map)
+or_map_partial = partial(lambda a, b: a or b)
 
 
 class CNPJScrapService:
@@ -98,8 +95,8 @@ class CNPJScrapService:
         year_month = self.get_previous_year_month(current_year_month)
         data_url = f"{self.base_url}/{year_month}/"
 
-        raw_html = request.urlopen(data_url)
-        raw_html = raw_html.read()
+        with request.urlopen(data_url) as response:
+            raw_html = response.read()
 
         # Formatar página e converter em string
         page_items = BeautifulSoup(raw_html, "lxml")
@@ -114,9 +111,6 @@ class CNPJScrapService:
             filename_cell = row.find("a")
 
             date_cell = row.find("td", text=collect_date_partial)
-
-            def or_map(a, b):
-                return a or b
 
             def is_size_map(text):
                 return text and is_size_type_partial(text)
@@ -134,16 +128,15 @@ class CNPJScrapService:
                     # Try converting date text to datetime object (adjust
                     # format if needed)
                     try:
-                        updated_at = datetime.strptime(
-                            date_text, "%Y-%m-%d %H:%M")
+                        updated_at = datetime.strptime(date_text, "%Y-%m-%d %H:%M")
                         updated_at = TIMEZONE_SAO_PAULO.localize(updated_at)
                         updated_at = updated_at.replace(
-                            hour=0, minute=0, second=0, microsecond=0)
+                            hour=0, minute=0, second=0, microsecond=0
+                        )
 
                     except ValueError:
                         # Handle cases where date format doesn't match
-                        logger.error(
-                            f"Error parsing date for file: {filename}")
+                        logger.error(f"Error parsing date for file: {filename}")
 
                     size_value_str = size_cell.text.strip()
 
@@ -165,9 +158,7 @@ class CNPJScrapService:
         """
 
         files_info = self.scrap_files_date()
-        max_date = max(
-            files_info.values(),
-            key=lambda x: x["updated_at"])["updated_at"]
+        max_date = max(files_info.values(), key=lambda x: x["updated_at"])["updated_at"]
         return max_date
 
 

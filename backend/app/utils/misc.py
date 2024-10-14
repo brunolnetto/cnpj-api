@@ -154,8 +154,7 @@ def is_number(text: str) -> bool:
     return bool(re.match(pattern, text))
 
 
-def are_numbers(lst: List[Union[str, int, float]],
-                is_strict: bool = False) -> bool:
+def are_numbers(lst: List[Union[str, int, float]], is_strict: bool = False) -> bool:
     """
     Checks if all elements in a list are numbers.
 
@@ -168,8 +167,8 @@ def are_numbers(lst: List[Union[str, int, float]],
     """
     if is_strict:
         return all(map(lambda x: is_number(str(x)), lst))
-    else:
-        return all(map(lambda x: is_number(str(x).replace(".", "")), lst))
+
+    return all(map(lambda x: is_number(str(x).replace(".", "")), lst))
 
 
 def format_decimal(float_string: str, num_decimal_places: int = 2) -> str:

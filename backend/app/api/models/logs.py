@@ -11,10 +11,8 @@ class RequestLogBase(BaseModel):
     relo_body: Optional[str] = None
     relo_headers: dict
     relo_status_code: int
-    relo_ip_address: Optional[str] = Field(
-        None, description="Client's IP address")
-    relo_device_info: Optional[str] = Field(
-        None, description="Device information")
+    relo_ip_address: Optional[str] = Field(None, description="Client's IP address")
+    relo_device_info: Optional[str] = Field(None, description="Device information")
     relo_absolute_path: Optional[str] = Field(
         None, description="Absolute path of the request"
     )
