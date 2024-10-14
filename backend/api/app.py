@@ -2,10 +2,12 @@
 # a instância do aplicativo FastAPI e adicionar as rotas a ele.
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
+
 import sentry_sdk
 
 from backend.setup.config import settings
@@ -23,20 +25,22 @@ def create_app():
     # Generates the FastAPI application
     app_ = FastAPI(
         title=settings.PROJECT_NAME,
+        version=settings.VERSION,
+        summary=settings.DESCRIPTION,
         docs_url=f"{settings.API_V1_STR}/docs",
         openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        redoc_url=f"{settings.API_V1_STR}/redoc",
         generate_unique_id_function=custom_generate_unique_id,
     )
     
     obj=StaticFiles(directory="static")
     app_.mount("/static", obj, name="static")
 
-    @app_.get("/favicon.ico")
-    async def get_favicon():
+    @app_.get("/favicon.ico", include_in_schema=False)
+    async def my_favicon():
         return FileResponse("static/favicon.ico")
 
     return app_
-
 
 
 def setup_app(app_):
