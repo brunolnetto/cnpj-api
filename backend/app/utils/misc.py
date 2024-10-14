@@ -1,15 +1,10 @@
-from fastapi import Request
-
 from typing import Union, List, Tuple, Dict, Any, Callable
 from datetime import datetime
-import cProfile
-import pstats
-from io import StringIO
-import asyncio
 import json
 import re
 
 NumberList = List[Union[int, float]]
+
 
 def are(args: List[Any], validation_map: callable) -> bool:
     """
@@ -348,8 +343,7 @@ def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:
 
 
 def operate_on_list_dict(
-    lst: List[Dict[Any, Any]], 
-    operation: Callable[[Any], Any]
+    lst: List[Dict[Any, Any]], operation: Callable[[Any], Any]
 ) -> List[Dict[Any, Any]]:
     """
     Operates on a list of dictionaries by applying the operation to each value.

@@ -2,17 +2,17 @@ from backend.app.utils.misc import is_positive, is_non_negative
 from backend.app.api.constants import UNIT_MULTIPLIER, MAX_LIMIT
 
 import time
-from functools import wraps
 from typing import Callable, Any
+
 
 def time_execution(func: Callable[..., Any], *args, **kwargs) -> Any:
     """
     A utility function to time the execution of another function.
-    
+
     Args:
         func: The function to wrap.
         *args, **kwargs: The arguments to pass to the function.
-    
+
     Returns:
         The result of the function and the execution time.
     """
@@ -20,9 +20,10 @@ def time_execution(func: Callable[..., Any], *args, **kwargs) -> Any:
     result = func(*args, **kwargs)
     t1 = time.perf_counter()
     execution_time = t1 - t0
-    print(f'Execution of {func.__name__} took {execution_time:.4f} seconds')
-    
+    print(f"Execution of {func.__name__} took {execution_time:.4f} seconds")
+
     return result, execution_time
+
 
 def check_limit_and_offset(limit: int, offset: int) -> None:
     """

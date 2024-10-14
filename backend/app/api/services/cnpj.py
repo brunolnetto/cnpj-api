@@ -314,7 +314,7 @@ class CNPJService:
                 raise ValueError(f"City code {city_code} is not a number.")
 
             city = self.repository.get_city(city_code)
-            
+
         except Exception as e:
             logger.error(f"Error getting city: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -691,8 +691,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not est_info:
+            cnpj_route=f"{settings.API_V1_STR}/cnpj/{cnpj}/company"
             base_msg = f"There is no establishment associated with CNPJ {cnpj_obj}"
-            explanation = f"Try route {settings.API_V1_STR}/cnpj/{cnpj}/company to verify if the CNPJ exists."
+            explanation = f"Try route {cnpj_route} to verify if the CNPJ exists."
             message = f"{base_msg}. {explanation}"
 
             return {"message": message}

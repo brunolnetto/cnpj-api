@@ -15,7 +15,6 @@ from backend.app.api.constants import UNIT_MULTIPLIER
 
 BASE_URL = "http://200.152.38.155/CNPJ/dados_abertos_cnpj"
 
-
 class FileInfo(BaseModel):
     """
     Pydantic model representing a CNPJ file.
@@ -64,7 +63,8 @@ class CNPJScrapService:
         Scrapes the RF (Receita Federal) website to extract file information.
 
         Returns:
-            list: A list of tuples containing the updated date and filename of the files found on the RF website.
+            list: A list of tuples containing the updated date and filename of the files 
+            found on the RF website.
         """
         current_year_month = datetime.now().strftime("%Y-%m")
         year_month = self.get_previous_year_month(current_year_month)

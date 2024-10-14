@@ -40,6 +40,7 @@ def log_app_start():
     app_start_log = {"stlo_start_time": datetime.now()}
     app_start_logs_repository.create(app_start_log)
 
+
 TaskLogsRepositoryDependency = Depends(get_task_logs_repository)
 RequestLogsRepositoryDependency = Depends(get_request_logs_repository)
 AppStartLogRepositoryDependency = Depends(get_app_start_logs_repository)
