@@ -1,0 +1,21 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+# Step 1: Push the new Docker image to DockerHub
+- script: |
+    ./scripts/push-to-dockerhub.sh -u $(DOCKERHUB_USERNAME) -p $(DOCKERHUB_PASSWORD) -f "$(pwd)" -i $(DOCKER_IMAGE_NAME) -t latest
+  displayName: 'Build and Push Latest Docker Image to DockerHub'
+
+# Step 2: Delete the existing stack on Portainer
+- script: |
+    ./scripts/delete-stack-on-portainer.sh -r $(PORTAINER_URL) -u $(PORTAINER_USERNAME) -p $(PORTAINER_PASSWORD) -s $(PORTAINER_STACK_NAME)
+  displayName: 'Delete Existing Stack on Portainer'
+
+# Step 3: Deploy the new stack on Portainer
+- script: |
+    ./scripts/push-stack-on-portainer.sh -r $(PORTAINER_URL) -u $(PORTAINER_USERNAME) -p $(PORTAINER_PASSWORD) -s $(PORTAINER_STACK_NAME) -f "$(pwd)/docker-compose.yaml"
+  displayName: 'Deploy New Stack on Portainer'
