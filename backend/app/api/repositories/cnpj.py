@@ -243,15 +243,7 @@ class CNPJRepository:
             return []
 
         # Use parameterized queries to safely include the token in the query
-<<<<<<< HEAD
         cnae_result = self.session.query(CNAE).filter(CNAE.descricao.ilike(f'%{token}%')).all()
-=======
-        query = text(
-            f"select codigo, descricao from cnae where descricao ilike '%{token}%'"
-        )
-
-        cnae_result = self.session.execute(query).fetchall()
->>>>>>> 6950956 (refactor: rollback changes)
 
         # Map the results to the desired format
         cnae_dict = [

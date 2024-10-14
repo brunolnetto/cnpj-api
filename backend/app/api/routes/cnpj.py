@@ -18,7 +18,7 @@ router = APIRouter(tags=["CNPJ"], dependencies=[JWTDependency])
 
 @rate_limit()
 @router.get("/cnaes")
-async def get_cnaes(
+def get_cnaes(
     request: Request,
     query_params: Annotated[PaginatedLimitOffsetParams, Query()],
     search_token: str = "",
@@ -35,9 +35,9 @@ async def get_cnaes(
     - A list of CNAEs as dictionaries.
     """
     return (
-        await cnpj_service.get_cnae_by_token(search_token)
+        cnpj_service.get_cnae_by_token(search_token)
         if search_token != ""
-        else await cnpj_service.get_cnaes(
+        else cnpj_service.get_cnaes(
             query_params.limit, query_params.offset, query_params.enable_pagination
         )
     )
@@ -45,7 +45,7 @@ async def get_cnaes(
 
 @rate_limit()
 @router.post("/cnaes")
-async def get_cnae_objects(
+def get_cnae_objects(
     request: Request,
     cnae_code_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -59,13 +59,12 @@ async def get_cnae_objects(
     Returns:
     - A list with the CNAE objects.
     """
-    return await cnpj_service.get_cnae_objects(cnae_code_batch) \
-        if not search_token else  cnpj_service.get_cnae_by_token(search_token)
+    return cnpj_service.get_cnae_objects(cnae_code_batch)
 
 
 @rate_limit()
 @router.post("/cnaes/cnpjs")
-async def get_cnpjs_by_cnaes(
+def get_cnpjs_by_cnaes(
     request: Request,
     cnae_batch: BatchModel,
     query_params: Annotated[LimitOffsetParams, Query()],
@@ -82,14 +81,14 @@ async def get_cnpjs_by_cnaes(
     Returns:
     - A list of establishments as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_by_cnaes(
+    return cnpj_service.get_cnpjs_by_cnaes(
         cnae_batch, query_params.limit, query_params.offset
     )
 
 
 @rate_limit()
 @router.get("/cnae/{cnae_code}")
-async def get_cnae_description(
+def get_cnae_description(
     request: Request,
     cnae_code: CodeType,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -103,12 +102,12 @@ async def get_cnae_description(
     Returns:
     - A dictionary with the CNAE description.
     """
-    return await cnpj_service.get_cnae_description(cnae_code)
+    return cnpj_service.get_cnae_description(cnae_code)
 
 
 @rate_limit()
 @router.get("/cnae/{cnae_code}/cnpjs")
-async def get_cnpjs_with_cnae(
+def get_cnpjs_with_cnae(
     request: Request,
     cnae_code: CodeType,
     query_params: Annotated[LimitOffsetParams, Query()],
@@ -125,14 +124,14 @@ async def get_cnpjs_with_cnae(
     Returns:
     - A list of establishments as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_with_cnae(
+    return cnpj_service.get_cnpjs_with_cnae(
         cnae_code, query_params.limit, query_params.offset
     )
 
 
 @rate_limit()
 @router.post("/states/cnpjs")
-async def get_cnpjs_by_state(
+def get_cnpjs_by_state(
     request: Request,
     state_batch: BatchModel,
     query_params: Annotated[LimitOffsetParams, Query()],
@@ -149,14 +148,14 @@ async def get_cnpjs_by_state(
     Returns:
     - A list of establishments as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_by_states(
+    return cnpj_service.get_cnpjs_by_states(
         state_batch, query_params.limit, query_params.offset
     )
 
 
 @rate_limit()
 @router.get("/company/sizes")
-async def get_company_sizes(
+def get_company_sizes(
     request: Request,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -166,12 +165,12 @@ async def get_company_sizes(
     Returns:
     - A dictionary with the company sizes.
     """
-    return await cnpj_service.get_company_size_dict()
+    return cnpj_service.get_company_size_dict()
 
 
 @rate_limit()
 @router.get("/company/situation")
-async def get_situations(
+def get_situations(
     request: Request,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -181,12 +180,12 @@ async def get_situations(
     Returns:
     - A dictionary with the company situations.
     """
-    return await cnpj_service.get_company_situation_dict()
+    return cnpj_service.get_company_situation_dict()
 
 
 @rate_limit()
 @router.get("/establishment/types")
-async def get_establishment_sizes(
+def get_establishment_sizes(
     request: Request,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
@@ -196,12 +195,12 @@ async def get_establishment_sizes(
     Returns:
     - A dictionary with the company sizes.
     """
-    return await cnpj_service.get_establishment_type_dict()
+    return cnpj_service.get_establishment_type_dict()
 
 
 @rate_limit()
 @router.get("/city/{city_code}")
-async def get_city(
+def get_city(
     request: Request,
     city_code: CodeType,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -215,12 +214,12 @@ async def get_city(
     Returns:
     - A dictionary with the city name.
     """
-    return await cnpj_service.get_city(city_code)
+    return cnpj_service.get_city(city_code)
 
 
 @rate_limit()
 @router.get("/cities")
-async def get_cities(
+def get_cities(
     request: Request,
     query_params: Annotated[LimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -234,32 +233,32 @@ async def get_cities(
     Returns:
     - A list of cities as dictionaries.
     """
-    return await cnpj_service.get_cities(query_params.limit, query_params.offset)
+    return cnpj_service.get_cities(query_params.limit, query_params.offset)
 
 
 @rate_limit()
 @router.post("/cities")
-async def get_cities_list(
+def get_cities_list(
     request: Request,
     cities_code_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
-    return await cnpj_service.get_cities_list(cities_code_batch)
+    return cnpj_service.get_cities_list(cities_code_batch)
 
 
 @rate_limit()
 @router.post("/cities/infer")
-async def infer_city(
+def infer_city(
     request: Request,
     city_name_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
-    return await cnpj_service.get_city_candidates(city_name_batch)
+    return cnpj_service.get_city_candidates(city_name_batch)
 
 
 @rate_limit()
 @router.get("/legal-nature/{legal_nature_code}")
-async def get_legal_nature(
+def get_legal_nature(
     request: Request,
     legal_nature_code: CodeType,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -273,12 +272,12 @@ async def get_legal_nature(
     Returns:
     - A list of legal natures as dictionaries.
     """
-    return await cnpj_service.get_legal_nature(legal_nature_code)
+    return cnpj_service.get_legal_nature(legal_nature_code)
 
 
 @rate_limit()
 @router.get("/legal-natures")
-async def get_legal_natures(
+def get_legal_natures(
     request: Request,
     query_params: Annotated[PaginatedLimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -292,14 +291,14 @@ async def get_legal_natures(
     Returns:
     - A list of legal natures as dictionaries.
     """
-    return await cnpj_service.get_legal_natures(
+    return cnpj_service.get_legal_natures(
         query_params.limit, query_params.offset, query_params.enable_pagination
     )
 
 
 @rate_limit()
 @router.post("/legal-natures")
-async def get_legal_natures_list(
+def get_legal_natures_list(
     request: Request,
     legal_natures_code_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -313,12 +312,12 @@ async def get_legal_natures_list(
     Returns:
     - A list of legal natures as dictionaries.
     """
-    return await cnpj_service.get_legal_natures_list(legal_natures_code_batch)
+    return cnpj_service.get_legal_natures_list(legal_natures_code_batch)
 
 
 @rate_limit()
 @router.get("/registration-status/{registration_status_code}")
-async def get_registration_status(
+def get_registration_status(
     request: Request,
     registration_status_code: CodeType,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -332,12 +331,12 @@ async def get_registration_status(
     Returns:
     - A dictionary with the registration status.
     """
-    return await cnpj_service.get_registration_status(registration_status_code)
+    return cnpj_service.get_registration_status(registration_status_code)
 
 
 @rate_limit()
 @router.get("/registration-statuses")
-async def get_registration_statuses(
+def get_registration_statuses(
     request: Request,
     query_params: Annotated[PaginatedLimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -351,14 +350,14 @@ async def get_registration_statuses(
     Returns:
     - A list of registration statuses as dictionaries.
     """
-    return await cnpj_service.get_registration_statuses(
+    return cnpj_service.get_registration_statuses(
         query_params.limit, query_params.offset, query_params.enable_pagination
     )
 
 
 @rate_limit()
 @router.post("/registration-statuses")
-async def get_registration_statuses_list(
+def get_registration_statuses_list(
     request: Request,
     registration_code_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -372,12 +371,12 @@ async def get_registration_statuses_list(
     Returns:
     - A list of registration statuses as dictionaries.
     """
-    return await cnpj_service.get_registration_statuses_list(registration_code_batch)
+    return cnpj_service.get_registration_statuses_list(registration_code_batch)
 
 
 @rate_limit()
 @router.get("/cnpj/{cnpj}")
-async def get_cnpj_info(
+def get_cnpj_info(
     request: Request,
     cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -391,13 +390,13 @@ async def get_cnpj_info(
     Returns:
     - A dictionary with information about the CNPJ.
     """
-    cnpj_info = await cnpj_service.get_cnpj_info(cnpj)
+    cnpj_info = cnpj_service.get_cnpj_info(cnpj)
     return cnpj_info
 
 
 @rate_limit()
 @router.get("/cnpj/{cnpj}/activities")
-async def get_cnpj_activities(
+def get_cnpj_activities(
     request: Request,
     cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -411,12 +410,12 @@ async def get_cnpj_activities(
     Returns:
     - A list of activities associated with the CNPJ.
     """
-    return await cnpj_service.get_cnpj_activities(cnpj)
+    return cnpj_service.get_cnpj_activities(cnpj)
 
 
 @rate_limit()
 @router.get("/cnpj/{cnpj}/partners")
-async def get_cnpj_partners(
+def get_cnpj_partners(
     request: Request,
     cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -430,12 +429,12 @@ async def get_cnpj_partners(
     Returns:
     - A list of partners associated with the CNPJ.
     """
-    return await cnpj_service.get_cnpj_partners(cnpj)
+    return cnpj_service.get_cnpj_partners(cnpj)
 
 
 @rate_limit()
 @router.get("/cnpj/{cnpj}/simples-simei")
-async def get_cnpj_simples_simei(
+def get_cnpj_simples_simei(
     request: Request,
     cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -454,7 +453,7 @@ async def get_cnpj_simples_simei(
 
 @rate_limit()
 @router.get("/cnpj/{cnpj}/company")
-async def get_cnpj_company(
+def get_cnpj_company(
     request: Request,
     cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -468,12 +467,12 @@ async def get_cnpj_company(
     Returns:
     - A dictionary with information about the company.
     """
-    return await cnpj_service.get_cnpj_company(cnpj)
+    return cnpj_service.get_cnpj_company(cnpj)
 
 
 @rate_limit()
 @router.get("/cnpj/{cnpj}/establishment")
-async def get_cnpj_establishment(
+def get_cnpj_establishment(
     request: Request,
     cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -487,12 +486,12 @@ async def get_cnpj_establishment(
     Returns:
     - A dictionary with information about the establishment.
     """
-    return await cnpj_service.get_cnpj_establishment(cnpj)
+    return cnpj_service.get_cnpj_establishment(cnpj)
 
 
 @rate_limit()
 @router.get("/cnpj/{cnpj}/establishments")
-async def get_cnpj_establishments(
+def get_cnpj_establishments(
     request: Request,
     cnpj: str,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -507,12 +506,12 @@ async def get_cnpj_establishments(
     Returns:
     - A list of establishments associated with the CNPJ.
     """
-    return await cnpj_service.get_cnpj_establishments(cnpj)
+    return cnpj_service.get_cnpj_establishments(cnpj)
 
 
 @rate_limit()
 @router.get("/cnpjs")
-async def get_cnpjs(
+def get_cnpjs(
     request: Request,
     query_params: Annotated[CNPJQueryParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -526,7 +525,7 @@ async def get_cnpjs(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return await cnpj_service.get_cnpjs(
+    return cnpj_service.get_cnpjs(
         query_params.state_abbrev, 
         query_params.city_name, 
         query_params.cnae_code, 
@@ -539,7 +538,7 @@ async def get_cnpjs(
 
 @rate_limit()
 @router.post("/cnpjs")
-async def get_cnpjs_info(
+def get_cnpjs_info(
     request: Request,
     cnpj_batch: BatchModel,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -553,12 +552,12 @@ async def get_cnpjs_info(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_info(cnpj_batch)
+    return cnpj_service.get_cnpjs_info(cnpj_batch)
 
 
 @rate_limit()
 @router.post("/cnpjs/partners")
-async def get_cnpjs_partners(
+def get_cnpjs_partners(
     request: Request,
     cnpj_batch: CNPJBatch,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -572,12 +571,12 @@ async def get_cnpjs_partners(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_partners(cnpj_batch)
+    return cnpj_service.get_cnpjs_partners(cnpj_batch)
 
 
 @rate_limit()
 @router.post("/cnpjs/company")
-async def get_cnpjs_company(
+def get_cnpjs_company(
     request: Request,
     cnpj_batch: CNPJBatch,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -591,12 +590,12 @@ async def get_cnpjs_company(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_company(cnpj_batch)
+    return cnpj_service.get_cnpjs_company(cnpj_batch)
 
 
 @rate_limit()
 @router.post("/cnpjs/establishment")
-async def get_cnpjs_establishment(
+def get_cnpjs_establishment(
     request: Request,
     cnpj_batch: CNPJBatch,
     cnpj_service: CNPJService = CNPJServiceDependency,
@@ -610,12 +609,12 @@ async def get_cnpjs_establishment(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return await cnpj_service.get_cnpjs_establishment(cnpj_batch)
+    return cnpj_service.get_cnpjs_establishment(cnpj_batch)
 
 
 @rate_limit()
 @router.post("/cnpjs/simples-simei")
-async def get_cnpjs_simples_simei(
+def get_cnpjs_simples_simei(
     request: Request,
     cnpj_batch: CNPJBatch,
     cnpj_service: CNPJService = CNPJServiceDependency,

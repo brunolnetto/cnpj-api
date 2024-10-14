@@ -62,8 +62,7 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         # Schedule the log entry as a background task
         background_scheduler.add_job(
             self.log_request,
-            args=[log_data],
-            id=f"log-{strftime('%Y%m%d%H%M%S', localtime(start_time))}",
+            args=[log_data]
         )
 
         # Return the original response
