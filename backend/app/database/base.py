@@ -65,10 +65,10 @@ class Database(BaseDatabase):
         self.base = declarative_base()
         self.engine = create_engine(
             uri,
-            pool_size=20,
-            max_overflow=10,
-            pool_recycle=3600,      # recycle connections after 1 hour
-            pool_timeout=30,        # wait time before throwing TimeoutError
+            pool_size=30,          # Increase the base pool size
+            max_overflow=20,        # Increase the overflow pool
+            pool_timeout=60,        # Increase timeout to wait for a connection
+            pool_recycle=1800       # Recycle connections after a certain number of seconds
             pool_pre_ping=True,     # Ensure stale connections are checked before reuse
             isolation_level="AUTOCOMMIT",
         )
