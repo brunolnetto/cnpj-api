@@ -3,6 +3,7 @@ from sqlalchemy import text
 import pandas as pd
 from datetime import datetime
 
+from backend.app.setup.config import settings
 from backend.app.utils.misc import string_to_json
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.api.models.cnpj import CNPJ

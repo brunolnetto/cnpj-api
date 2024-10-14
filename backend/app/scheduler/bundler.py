@@ -26,15 +26,15 @@ async def add_tasks():
         # Compare existing tasks with the new one to avoid duplication
         duplicate_task = None
         for existing_task in existing_tasks:
-            if existing_task.task_name == task_config.task_name:
+            if existing_task == task_config:
                 duplicate_task = existing_task
                 break
+        
+        # Add the task to the orchestrator
+        await task_orchestrator.add_task(task_configs[index])
 
         if duplicate_task:
             task_configs[index].task_id = duplicate_task.task_id
-
-            # Add the task to the orchestrator
-            await task_orchestrator.add_task(task_configs[index])
             continue
 
         # Save the new task to the database using the repository

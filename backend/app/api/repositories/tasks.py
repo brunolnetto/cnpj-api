@@ -5,8 +5,9 @@ from sqlalchemy.dialects.postgresql import UUID
 
 from typing import Dict, List, Any, Annotated, Optional
 
+from backend.app.setup.config import settings
 from backend.app.database.base import get_session
-from backend.app.database.models.tasks import Task
+from backend.app.database.models.logs import Task
 from backend.app.api.repositories.base import BaseRepository
 
 
@@ -70,7 +71,7 @@ class TaskRepository(BaseRepository):
 
 
 def get_task_repository():
-    with get_session() as session:
+    with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
         return TaskRepository(session)
 
 

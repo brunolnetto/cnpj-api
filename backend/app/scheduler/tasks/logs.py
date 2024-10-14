@@ -15,7 +15,7 @@ async def cleanup_request_logs(time_delta: timedelta, max_rows: int = None):
         time_delta (timedelta): The time difference from now. Logs older than this will be deleted.
         max_rows (int, optional): The maximum number of rows to retain. If specified, logs will be deleted based on their creation time and this count.
     """
-    with get_session() as db_session:
+    with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         request_log_repository = RequestLogRepository(db_session)
         if max_rows is not None:
             await request_log_repository.delete_excess_logs(max_rows)
@@ -31,7 +31,7 @@ async def cleanup_task_logs(time_delta: timedelta, max_rows: int = None):
         time_delta (timedelta): The time difference from now. Logs older than this will be deleted.
         max_rows (int, optional): The maximum number of rows to retain. If specified, logs will be deleted based on their creation time and this count.
     """
-    with get_session() as db_session:
+    with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         task_log_repository = TaskLogRepository(db_session)
         if max_rows is not None:
             await task_log_repository.delete_excess_logs(max_rows)

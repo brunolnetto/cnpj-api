@@ -7,7 +7,8 @@ from fastapi import Depends
 
 from uuid import UUID
 
-from backend.app.database.models.logs import RequestLog
+from backend.app.setup.config import settings
+from backend.app.database.models.logs import TaskLog, RequestLog
 from backend.app.api.models.logs import RequestLogCreate
 from backend.app.database.base import get_session
 from backend.app.api.repositories.base import BaseRepository
@@ -104,20 +105,11 @@ class TaskLogRepository(BaseRepository):
         ).delete()
         self.session.commit()
 
+    def delete_excess_logs(self, max_rows: int):
+        query = self.session.query(TaskLog).order_by(TaskLog.inserted_at)
+        total_rows = query.count()
+        if total_rows > max_rows:
+            delete_query = query.delete(synchronize_session="fetch")
+            self.session.execute(delete_query)
+            self.session.commit()
 
-def get_request_logs_repository():
-    with get_session() as session:
-        return RequestLogRepository(session)
-
-
-def get_task_logs_repository():
-    with get_session() as session:
-        return TaskLogRepository(session)
-
-TaskLogsRepositoryDependency = Annotated[
-    TaskLogRepository, Depends(get_task_logs_repository)
-]
-
-RequestLogsRepositoryDependency = Annotated[
-    RequestLogRepository, Depends(get_request_logs_repository)
-]
