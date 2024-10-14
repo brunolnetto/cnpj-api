@@ -13,6 +13,7 @@ from backend.app.api.constants import UNIT_MULTIPLIER
 
 BASE_URL = "http://200.152.38.155/CNPJ/dados_abertos_cnpj"
 
+
 class FileInfo(BaseModel):
     """
     Pydantic model representing a CNPJ file.
@@ -49,14 +50,13 @@ class CNPJScrapService:
         Returns:
             str: The previous year-month string.
         """
-        year, month = map(int, year_month_str.split('-'))
+        year, month = map(int, year_month_str.split("-"))
         if month == 1:
             year -= 1
             month = 12
         else:
             month -= 1
         return f"{year:04d}-{month:02d}"
-
 
     def scrap_files_date(self):
         """
