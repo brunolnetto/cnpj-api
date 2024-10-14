@@ -93,6 +93,22 @@ def time_str():
 
 
 def humanize_string(s):
+    """
+    Humanizes a string by separating letters and special characters from numbers,
+    removing leading zeros from numbers, replacing multiple spaces with a single space,
+    and capitalizing the first letter of each word.
+
+    Args:
+        s (str): The input string to be humanized.
+
+    Returns:
+        str: The humanized string.
+
+    Example:
+        >>> humanize_string("hello123world")
+        'Hello 123 World'
+    """
+    
     # Step 1: Separate letters and special characters from numbers
     s = re.sub(r"(\W+)(\d+)", r"\1 \2", s)
     s = re.sub(r"([A-Za-z]+)(\d+)", r"\1 \2", s)
@@ -110,6 +126,15 @@ def humanize_string(s):
 
 
 def string_to_json(string: str) -> dict:
+    """
+    Converts a string representation of a JSON object to a Python dictionary.
+
+    Args:
+        string (str): The string representation of the JSON object.
+
+    Returns:
+        dict: The Python dictionary representation of the JSON object.
+    """
     string = string.replace("'", '"')
     string = re.sub(r"\bNone\b", "null", string)
 
@@ -249,13 +274,8 @@ def format_cep(cep_str: str):
     Returns:
         str: The formatted CEP string
     """
-<<<<<<< HEAD
-    cep_str=str(cep_str)
-    is_valid_cep=is_database_field_valid(cep_str) and is_number(cep_str)
-=======
     cep_str = str(cep_str)
     is_valid_cep = is_field_valid(cep_str) and is_number(cep_str)
->>>>>>> 2d6b359 (lint/ black backend/__init__.py)
 
     if not is_valid_cep:
         return ""
