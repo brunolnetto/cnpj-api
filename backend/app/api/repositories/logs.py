@@ -11,6 +11,7 @@ from backend.app.database.models.logs import RequestLog
 from backend.app.api.models.logs import RequestLogCreate
 from backend.app.database.base import get_session
 from backend.app.api.repositories.base import BaseRepository
+from backend.app.api.models.logs import TaskLogCreate
 
 
 class RequestLogRepository(BaseRepository):
@@ -57,10 +58,65 @@ class RequestLogRepository(BaseRepository):
             self.session.commit()
 
 
+class TaskLogRepository(BaseRepository):
+    def create(self, task_log_data: TaskLogCreate) -> TaskLog:
+        task_log = TaskLog(**task_log_data)
+        self.session.add(task_log)
+        self.session.commit()
+        self.session.refresh(task_log)
+        return task_log
+
+    def update(self, id: UUID, data: TaskLogCreate) -> Optional[TaskLog]:
+        task_log = self.get_by_id(id)
+        if not task_log:
+            return None
+
+        for key, value in data.dict(exclude_unset=True).items():
+            setattr(task_log, key, value)
+
+        self.session.commit()
+        self.session.refresh(task_log)
+        return task_log
+
+    def get_by_id(self, id: UUID) -> Optional[TaskLog]:
+        return self.session.get(TaskLog, id)
+
+    def delete_by_id(self, id: UUID) -> bool:
+        task_log = self.get_by_id(id)
+        if not task_log:
+            return False
+
+        self.session.delete(task_log)
+        self.session.commit()
+        return True
+
+    def get_all(self, limit: int = 100, offset: int = 0) -> List[TaskLog]:
+        return (
+            self.session.execute(select(TaskLog).offset(offset).limit(limit))
+            .scalars()
+            .all()
+        )
+
+    def delete_old_logs(self, time_delta: timedelta):
+        cutoff_date = datetime.now() - time_delta
+        self.session.query(TaskLog).filter(
+            TaskLog.talo_start_time < cutoff_date
+        ).delete()
+        self.session.commit()
+
+
 def get_request_logs_repository():
     with get_session() as session:
         return RequestLogRepository(session)
 
+
+def get_task_logs_repository():
+    with get_session() as session:
+        return TaskLogRepository(session)
+
+TaskLogsRepositoryDependency = Annotated[
+    TaskLogRepository, Depends(get_task_logs_repository)
+]
 
 RequestLogsRepositoryDependency = Annotated[
     RequestLogRepository, Depends(get_request_logs_repository)
