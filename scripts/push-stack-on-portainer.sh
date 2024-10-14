@@ -101,7 +101,7 @@ stack_deploy() {
 
     local response_body
     response_body=$(cat "$response_output")
-
+    echo "$(ls -la)"
     if [[ "$http_code" -eq 200 && "$response_body" =~ "\"Id\"" ]]; then
         echo -e "Deploy da stack $bege$stack_name$reset feito com sucesso!"
     else
