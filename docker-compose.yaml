@@ -1,3 +1,5 @@
+version: '3.3'
+
 services:
   backend-app:
     image: josezago/cnpj-api
