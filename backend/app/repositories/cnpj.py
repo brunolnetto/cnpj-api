@@ -237,7 +237,9 @@ class CNPJRepository:
 
         return cnae_dict
 
-    def get_cnaes(self, limit: int = 10, offset: int = 0, enable_pagination: bool = True):
+    def get_cnaes(
+        self, limit: int = 10, offset: int = 0, enable_pagination: bool = True
+    ):
         """
         Get all CNAEs from the database.
 
