@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 backend-app:
   build: .
   restart: unless-stopped
@@ -19,6 +20,15 @@ backend-app:
       - "traefik.http.routers.backend-app.rule=Host(`cnpjapi.conexxohub.com.br`)"
       - "traefik.http.services.backend-app.loadbalancer.server.port=8000"
       - "traefik.http.routers.backend-app.service=backend-app"
+=======
+services:
+  backend-app:
+    image: brunolnetto1234/cnpj_api:latest
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000d:8000"
+>>>>>>> 6950956 (refactor: rollback changes)
     env_file: .env
     
 

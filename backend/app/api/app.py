@@ -56,12 +56,12 @@ async def lifespan(app_: FastAPI):
     t2 = perf_counter()
 
     # Initialize CNPJ repository
-    await initialize_CNPJRepository_on_startup()
+    initialize_CNPJRepository_on_startup()
 
     logger.info(f"Repository initialization took {perf_counter()-t2:.4f} seconds")
 
     # Run non-essential startup tasks in the background
-    create_task(log_app_start())
+    log_app_start()
     create_task(task_orchestrator.start())
     
     # Add tasks to orchestrator

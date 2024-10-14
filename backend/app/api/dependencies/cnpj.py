@@ -6,7 +6,7 @@ from backend.app.setup.logging import logger
 from backend.app.setup.config import settings
 
 # Define a dependency to create a CNPJRepository instance
-async def get_cnpj_repository() -> CNPJRepository:
+def get_cnpj_repository() -> CNPJRepository:
     """
     Create a CNPJRepository instance.
 
@@ -16,14 +16,14 @@ async def get_cnpj_repository() -> CNPJRepository:
     Returns:
         CNPJRepository: CNPJRepository instance
     """
-    async with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+    with get_session(settings.POSTGRES_DBNAME_RFB) as session:
         return CNPJRepository(session)
 
 
-async def initialize_CNPJRepository_on_startup():
+def initialize_CNPJRepository_on_startup():
     try:
-        async with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            await CNPJRepository.initialize_on_startup(session)
+        with get_session(settings.POSTGRES_DBNAME_RFB) as session:
+            CNPJRepository.initialize_on_startup(session)
         
         logger.info("CNPJ measure dictionaries initialized!")
 

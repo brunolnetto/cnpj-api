@@ -135,7 +135,7 @@ def format_cnpj_list(cnpj_list: List[str]) -> List[str]:
     return ",".join(cnpj_basicos)
 
 
-async def get_cnpj_code_description_entries(session: AsyncSession, table_name: str):
+def get_cnpj_code_description_entries(session: Session, table_name: str):
     """
     Get all code-description entrie from the specified table.
 
@@ -148,7 +148,7 @@ async def get_cnpj_code_description_entries(session: AsyncSession, table_name: s
     Returns:
         dict: A dictionary containing the CNAEs.
     """
-    entries_result = await session.execute(
+    entries_result = session.execute(
         text(f"SELECT codigo, descricao FROM {table_name}")
     )
     entries_result = entries_result.fetchall()

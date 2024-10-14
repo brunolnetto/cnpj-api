@@ -24,7 +24,7 @@ from typing_extensions import Self, Annotated
 import toml
 
 DEFAULT_PASSWORD = "postgres"
-POSTGRES_DSN_SCHEME = "postgresql+asyncpg"
+POSTGRES_DSN_SCHEME = "postgresql"
 BASE_URI_TEMPLATE = "{dsn_scheme}://{user}:{password}@{host}:{port}/{database}"
 
 
