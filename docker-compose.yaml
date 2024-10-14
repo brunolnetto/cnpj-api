@@ -3,9 +3,8 @@ version: '3.3'
 services:
   backend-app:
     image: josezago/cnpj-api
-    restart: unless-stopped
     ports:
-      - "80:8000"
+      - "8081:8000"
     networks:
       - ConexxoHubNet
     volumes:
