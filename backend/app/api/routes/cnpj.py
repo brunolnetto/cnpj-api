@@ -15,7 +15,6 @@ CodeType = Union[str, int]
 
 router = APIRouter(tags=["CNPJ"], dependencies=[JWTDependency])
 
-
 @router.get("/cnaes")
 async def get_cnaes(
     search_token: str = "",
