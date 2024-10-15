@@ -5,7 +5,7 @@ import traceback
 import asyncio
 import inspect
 
-from apscheduler import AsyncScheduler, Scheduler, ScheduleLookupError
+from apscheduler import Scheduler, ScheduleLookupError
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
@@ -64,42 +64,6 @@ def validate_cron_kwargs(kwargs: Dict[str, Any]):
         raise InvalidScheduleParameter(
             f"Invalid cron scheduling parameters: {invalid_keys}"
         )
-
-
-# Generic function to set up scheduler
-def setup_scheduler(
-    scheduler: Scheduler,
-    job_function: Callable,
-    schedule_params: Dict[str, Any],
-    task_type: str = "interval",
-):
-    """
-    Set up the scheduler to run a specified job function based on the given schedule type.
-
-    Args:
-        job_function (callable): The function to schedule.
-        schedule_type (str): The type of schedule to use ('interval' or 'cron').
-        **kwargs: Additional keyword arguments for the trigger, such as 'days', 'hours', 'cron' parameters, etc.
-    """
-    if task_type == "interval":
-        validate_interval_kwargs(schedule_params)
-        trigger = IntervalTrigger(**schedule_params)
-    elif task_type == "cron":
-        validate_cron_kwargs(schedule_params)
-        trigger = CronTrigger(**schedule_params)
-    elif task_type == "date":
-        if "run_date" not in schedule_params:
-            raise ValueError(
-                "For task_type 'date', 'run_date' must be specified in schedule_params."
-            )
-        trigger = DateTrigger(
-            run_date=schedule_params["run_date"],
-            timezone=schedule_params.get("timezone"),
-        )
-    else:
-        raise ValueError("Unsupported schedule_type. Use 'interval', 'cron' or 'date'.")
-
-    scheduler.add_schedule(job_function, trigger, id="")
 
 
 # Define a function to create the appropriate scheduler
@@ -169,14 +133,41 @@ class ScheduledTask:
                 task_log.talo_end_time = datetime.now()
                 session.commit()
 
-    def schedule(self, scheduler):
-        job_function = self.run
-        setup_scheduler(
-            scheduler,
-            job_function,
-            self.task_config.schedule_params,
-            self.task_config.task_type,
-        )
+    # Generic function to set up scheduler
+    def get_scheduler_trigger(self):
+        """
+        Set up the scheduler to run a specified job function based on the given schedule type.
+
+        Args:
+            job_function (callable): The function to schedule.
+            schedule_type (str): The type of schedule to use ('interval' or 'cron').
+            **kwargs: Additional keyword arguments for the trigger, such as 'days', 'hours', 'cron' parameters, etc.
+        """
+        task_type=self.task_config.task_type
+        schedule_params=self.task_config.schedule_params
+        
+        if task_type == "interval":
+            validate_interval_kwargs(schedule_params)
+            trigger = IntervalTrigger(**schedule_params)
+        elif task_type == "cron":
+            validate_cron_kwargs(schedule_params)
+            trigger = CronTrigger(**schedule_params)
+        elif task_type == "date":
+            if "run_date" not in schedule_params:
+                message="For task_type 'date', 'run_date' must be specified in schedule_params."
+                raise ValueError(message)
+            trigger = DateTrigger(
+                run_date=schedule_params["run_date"],
+                timezone=schedule_params.get("timezone"),
+            )
+        else:
+            raise ValueError("Unsupported schedule_type. Use 'interval', 'cron' or 'date'.")
+
+        return trigger
+
+    def schedule(self, scheduler: Scheduler):
+        trigger=self.get_scheduler_trigger()
+        scheduler.add_schedule(self.run, trigger, id=self.task_config.task_id)
 
 
 class TaskOrchestrator:
