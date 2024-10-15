@@ -7,8 +7,6 @@ services:
       - "8081:8000"
     networks:
       - ConexxoHubNet
-    volumes:
-      - .:/app
     deploy:
       mode: replicated
       replicas: 5
