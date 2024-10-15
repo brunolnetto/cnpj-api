@@ -167,7 +167,7 @@ class ScheduledTask:
 
     def schedule(self, scheduler: Scheduler):
         trigger=self.get_scheduler_trigger()
-        scheduler.add_schedule(self.run, trigger, id=self.task_config.task_id)
+        scheduler.add_schedule(self.run, trigger, id=str(self.task_config.task_id))
 
 
 class TaskOrchestrator:
