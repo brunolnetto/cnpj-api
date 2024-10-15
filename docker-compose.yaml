@@ -11,14 +11,13 @@ services:
       - .:/app
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 5
       placement:
         constraints:
           - node.role == manager
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.backend-app.entrypoints=websecure"
-        - "traefik.http.routers.backend-app.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.backend-app.entrypoints=web"
         - "traefik.http.routers.backend-app.rule=Host(`cnpjapi.conexxohub.com.br`)"
         - "traefik.http.services.backend-app.loadbalancer.server.port=8000"
         - "traefik.http.routers.backend-app.service=backend-app"
