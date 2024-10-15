@@ -90,8 +90,6 @@ class RequestLogRepository(BaseRepository):
                             RequestLog.relo_id == log.relo_id
                         ).update({RequestLog.relo_ip_info: results})
                         self.session.commit()
-                    else:
-                        print(f"Skipping local or inappropriate IP: {ip_address_}")
 
                 except Exception as e:
                     print(f"Error looking up IP {ip_address}: {e}")

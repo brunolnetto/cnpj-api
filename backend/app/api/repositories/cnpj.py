@@ -1326,6 +1326,11 @@ class CNPJRepository:
 
         results = {}
 
+        import time
+        
+        t0 = time.perf_counter()
+        
+        
         # Run the tasks in parallel using ThreadPoolExecutor
         with ThreadPoolExecutor() as executor:
             # Create a future for each task
@@ -1383,7 +1388,7 @@ class CNPJRepository:
             }
             for cnpj_key, cnpj_info in cnpj_info_dict.items()
         }
-
+    
         return [
             {key_: cnpj_infos[key][key_] for key_ in columns if key_ in cnpj_infos[key]}
             for key in cnpj_infos
