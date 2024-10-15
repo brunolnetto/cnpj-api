@@ -24,6 +24,5 @@ services:
       - postgres_data:/var/lib/postgresql/data/some_name
       - ./pg_hba.conf:/var/lib/postgresql/data/some_name/pg_hba.conf
 
-
 volumes:
   postgres_data:
