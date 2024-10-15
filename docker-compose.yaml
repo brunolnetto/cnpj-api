@@ -3,8 +3,6 @@ version: '3.3'
 services:
   backend-app:
     image: josezago/cnpj-api
-    ports:
-      - "8081:8000"
     networks:
       - ConexxoHubNet
     deploy:
