@@ -7,7 +7,7 @@ services:
       - ConexxoHubNet
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 10
       placement:
         constraints:
           - node.role == manager
