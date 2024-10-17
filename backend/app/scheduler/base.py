@@ -2,6 +2,7 @@ from typing import Dict, List, Any
 from datetime import datetime
 from copy import deepcopy
 import traceback
+from copy import deepcopy
 import asyncio
 import inspect
 
@@ -90,7 +91,7 @@ def create_scheduler(schedule_type):
 
 class ScheduledTask:
     def __init__(self, task_config: TaskConfig):
-        self.task_config = deepcopy(task_config)
+        self.task_config = task_config
 
     def run(self):
         """
@@ -162,12 +163,11 @@ class ScheduledTask:
             validate_cron_kwargs(schedule_params)
             trigger = CronTrigger(**schedule_params)
         elif task_type == "date":
-            if "run_date" not in schedule_params:
-                message = "For task_type 'date', 'run_date' must be specified in schedule_params."
+            if "run_time" not in schedule_params:
+                message = "For task_type 'date', 'run_time' must be specified in schedule_params."
                 raise ValueError(message)
             trigger = DateTrigger(
-                run_date=schedule_params["run_date"],
-                timezone=schedule_params.get("timezone"),
+                run_time=schedule_params["run_time"]
             )
         else:
             raise ValueError(
@@ -178,7 +178,8 @@ class ScheduledTask:
 
     def schedule(self, scheduler: Scheduler):
         trigger = self.get_scheduler_trigger()
-        scheduler.add_schedule(self.run, trigger, id=str(self.task_config.task_id))
+        id_=str(self.task_config.task_id)
+        scheduler.add_schedule(self.run, trigger, id=id_)
 
 
 class TaskOrchestrator:

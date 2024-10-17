@@ -1339,14 +1339,9 @@ class CNPJRepository:
             for common_key in common_keys
         }
 
-        # XXX: Fix scrap according to new route structure
-        # cnpj_scrap_service=get_cnpj_scrap_service()
-        # update_at = cnpj_scrap_service.max_update_at()
-
         cnpj_infos = {
             cnpj_key: {
                 "cnpj_raw": cnpj_key,
-                # "ultima_atualizacao": update_at.strftime(date_format),
                 **cnpj_info,
             }
             for cnpj_key, cnpj_info in cnpj_info_dict.items()
