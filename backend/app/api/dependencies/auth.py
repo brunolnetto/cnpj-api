@@ -23,34 +23,24 @@ class JWTBearer(OAuth2PasswordBearer):
     def __init__(self, tokenUrl: str = AUTH_TOKEN_URL):
         super().__init__(tokenUrl=tokenUrl)
 
-    def __call__(self, request: Request):
-        token = None
-        authorization = request.headers.get("Authorization")
-
-        if authorization:
-            token = authorization.split()[1]
-        if not token:
-            raise MissingTokenException()
+    async def __call__(self, request: Request):
+        authorization = request.headers.get("Authorization", "")
         try:
-            check_claims = {
-                "verify_aud": False,
-                "verify_iss": False,
-                "verify_sub": False,
-            }
+            scheme, token = authorization.split()
+        except ValueError:
+            raise MissingTokenException()
+        if scheme.lower() != "bearer":
+            raise MissingTokenException()
 
-            payload = jwt.decode(
-                token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM], options=check_claims
-            )
-
-            if payload["exp"] <= time():
-                raise ExpiredTokenException()
-
-        except ExpiredTokenException as exc:
-            raise ExpiredTokenException() from exc
-
+        try:
+            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+            # jwt.decode will raise ExpiredSignatureError if the token is expired
+        except ExpiredTokenException:
+            raise ExpiredTokenException()
         except Exception as e:
-            raise CustomHTTPException(e) from e
+            raise CustomHTTPException(f"Invalid token: {str(e)}") from e
 
+        return payload
 
 jwt_bearer = JWTBearer(tokenUrl=AUTH_TOKEN_URL)
 

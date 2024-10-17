@@ -11,6 +11,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.datastores.sqlalchemy import SQLAlchemyDataStore
+from apscheduler.datastores.memory import MemoryDataStore
 
 from backend.app.database.base import multi_database
 from backend.app.database.base import get_session
@@ -81,7 +82,7 @@ audit_database = multi_database.databases[settings.POSTGRES_DBNAME_AUDIT]
 
 
 def create_scheduler(schedule_type):
-    datastore = SQLAlchemyDataStore(engine_or_url=audit_database.engine)
+    datastore = MemoryDataStore()
 
     if schedule_type == "background":
         return Scheduler(data_store=datastore)

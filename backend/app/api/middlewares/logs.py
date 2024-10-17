@@ -70,7 +70,6 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
                 headers=original_response.headers
             )
             wrapped_response.body_bytes = b"".join(body_bytes)  # Store full body
-
         
         # Extract serializable data from request and response
         request_data = {
@@ -87,9 +86,7 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
             "headers": dict(original_response.headers),
             "response_size": len(wrapped_response.body_bytes if hasattr(wrapped_response, 'body_bytes') else b'')
         }
-        
-        print((request_data, response_data,))
-
+ 
         # Create the task configuration with a future delay
         task_id=uuid4()
         # Create the task configuration with a future delay
@@ -106,6 +103,9 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
 
         # Schedule the logging task using TaskOrchestrator and ScheduledTask
         scheduled_task = ScheduledTask(task_config)
+        
+        t4 = perf_counter()
+        
         scheduled_task.schedule(background_scheduler)
 
         # Return the response without waiting for logging

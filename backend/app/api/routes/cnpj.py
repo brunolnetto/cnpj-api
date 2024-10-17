@@ -388,13 +388,7 @@ def get_cnpj_info(
     Returns:
     - A dictionary with information about the CNPJ.
     """
-    import time
-
-    time.perf_counter()
-    cnpj_info = cnpj_service.get_cnpj_info(cnpj)
-    time.perf_counter()
-
-    return cnpj_info
+    return cnpj_service.get_cnpj_info(cnpj)
 
 
 @rate_limit()
