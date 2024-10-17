@@ -1,12 +1,10 @@
 from typing import Dict, Optional, ContextManager
-from contextlib import contextmanager, asynccontextmanager
-import asyncio
+from contextlib import contextmanager
 
 from psycopg2 import OperationalError
-from sqlalchemy.exc import SQLAlchemyError, DBAPIError
-from sqlalchemy import text, inspect, create_engine 
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import text, inspect, create_engine
 from sqlalchemy.orm import Session, sessionmaker, declarative_base
-from sqlalchemy.pool import QueuePool
 from sqlalchemy.engine.url import make_url
 
 from backend.app.setup.config import settings
@@ -58,25 +56,22 @@ class Database(BaseDatabase):
             Cleans up and closes the database connection and session maker.
         __repr__() -> str:
             Returns a string representation of the Database instance with masked URI.
-    """    
+    """
 
     def __init__(self, uri):
         self.url = make_url(uri)
         self.base = declarative_base()
         self.engine = create_engine(
             uri,
-            pool_size=30,          # Increase the base pool size
-            max_overflow=20,        # Increase the overflow pool
-            pool_timeout=60,        # Increase timeout to wait for a connection
-            pool_recycle=1800,       # Recycle connections after a certain number of seconds
-            pool_pre_ping=True,     # Ensure stale connections are checked before reuse
+            pool_size=30,  # Increase the base pool size
+            max_overflow=20,  # Increase the overflow pool
+            pool_timeout=60,  # Increase timeout to wait for a connection
+            pool_recycle=1800,  # Recycle connections after a certain number of seconds
+            pool_pre_ping=True,  # Ensure stale connections are checked before reuse
             isolation_level="AUTOCOMMIT",
         )
         self.session_maker = sessionmaker(
-            class_=Session,
-            autocommit=False, 
-            autoflush=False, 
-            bind=self.engine
+            class_=Session, autocommit=False, autoflush=False, bind=self.engine
         )
 
     @contextmanager
@@ -98,11 +93,11 @@ class Database(BaseDatabase):
         masked_uri = self.mask_sensitive_data()
 
         try:
-            with self.engine.begin() as conn:                
+            with self.engine.begin() as conn:
                 query = text("SELECT 1 FROM pg_database WHERE datname = :dbname")
                 db_data = {"dbname": self.url.database}
                 result = conn.execute(query, db_data)
-                
+
                 if not result.scalar():
                     query = text(f"CREATE DATABASE {self.url.database}")
                     conn.execute(query)
@@ -138,7 +133,8 @@ class Database(BaseDatabase):
         """
         masked_uri = self.mask_sensitive_data()
         try:
-            # Create all tables defined using the Base class (if not already created)
+            # Create all tables defined using the Base class (if not already
+            # created)
             with self.engine.begin() as conn:
                 self.base.metadata.create_all(conn)
 
@@ -150,10 +146,11 @@ class Database(BaseDatabase):
     def print_tables(self):
         """
         Print the available tables in the database.
-        """    
+        """
         try:
             with self.engine.begin() as conn:
-                # Use run_sync to handle synchronous code inside an async connection
+                # Use run_sync to handle synchronous code inside an async
+                # connection
                 def get_tables():
                     inspector = inspect(conn)
                     return inspector.get_table_names()
@@ -224,7 +221,7 @@ class MultiDatabase(BaseDatabase):
         """
         if not database_uris:
             raise ValueError("Database URIs must be provided.")
-    
+
         self.databases = {
             db_name: Database(uri) for db_name, uri in database_uris.items()
         }
@@ -304,4 +301,3 @@ def get_session(db_name: str):
     except SQLAlchemyError as e:
         print(f"Failed to get session for {db_name}: {e}")
         raise
-

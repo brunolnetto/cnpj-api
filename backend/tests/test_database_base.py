@@ -25,4 +25,3 @@ def test_database_init_invalid_uri(mocker):
     mock_uri = "invalid_uri"
     with pytest.raises(ArgumentError):
         Database(mock_uri)
-

@@ -7,8 +7,7 @@ from backend.app.rate_limiter import rate_limit
 from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.api.models.base import BatchModel
 from backend.app.api.models.cnpj import CNPJBatch, CNPJQueryParams
-from backend.app.api.models.misc import LimitOffsetParams, PaginatedLimitOffsetParams 
-from backend.app.setup.config import settings
+from backend.app.api.models.misc import LimitOffsetParams, PaginatedLimitOffsetParams
 
 # Types
 CodeType = Union[str, int]
@@ -22,8 +21,7 @@ def get_cnaes(
     request: Request,
     query_params: Annotated[PaginatedLimitOffsetParams, Query()],
     search_token: str = "",
-    cnpj_service: CNPJService = CNPJServiceDependency
-    
+    cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
     Get a list of CNAEs from the database.
@@ -391,10 +389,11 @@ def get_cnpj_info(
     - A dictionary with information about the CNPJ.
     """
     import time
-    t0=time.perf_counter()
+
+    time.perf_counter()
     cnpj_info = cnpj_service.get_cnpj_info(cnpj)
-    t1=time.perf_counter()
-    
+    time.perf_counter()
+
     return cnpj_info
 
 
@@ -530,13 +529,13 @@ def get_cnpjs(
     - A list of CNPJs as dictionaries.
     """
     return cnpj_service.get_cnpjs(
-        query_params.state_abbrev, 
-        query_params.city_name, 
-        query_params.cnae_code, 
-        query_params.zipcode, 
-        query_params.is_all, 
-        query_params.limit, 
-        query_params.offset
+        query_params.state_abbrev,
+        query_params.city_name,
+        query_params.cnae_code,
+        query_params.zipcode,
+        query_params.is_all,
+        query_params.limit,
+        query_params.offset,
     )
 
 

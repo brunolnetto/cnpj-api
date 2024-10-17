@@ -1,4 +1,4 @@
-from typing import Union, Dict, List, Any, Callable
+from typing import Dict, List, Any
 from datetime import datetime
 from copy import deepcopy
 import traceback
@@ -20,6 +20,8 @@ from backend.app.api.repositories.tasks import TaskRepository
 from backend.app.setup.config import settings
 
 # Custom exception for invalid scheduling parameters
+
+
 class InvalidScheduleParameter(Exception):
     pass
 
@@ -35,7 +37,14 @@ def validate_date_format(date_str: str, date_format: str = "%Y-%m-%d"):
 
 def validate_interval_kwargs(kwargs: Dict[str, Any]):
     allowed_keys = {
-        "weeks","days","hours","minutes","seconds","start_date","end_date","timezone",
+        "weeks",
+        "days",
+        "hours",
+        "minutes",
+        "seconds",
+        "start_date",
+        "end_date",
+        "timezone",
     }
     invalid_keys = set(kwargs) - allowed_keys
     if invalid_keys:
@@ -143,9 +152,9 @@ class ScheduledTask:
             schedule_type (str): The type of schedule to use ('interval' or 'cron').
             **kwargs: Additional keyword arguments for the trigger, such as 'days', 'hours', 'cron' parameters, etc.
         """
-        task_type=self.task_config.task_type
-        schedule_params=self.task_config.schedule_params
-        
+        task_type = self.task_config.task_type
+        schedule_params = self.task_config.schedule_params
+
         if task_type == "interval":
             validate_interval_kwargs(schedule_params)
             trigger = IntervalTrigger(**schedule_params)
@@ -154,19 +163,21 @@ class ScheduledTask:
             trigger = CronTrigger(**schedule_params)
         elif task_type == "date":
             if "run_date" not in schedule_params:
-                message="For task_type 'date', 'run_date' must be specified in schedule_params."
+                message = "For task_type 'date', 'run_date' must be specified in schedule_params."
                 raise ValueError(message)
             trigger = DateTrigger(
                 run_date=schedule_params["run_date"],
                 timezone=schedule_params.get("timezone"),
             )
         else:
-            raise ValueError("Unsupported schedule_type. Use 'interval', 'cron' or 'date'.")
+            raise ValueError(
+                "Unsupported schedule_type. Use 'interval', 'cron' or 'date'."
+            )
 
         return trigger
 
     def schedule(self, scheduler: Scheduler):
-        trigger=self.get_scheduler_trigger()
+        trigger = self.get_scheduler_trigger()
         scheduler.add_schedule(self.run, trigger, id=str(self.task_config.task_id))
 
 
@@ -177,10 +188,10 @@ class TaskOrchestrator:
         }
 
     async def start(self):
-        self.schedulers['background'].start_in_background()
+        self.schedulers["background"].start_in_background()
 
     async def shutdown(self):
-        self.schedulers['background'].remove_schedule("")
+        self.schedulers["background"].remove_schedule("")
 
     async def add_task(self, task_config: TaskConfig):
         scheduler = self.schedulers.get(task_config.schedule_type, None)
@@ -218,12 +229,12 @@ class TaskOrchestrator:
 
     def remote_all_schedules_from(self, schedule_type: str):
         scheduler = self.schedulers.get(schedule_type)
-        
+
         if scheduler:
             scheduler.remove_schedule()
 
     async def remote_all_schedules(self):
-        self.schedulers['background'].remove_schedule("")
+        self.schedulers["background"].remove_schedule("")
 
 
 class TaskRegister:

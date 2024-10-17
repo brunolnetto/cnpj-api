@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 import logging
 import asyncio
-from datetime import datetime
 
 
 from uuid import UUID
@@ -11,8 +10,6 @@ from ipwhois import IPWhois
 from sqlalchemy import delete
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
 from backend.app.setup.config import settings
 from backend.app.database.models.logs import DebugLog
@@ -64,7 +61,7 @@ class RequestLogRepository(BaseRepository):
             delete_query = query.delete(synchronize_session="fetch")
             self.session.execute(delete_query)
             self.session.commit()
-    
+
     def lookup_and_update_ip_info(self):
         # Get all logs with missing IP info
         logs_without_ip_info = (
@@ -77,10 +74,13 @@ class RequestLogRepository(BaseRepository):
                 try:
                     # Correct the IP address handling
                     from ipaddress import ip_address
+
                     ip_obj = ip_address(ip_address_)
 
                     # Check if the IP is public
-                    if not (ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved):
+                    if not (
+                        ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved
+                    ):
                         # Perform IP lookup only for public IPs
                         obj = IPWhois(ip_address_)
                         results = obj.lookup_rdap(depth=1)
@@ -239,13 +239,13 @@ class DebuggingDatabaseHandler(logging.Handler):
 
         # Add the log to the database and commit the session
         self.queue.put_nowait(log_data)
-    
+
     async def process_queue(self):
         while not self.stop_event.is_set() or not self.queue.empty():
             log_data = await self.queue.get()
             self.write_to_db(log_data)
             self.queue.task_done()
-            
+
     def write_to_db(self, log_data):
         # Create a new DebugLog entry and add it to the session
         debug_log = DebugLog(
@@ -266,7 +266,7 @@ class DebuggingDatabaseHandler(logging.Handler):
     async def close(self):
         self.stop_event.set()
         await self.queue.join()  # Awaiting the queue join
-        await super().close() 
+        await super().close()
 
     async def delete_old_logs(self, time_delta: timedelta):
         """

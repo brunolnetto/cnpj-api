@@ -44,9 +44,9 @@ def test_convert_to_bytes_invalid_unit():
 
 
 def test_convert_to_bytes_invalid_format():
-    assert convert_to_bytes("invalid_size") is 0
-    assert convert_to_bytes("10") is 0  # Missing unit
+    assert convert_to_bytes("invalid_size") == 0
+    assert convert_to_bytes("10") == 0  # Missing unit
 
 
 def test_convert_to_bytes_empty_string():
-    assert convert_to_bytes("") is 0
+    assert convert_to_bytes("") == 0

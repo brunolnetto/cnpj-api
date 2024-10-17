@@ -22,9 +22,9 @@ class TaskRepository(BaseRepository):
                 task_name=data.get("task_name"),
                 task_type=data.get("task_type"),
             )
-            
+
             # Check if the task already exists
-            result=self.session.execute(stmt)
+            result = self.session.execute(stmt)
 
             existing_task = result.scalars().first()
 
@@ -68,7 +68,7 @@ class TaskRepository(BaseRepository):
 
     def get_all(self, limit: int = 100, offset: int = 0) -> List[Task]:
         try:
-            result=self.session.execute(select(Task).offset(offset).limit(limit))
+            result = self.session.execute(select(Task).offset(offset).limit(limit))
             return result.scalars().all()
 
         except Exception as e:

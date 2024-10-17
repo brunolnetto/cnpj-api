@@ -1,8 +1,6 @@
 # Description: This file initializes the FastAPI application and sets up
 # configurations.
 from contextlib import asynccontextmanager
-from asyncio import create_task
-from time import perf_counter
 
 from fastapi import FastAPI, status, Request
 from fastapi.responses import FileResponse
@@ -11,8 +9,8 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 
+
 from backend.app.setup.config import settings
-from backend.app.setup.logging import logger
 from backend.app.api.routes.router_bundler import api_router
 from backend.app.api.exceptions import (
     not_found_handler,
@@ -42,13 +40,13 @@ async def lifespan(app_: FastAPI):
     initialization and cleanup tasks related to the application's lifespan
     :type app: FastAPI
     """
-    
+
     # Data related entities
     print_execution_time(init_database)()
-    
+
     # Logging
     await print_execution_time(setup_logger)()
-    
+
     # Initialize CNPJ repository
     print_execution_time(initialize_CNPJRepository_on_startup)()
 

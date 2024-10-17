@@ -1,5 +1,4 @@
 from datetime import timedelta
-from uuid import uuid4
 
 from backend.app.database.base import get_session
 from backend.app.api.repositories.logs import (

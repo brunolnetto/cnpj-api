@@ -30,7 +30,7 @@ class TimingMiddleware(BaseHTTPMiddleware):
 
         # Calculate the time taken
         process_time = perf_counter() - start_time
-
+        print(process_time)
         # Trigger a background task to save the execution time
         background_tasks = BackgroundTasks()
         background_tasks.add_task(self.save_request_timing, request, process_time)

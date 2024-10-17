@@ -2,7 +2,6 @@ from typing import Dict, List, Union, Tuple
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from sqlalchemy.ext.asyncio import AsyncSession
 import pandas as pd
 
 from backend.app.utils.misc import is_number

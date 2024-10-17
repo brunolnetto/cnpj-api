@@ -4,7 +4,6 @@ import toml
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
-from backend.app.setup.config import settings
 from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.rate_limiter import rate_limit
 
@@ -19,10 +18,7 @@ class ExampleResponse(BaseModel):
 @router.get("/health")
 async def health_check(request: Request):
     return {
-        "name": settings.PROJECT_NAME,
-        "version": settings.VERSION,
         "status": "OK",
-        "message": f"Visit {settings.API_V1_STR}/docs for more information.",
     }
 
 

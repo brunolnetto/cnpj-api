@@ -19,7 +19,7 @@ async def capture_request_body(request: Request):
             request.state.body = b""
         else:
             request.state.body = await request.body()
-    
+
     return request.state.body.decode() if request.state.body else ""
 
 

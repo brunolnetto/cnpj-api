@@ -14,7 +14,6 @@ from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
 from backend.app.setup.logging import logger
 from backend.app.api.constants import STATES_BRAZIL
-from backend.app.api.models.cnpj import CNPJ
 
 # Types
 CodeType = Union[str, int]
@@ -147,26 +146,6 @@ class CNPJService:
         except Exception as e:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
-
-    async def get_cnae_by_token(self, search_token):
-        """
-        Get a list of CNAEs from the database.
-
-        Parameters:
-        - search_token: The search token to look for in the CNAE description.
-
-        Returns:
-        - A list of CNAEs as dictionaries.
-        """
-        try:
-            cnaes = self.repository.get_cnae_by_token(search_token)
-
-            return cnaes
-
-        except Exception as e:
-            logger.error(f"Error getting CNAEs: {e}")
-            raise HTTPException(status_code=400, detail=str(e)) from e
-
 
     async def get_cnpjs_with_cnae(
         self, cnae_code: CodeType, limit: int = settings.PAGE_SIZE, offset: int = 0
