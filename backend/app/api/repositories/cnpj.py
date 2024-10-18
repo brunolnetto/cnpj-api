@@ -1292,15 +1292,12 @@ class CNPJRepository:
 
         results = {}
 
-        import time
-
-        time.perf_counter()
-
         # Run the tasks in parallel using ThreadPoolExecutor
         with ThreadPoolExecutor() as executor:
             # Create a future for each task
             future_to_task = {
-                executor.submit(task, cnpj_list): name for name, task in tasks.items()
+                executor.submit(task, cnpj_list): name 
+                for name, task in tasks.items()
             }
 
             # Collect the results as they complete
@@ -1312,31 +1309,19 @@ class CNPJRepository:
                     results[task_name] = f"Error occurred: {e}"
 
         # Combine all the results into a single dictionary and return it
-        establishment_dict = results.get("establishment", {})
-        company_dict = results.get("company", {})
-        partners_dict = results.get("partners", {})
-        simples_simei_dict = results.get("simples_simei", {})
-
-        establ_set = set(establishment_dict)
-        companies_set = set(company_dict)
-        partners_set = set(partners_dict)
-        simples_simei_set = set(simples_simei_dict)
-
-        # XXX: Review missing information on original methods
-        common_keys = list(
-            establ_set.intersection(companies_set)
-            .intersection(partners_set)
-            .intersection(simples_simei_set)
-        )
+        establishment_dict: dict = results.get("establishment", {})
+        company_dict: dict = results.get("company", {})
+        partners_dict: dict = results.get("partners", {})
+        simples_simei_dict: dict = results.get("simples_simei", {})
 
         cnpj_info_dict = {
             common_key: {
-                **establishment_dict[common_key],
-                **company_dict[common_key],
-                **partners_dict[common_key],
-                **simples_simei_dict[common_key],
+                **establishment_dict.get(common_key.to_raw(), {}),
+                **company_dict.get(common_key.to_raw(), {}),
+                **partners_dict.get(common_key.to_raw(), {'qsa': []}),
+                **simples_simei_dict.get(common_key.to_raw(), {}),
             }
-            for common_key in common_keys
+            for common_key in cnpj_list
         }
 
         cnpj_infos = {

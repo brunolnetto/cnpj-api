@@ -809,7 +809,7 @@ class CNPJService:
         - A list of CNPJs as dictionaries.
         """
 
-        def remove_quotes(text):
+        def remove_quotes(text: str):
             return text.replace("'", "").replace('"', "")
 
         try:
