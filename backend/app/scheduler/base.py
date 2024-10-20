@@ -1,8 +1,6 @@
 from typing import Dict, List, Any
 from datetime import datetime
-from copy import deepcopy
 import traceback
-from copy import deepcopy
 import asyncio
 import inspect
 
@@ -10,7 +8,6 @@ from apscheduler import Scheduler, ScheduleLookupError
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
-from apscheduler.datastores.sqlalchemy import SQLAlchemyDataStore
 from apscheduler.datastores.memory import MemoryDataStore
 
 from backend.app.database.base import multi_database
@@ -167,9 +164,7 @@ class ScheduledTask:
             if "run_time" not in schedule_params:
                 message = "For task_type 'date', 'run_time' must be specified in schedule_params."
                 raise ValueError(message)
-            trigger = DateTrigger(
-                run_time=schedule_params["run_time"]
-            )
+            trigger = DateTrigger(run_time=schedule_params["run_time"])
         else:
             raise ValueError(
                 "Unsupported schedule_type. Use 'interval', 'cron' or 'date'."
@@ -179,7 +174,7 @@ class ScheduledTask:
 
     def schedule(self, scheduler: Scheduler):
         trigger = self.get_scheduler_trigger()
-        id_=str(self.task_config.task_id)
+        id_ = str(self.task_config.task_id)
         scheduler.add_schedule(self.run, trigger, id=id_)
 
 

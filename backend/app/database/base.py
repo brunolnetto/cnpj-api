@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from psycopg2 import OperationalError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text, inspect, create_engine
-from sqlalchemy.orm import Session, sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.engine.url import make_url
 
 from backend.app.setup.config import settings
@@ -30,68 +30,41 @@ class BaseDatabase:
 class Database(BaseDatabase):
     """
     Database class for managing PostgreSQL database connections and operations.
-
-
-    Attributes:
-        url (URL): Parsed database URL.
-        base (DeclarativeMeta): SQLAlchemy declarative base.
-        engine (Engine): SQLAlchemy engine for database connection.
-        session_maker (sessionmaker): SQLAlchemy session maker.
-
-    Methods:
-        get_session():
-            Context manager to get a database session.
-        mask_sensitive_data() -> str:
-            Masks sensitive data in the database URI.
-        create_database():
-            Creates the database if it does not exist.
-        test_connection():
-            Tests the connection to the database.
-        create_tables():
-            Creates tables in the database based on the defined models.
-        print_tables():
-            Prints the available tables in the database.
-        init():
-        disconnect():
-            Cleans up and closes the database connection and session maker.
-        __repr__() -> str:
-            Returns a string representation of the Database instance with masked URI.
     """
 
-    def __init__(self, uri):
+    def __init__(self, uri: str):
+        if not uri:
+            raise ValueError("Database URI must be provided.")
+
         self.url = make_url(uri)
         self.base = declarative_base()
         self.engine = create_engine(
             uri,
-            pool_size=30,  # Increase the base pool size
-            max_overflow=20,  # Increase the overflow pool
-            pool_timeout=60,  # Increase timeout to wait for a connection
-            pool_recycle=1800,  # Recycle connections after a certain number of seconds
-            pool_pre_ping=True,  # Ensure stale connections are checked before reuse
+            pool_size=30,
+            max_overflow=20,
+            pool_timeout=60,
+            pool_recycle=1800,
+            pool_pre_ping=True,
             isolation_level="AUTOCOMMIT",
         )
-        self.session_maker = sessionmaker(
-            class_=Session, autocommit=False, autoflush=False, bind=self.engine
-        )
+        self.session_maker = sessionmaker(bind=self.engine)
 
     @contextmanager
-    def get_session(self):
-        with self.session_maker() as session:
+    def get_session(self) -> ContextManager:
+        """Context manager to get a database session."""
+        session = self.session_maker()
+        try:
             yield session
+        finally:
+            session.close()
 
     def mask_sensitive_data(self) -> str:
-        # Mask the password if it's present
-        if self.url.password:
-            parsed_uri = self.url.set(password="******")
-
-            # Return the sanitized URI as a string
-            return str(parsed_uri)
-
-        return str(self.url)
+        """Masks sensitive data in the database URI."""
+        masked_uri = self.url.set(password="******") if self.url.password else self.url
+        return str(masked_uri)
 
     def create_database(self):
         masked_uri = self.mask_sensitive_data()
-
         try:
             with self.engine.begin() as conn:
                 query = text("SELECT 1 FROM pg_database WHERE datname = :dbname")
@@ -99,112 +72,61 @@ class Database(BaseDatabase):
                 result = conn.execute(query, db_data)
 
                 if not result.scalar():
-                    query = text(f"CREATE DATABASE {self.url.database}")
-                    conn.execute(query)
+                    conn.execute(text(f"CREATE DATABASE {self.url.database}"))
                     print(f"Database {masked_uri} created!")
                 else:
                     print(f"Database {masked_uri} already exists!")
-
         except OperationalError as e:
             print(f"Error creating database {masked_uri}: {e}")
 
     def test_connection(self):
         masked_uri = self.mask_sensitive_data()
         try:
-            with self.engine.begin() as conn:
-                query = text("SELECT 1")
-
-                # Test the connection
-                conn.execute(query)
-
+            with self.engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
                 print(f"Connection to the database {masked_uri} established!")
-
         except OperationalError as e:
             print(f"Error connecting to the database {masked_uri}: {e}")
 
     def create_tables(self):
-        """w
-        Connects to a PostgreSQL database using environment variables for connection details.
-
-        Returns:
-            Database: A NamedTuple with engine and conn attributes for the database connection.
-            None: If there was an error connecting to the database.
-
-        """
+        """Creates tables in the database based on the defined models."""
         masked_uri = self.mask_sensitive_data()
         try:
-            # Create all tables defined using the Base class (if not already
-            # created)
             with self.engine.begin() as conn:
                 self.base.metadata.create_all(conn)
-
             print(f"Tables for database {masked_uri} created!")
-
         except SQLAlchemyError as e:
-            print(f"Error creating tables in the database {masked_uri}: {str(e)}")
+            print(f"Error creating tables in the database {masked_uri}: {e}")
 
     def print_tables(self):
-        """
-        Print the available tables in the database.
-        """
-        try:
-            with self.engine.begin() as conn:
-                # Use run_sync to handle synchronous code inside an async
-                # connection
-                def get_tables():
-                    inspector = inspect(conn)
-                    return inspector.get_table_names()
-
-                tables = get_tables()
-                print(f"Available tables in {self.url.database}: {tables}")
-        except Exception as e:
-            print(f"Error fetching table names: {str(e)}")
-
-    def init(self):
-        """
-        Initializes the database connection and creates the tables.
-
-        Args:
-            uri (str): The database URI.
-
-        Returns:
-            Database: A NamedTuple with engine and conn attributes for the database connection.
-            None: If there was an error connecting to the database.
-        """
-        try:
-            self.create_database()
-        except Exception as e:
-            print(f"Error creating database: {e}")
-
-        try:
-            self.test_connection()
-        except Exception as e:
-            print(f"Error testing connection: {e}")
-
-        try:
-            self.create_tables()
-        except Exception as e:
-            print(f"Error creating tables: {e}")
-
-        try:
-            self.print_tables()
-        except Exception as e:
-            print(f"Error print available tables: {e}")
-
-    def disconnect(self):
-        """
-        Clean up and close the database connection and session maker.
-        """
+        """Print the available tables in the database."""
         masked_uri = self.mask_sensitive_data()
         try:
-            # Close all connections in the pool
+            with self.engine.connect() as conn:
+                inspector = inspect(conn)
+                tables = inspector.get_table_names()
+                print(f"Available tables in {masked_uri}: {tables}")
+        except Exception as e:
+            print(f"Error fetching table names from {masked_uri}: {e}")
+
+    def init(self):
+        """Initializes the database connection and creates the tables."""
+        self.create_database()
+        self.test_connection()
+        self.create_tables()
+        self.print_tables()
+
+    def disconnect(self):
+        """Clean up and close the database connection and session maker."""
+        masked_uri = self.mask_sensitive_data()
+        try:
             self.session_maker.close_all()
             self.engine.dispose()
             print(f"Database {masked_uri} connections closed.")
         except Exception as e:
-            print(f"Error closing database connections: {str(e)}")
+            print(f"Error closing database connections: {e}")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         masked_uri = self.mask_sensitive_data()
         return f"<Database(uri={masked_uri})>"
 
@@ -212,13 +134,9 @@ class Database(BaseDatabase):
 class MultiDatabase(BaseDatabase):
     """
     This class represents a multi-database connection and session management object.
-    It contains methods to handle multiple databases.
     """
 
     def __init__(self, database_uris: Dict[str, str]):
-        """
-        Initialize with a dictionary of database URIs.
-        """
         if not database_uris:
             raise ValueError("Database URIs must be provided.")
 
@@ -227,49 +145,44 @@ class MultiDatabase(BaseDatabase):
         }
 
     @contextmanager
-    def get_session(self, db_name) -> ContextManager:
-        """
-        Get a session for a specific database.
-        """
+    def get_session(self, db_name: str) -> ContextManager:
+        """Get a session for a specific database."""
         if db_name not in self.databases:
             raise ValueError(f"No such database: {db_name}")
 
-        with self.databases[db_name].session_maker() as session:
+        with self.databases[db_name].get_session() as session:
             yield session
 
     def create_database(self):
+        """Create databases for all configured databases."""
         for database in self.databases.values():
             database.create_database()
 
     def test_connection(self):
+        """Test connection for all configured databases."""
         for database in self.databases.values():
             database.test_connection()
 
     def create_tables(self):
+        """Create tables for all configured databases."""
         for database in self.databases.values():
             database.create_tables()
 
     def print_tables(self):
-        """
-        Print the available tables in a specific database.
-        """
+        """Print the available tables in all databases."""
         for database in self.databases.values():
             database.print_tables()
 
     def init(self):
-        """
-        Initialize all databases concurrently.
-        """
+        """Initialize all databases concurrently."""
         for database in self.databases.values():
             try:
                 database.init()
             except Exception as e:
-                print(f"Error during initialization: {str(e)}")
+                print(f"Error during initialization of {database}: {e}")
 
     def disconnect(self):
-        """
-        Disconnect all databases concurrently.
-        """
+        """Disconnect all databases concurrently."""
         for database in self.databases.values():
             database.disconnect()
 
@@ -279,19 +192,13 @@ multi_database: Optional[MultiDatabase] = MultiDatabase(settings.postgres_uris_d
 
 
 def init_database():
+    """Initialize the multi-database setup."""
     multi_database.init()
 
 
 @contextmanager
-def get_session(db_name: str):
-    """
-    Define a dependency to create a database session asynchronously.
-
-    Returns:
-        Database: A NamedTuple with engine and conn attributes for the database connection.
-        None: If there was an error connecting to the database.
-    """
-    # Ensure database is initialized before getting a session
+def get_session(db_name: str) -> ContextManager:
+    """Define a dependency to create a database session."""
     if multi_database is None:
         init_database()
 
