@@ -20,7 +20,7 @@ async def add_tasks():
     """
     task_repository = get_task_repository()
     # Ensure this is an async call if needed
-    existing_tasks = await task_repository.get_all()
+    existing_tasks = task_repository.get_all()
 
     # Use a set for fast lookup
     existing_task_ids = {task.task_id for task in existing_tasks}

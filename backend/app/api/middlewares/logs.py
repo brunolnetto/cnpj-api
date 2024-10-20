@@ -33,7 +33,7 @@ async def log_request(
     # Define log_request as a standalone function
     log_data = {
         "relo_method": request_data["method"],
-        "relo_url": request_data["url"],
+        "relo_url": str(request_data["url"]),
         "relo_headers": request_data["headers"],
         "relo_status_code": response_data["status_code"],
         "relo_ip_address": request_data["client_host"],
