@@ -2,17 +2,17 @@ from typing import Union
 
 from fastapi import HTTPException, Depends
 
+from backend.app.setup.config import settings
+from backend.app.setup.logging import logger
+from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.app.api.repositories.cnpj import CNPJRepository
 from backend.app.utils.misc import is_number, are_numbers
 from backend.app.api.utils.cnpj import are_cnpj_str_valid
-from backend.app.setup.config import settings
-from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
-from backend.app.api.models.cnpj import CNPJ
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
-from backend.app.api.utils.misc import check_limit_and_offset, remove_quotes
-from backend.app.api.models.cnpj import CNPJBatch
+from backend.app.api.utils.misc import remove_quotes
+from backend.app.api.models.cnpj import CNPJ, CNPJQueryParams, CNPJBatch
 from backend.app.api.models.base import BatchModel
-from backend.app.setup.logging import logger
+from backend.app.api.models.misc import PaginatedLimitOffsetParams, LimitOffsetParams
 from backend.app.api.constants import STATES_BRAZIL
 
 # Types
@@ -42,12 +42,7 @@ class CNPJService:
     def __init__(self, cnpj_repository: CNPJRepository):
         self.repository: CNPJRepository = cnpj_repository
 
-    def get_cnaes(
-        self,
-        limit: int = settings.PAGE_SIZE,
-        offset: int = 0,
-        enable_pagination: bool = True,
-    ):
+    def get_cnaes(self, query_params: PaginatedLimitOffsetParams):
         """
         Get a list of CNAEs from the database.
 
@@ -60,10 +55,10 @@ class CNPJService:
         - A list of CNAEs as dictionaries.
         """
         try:
-            limit, offset = check_limit_and_offset(limit, offset)
-
             cnaes = self.repository.get_paginated_cnaes(
-                limit=limit, offset=offset, enable_pagination=enable_pagination
+                limit=query_params.limit, 
+                offset=query_params.offset, 
+                enable_pagination=query_params.enable_pagination
             )
 
             return cnaes
@@ -162,8 +157,6 @@ class CNPJService:
         - A list of establishments as dictionaries.
         """
         try:
-            limit, offset = check_limit_and_offset(limit, offset)
-
             if not is_number(cnae_code):
                 raise ValueError(f"CNAE code {cnae_code} is not a number.")
 
@@ -188,9 +181,7 @@ class CNPJService:
 
         return cnpjs
 
-    def get_cnpjs_by_cnaes(
-        self, cnae_batch: BatchModel, limit: int = settings.PAGE_SIZE, offset: int = 0
-    ):
+    def get_cnpjs_by_cnaes(self, cnae_batch: BatchModel, query_params: LimitOffsetParams):
         """
         Get a list of establishments with the specified CNAE codes.
 
@@ -213,9 +204,7 @@ class CNPJService:
                 not_numbers = list(filter(not_number_map, cnae_list))
                 raise ValueError(f"CNAE codes {not_numbers} are not numbers.")
 
-            establishments = self.repository.get_cnpjs_by_cnaes(
-                cnae_list, limit=limit, offset=offset
-            )
+            establishments = self.repository.get_cnpjs_by_cnaes(cnae_list, query_params)
 
         except Exception as e:
             logger.error(f"Error getting CNPJs by CNAEs: {e}")
@@ -318,7 +307,6 @@ class CNPJService:
         - A list of cities as dictionaries.
         """
         try:
-            limit, offset = check_limit_and_offset(limit, offset)
             return self.repository.get_paginated_cities(limit=limit, offset=offset)
 
         except Exception as e:
@@ -404,12 +392,7 @@ class CNPJService:
 
         return legal_nature_obj_list[0]
 
-    def get_legal_natures(
-        self,
-        limit: int = settings.PAGE_SIZE,
-        offset: int = 0,
-        enable_pagination: bool = True,
-    ):
+    def get_legal_natures(self, query_params: PaginatedLimitOffsetParams):
         """
         Get a list of legal natures from the database.
 
@@ -422,10 +405,7 @@ class CNPJService:
         - A list of legal natures as dictionaries.
         """
         try:
-            limit, offset = check_limit_and_offset(limit, offset)
-            return self.repository.get_paginated_legal_natures(
-                limit=limit, offset=offset, enable_pagination=enable_pagination
-            )
+            return self.repository.get_paginated_legal_natures(query_params)
         except Exception as e:
             logger.error(f"Error getting legal natures: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -535,12 +515,7 @@ class CNPJService:
 
         return registration_status
 
-    def get_registration_statuses(
-        self,
-        limit: int = settings.PAGE_SIZE,
-        offset: int = 0,
-        enable_pagination: bool = True,
-    ):
+    def get_registration_statuses(self, query_params: PaginatedLimitOffsetParams):
         """
         Get a list of registration statuses from the database.
 
@@ -553,11 +528,7 @@ class CNPJService:
         - A list of registration statuses as dictionaries.
         """
         try:
-            limit, offset = check_limit_and_offset(limit, offset)
-
-            return self.repository.get_paginated_registration_statuses(
-                limit=limit, offset=offset, enable_pagination=enable_pagination
-            )
+            return self.repository.get_paginated_registration_statuses(query_params)
         except Exception as e:
             logger.error(f"Error getting registration statuses: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -772,12 +743,12 @@ class CNPJService:
         """Validate the CNAE code."""
         if cnae_code:
             try:
+                if not self.repository.get_cnae(cnae_code):
+                    raise ValueError(f"CNAE code {cnae_code} not found.")
+
                 return str(int(cnae_code))
             except ValueError:
                 raise ValueError(f"Invalid CNAE code {cnae_code}.")
-
-        if not self.repository.get_cnae(cnae_code):
-            raise ValueError(f"CNAE code {cnae_code} not found.")
 
     def _validate_zipcode(self, zipcode: str) -> str:
         """Validate the zipcode."""
@@ -788,6 +759,9 @@ class CNPJService:
                 raise ValueError(f"Invalid Zipcode {zipcode}.")
         return ""
 
+    def validate_query_params(self, query_params):
+        pass
+
     def _process_cnpjs(self, cnpjs_raw_list: list) -> dict:
         """Convert raw CNPJs to objects and fetch additional info if available."""
         cnpj_objs = list(map(cnpj_str_to_obj, cnpjs_raw_list))
@@ -795,16 +769,7 @@ class CNPJService:
             return self.repository.get_cnpjs_info(cnpj_objs)
         return {}
 
-    def get_cnpjs(
-        self,
-        state_abbrev: str = "",
-        city_name: str = "",
-        cnae_code: str = "",
-        zipcode: str = "",
-        is_all: bool = False,
-        limit: int = settings.PAGE_SIZE,
-        offset: int = 0,
-    ):
+    def get_cnpjs(self, query_params: CNPJQueryParams):
         """
         Get a list of CNPJs from the database.
 
@@ -816,29 +781,14 @@ class CNPJService:
         """
 
         try:
-            limit, offset = check_limit_and_offset(limit, offset)
-
-            # Clean inputs
-            city_name, cnae_code, state_abbrev, zipcode = map(
-                remove_quotes, [city_name, cnae_code, state_abbrev, zipcode]
-            )
-
             # Validate inputs
-            city_code = self._validate_city(city_name)
-            self._validate_state(state_abbrev)
-            self._validate_cnae(cnae_code)
-            zipcode = self._validate_zipcode(zipcode)
-
+            city_code = self._validate_city(query_params.city_name)
+            self._validate_state(query_params.state_abbrev)
+            cnae_code = self._validate_cnae(query_params.cnae_code)
+            zipcode = self._validate_zipcode(query_params.zipcode)
+            
             # Get raw CNPJs and process them
-            cnpjs_raw_list = self.repository.get_cnpjs_raw(
-                state_abbrev=state_abbrev,
-                city_code=city_code,
-                cnae_code=cnae_code,
-                zipcode=zipcode,
-                is_all=is_all,
-                limit=limit,
-                offset=offset,
-            )
+            cnpjs_raw_list = self.repository.get_cnpjs_raw(query_params)
 
             return self._process_cnpjs(cnpjs_raw_list)
 

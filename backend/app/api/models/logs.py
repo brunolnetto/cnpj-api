@@ -11,7 +11,7 @@ class RequestLogBase(BaseModel):
     relo_method: str = Field(
         ..., description="HTTP method used for the request", min_length=1
     )
-    relo_url: AnyUrl = Field(..., description="URL of the request")
+    relo_url: str = Field(..., description="URL of the request")
     relo_body: Optional[str] = Field(None, description="Request body content")
     relo_headers: Dict[str, str] = Field(..., description="Request headers")
     relo_status_code: int = Field(

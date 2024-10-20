@@ -1,6 +1,7 @@
 # Description: This file initializes the FastAPI application and sets up
 # configurations.
 from contextlib import asynccontextmanager
+from time import perf_counter
 
 from fastapi import FastAPI, status, Request
 from fastapi.responses import FileResponse
@@ -40,6 +41,7 @@ async def lifespan(app_: FastAPI):
     initialization and cleanup tasks related to the application's lifespan
     :type app: FastAPI
     """
+    t0=perf_counter()
 
     # Data related entities
     print_execution_time(init_database)()
@@ -62,7 +64,11 @@ async def lifespan(app_: FastAPI):
     # Initialize NLTK
     print_execution_time(init_nltk)()
 
+    print(f"Start up took {perf_counter()-t0} seconds")
+
     yield
+
+    t0=perf_counter()
 
     # Cleanup tasks
     await print_execution_time(task_orchestrator.shutdown)()
@@ -70,6 +76,7 @@ async def lifespan(app_: FastAPI):
     # Disconnect from databases
     print_execution_time(multi_database.disconnect)()
 
+    print(f"Shutdown took {perf_counter()-t0} seconds")    
 
 def create_app():
     # Generates the FastAPI application
