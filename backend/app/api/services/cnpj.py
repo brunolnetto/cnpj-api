@@ -9,7 +9,7 @@ from backend.app.setup.config import settings
 from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
 from backend.app.api.models.cnpj import CNPJ
 from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
-from backend.app.api.utils.misc import check_limit_and_offset
+from backend.app.api.utils.misc import check_limit_and_offset, remove_quotes
 from backend.app.api.models.cnpj import CNPJBatch
 from backend.app.api.models.base import BatchModel
 from backend.app.setup.logging import logger
@@ -770,7 +770,13 @@ class CNPJService:
 
     def _validate_cnae(self, cnae_code: str):
         """Validate the CNAE code."""
-        if cnae_code and not self.repository.get_cnae(cnae_code):
+        if cnae_code:
+            try:
+                return str(int(cnae_code))
+            except ValueError:
+                raise ValueError(f"Invalid CNAE code {cnae_code}.")
+
+        if not self.repository.get_cnae(cnae_code):
             raise ValueError(f"CNAE code {cnae_code} not found.")
 
     def _validate_zipcode(self, zipcode: str) -> str:
@@ -808,9 +814,6 @@ class CNPJService:
         Returns:
         - A list of CNPJs as dictionaries.
         """
-
-        def remove_quotes(text: str):
-            return text.replace("'", "").replace('"', "")
 
         try:
             limit, offset = check_limit_and_offset(limit, offset)

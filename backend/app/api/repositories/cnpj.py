@@ -1296,8 +1296,7 @@ class CNPJRepository:
         with ThreadPoolExecutor() as executor:
             # Create a future for each task
             future_to_task = {
-                executor.submit(task, cnpj_list): name 
-                for name, task in tasks.items()
+                executor.submit(task, cnpj_list): name for name, task in tasks.items()
             }
 
             # Collect the results as they complete
@@ -1318,7 +1317,7 @@ class CNPJRepository:
             common_key: {
                 **establishment_dict.get(common_key.to_raw(), {}),
                 **company_dict.get(common_key.to_raw(), {}),
-                **partners_dict.get(common_key.to_raw(), {'qsa': []}),
+                **partners_dict.get(common_key.to_raw(), {"qsa": []}),
                 **simples_simei_dict.get(common_key.to_raw(), {}),
             }
             for common_key in cnpj_list

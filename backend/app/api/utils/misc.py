@@ -2,7 +2,7 @@ import time
 import re
 from functools import wraps
 from inspect import iscoroutinefunction
-from typing import Dict, List, Callable, Any
+from typing import Dict, List, Any
 
 from backend.app.utils.misc import is_positive, is_non_negative
 from backend.app.api.constants import UNIT_MULTIPLIER, MAX_LIMIT
@@ -41,72 +41,37 @@ def zfill_factory(n: int):
     return zfill_n
 
 
+def remove_quotes(text: str) -> str:
+    return text.replace("'", "").replace('"', "")
+
+
 def normalize_json(json_str: str):
     return re.sub(r"(?<!\\)'", '"', json_str)
 
 
-def time_execution(func: Callable[..., Any], *args, **kwargs) -> Any:
-    """
-    A utility function to time the execution of another function.
-
-    Args:
-        func: The function to wrap.
-        *args, **kwargs: The arguments to pass to the function.
-
-    Returns:
-        The result of the function and the execution time.
-    """
-    t0 = time.perf_counter()
-    result = func(*args, **kwargs)
-    t1 = time.perf_counter()
-    execution_time = t1 - t0
-    print(f"Execution of {func.__name__} took {execution_time:.4f} seconds")
-
-    return result, execution_time
-
-
-def check_limit_and_offset(limit: int, offset: int) -> None:
-    """
-    Checks if the limit and offset are non-negative.
-
-    Args:
-        limit: The limit value.
-        offset: The offset value.
-
-    Raises:
-        ValueError: If the limit or offset are negative.
-    """
+def check_limit_and_offset(limit: int, offset: int) -> tuple[int, int]:
+    """Checks if limit and offset are valid."""
     if not is_non_negative(offset):
-        explanation = f"Offset must be non-negative. Provided offset value: {offset}"
-        raise ValueError(explanation)
-
+        raise ValueError(
+            f"Offset must be non-negative. Provided offset value: {offset}"
+        )
     if not is_positive(limit):
-        explanation = f"Limit must be positive. Provided limit value: {limit}"
-        raise ValueError(explanation)
+        raise ValueError(f"Limit must be positive. Provided limit value: {limit}")
 
     return min(limit, MAX_LIMIT), offset
 
 
-def convert_to_bytes(size_str):
-    """
-    Converts a size string (e.g., "22K", "321M") into bytes.
-
-    Args:
-        size_str (str): The size string to convert.
-
-    Returns:
-        int: The size in bytes. Returns 0 if the format is invalid.
-    """
+def convert_to_bytes(size_str: str) -> int:
+    """Converts a size string (e.g., '22K', '321M') into bytes."""
     try:
         size_value = float(size_str[:-1])  # Extract numerical value
         size_unit = size_str[-1].upper()  # Get the unit (K, M, G, ...)
 
         if size_unit in UNIT_MULTIPLIER:
-            multiplier = UNIT_MULTIPLIER[size_unit]
-            return int(size_value * multiplier)
+            return int(size_value * UNIT_MULTIPLIER[size_unit])
 
     except ValueError:
-        pass  # Continue to return the default value
+        pass  # Invalid format
 
     return 0  # Default value for invalid format
 

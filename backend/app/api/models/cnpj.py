@@ -11,11 +11,27 @@ class CNPJBatch(BatchModel):
 
 
 class CNPJQueryParams(LimitOffsetParams):
-    state_abbrev: str = Field("")
-    city_name: str = Field("")
-    zipcode: str = Field("")
-    cnae_code: str = Field("")
-    is_all: bool = Field(True)
+    """Query parameters for filtering CNPJ data."""
+
+    state_abbrev: Optional[str] = Field(
+        None,
+        description="State abbreviation (e.g., 'SP' for São Paulo)",
+        min_length=2,
+        max_length=2,
+    )
+
+    city_name: Optional[str] = Field(None, description="City name to filter the data")
+
+    zipcode: Optional[str] = Field(
+        None,
+        description="8-digit ZIP code to filter the data",
+        min_length=8,
+        max_length=8,
+    )
+
+    cnae_code: Optional[str] = Field(None, description="CNAE code to filter the data")
+
+    is_all: bool = Field(True, description="Flag to return all records")
 
 
 class ModeloSimplesSimei(BaseModel):

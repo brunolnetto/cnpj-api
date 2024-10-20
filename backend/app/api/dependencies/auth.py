@@ -1,5 +1,3 @@
-from time import time
-
 from jose import jwt
 from fastapi import Depends
 from fastapi.requests import Request
@@ -34,13 +32,15 @@ class JWTBearer(OAuth2PasswordBearer):
 
         try:
             payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-            # jwt.decode will raise ExpiredSignatureError if the token is expired
+            # jwt.decode will raise ExpiredSignatureError if the token is
+            # expired
         except ExpiredTokenException:
             raise ExpiredTokenException()
         except Exception as e:
             raise CustomHTTPException(f"Invalid token: {str(e)}") from e
 
         return payload
+
 
 jwt_bearer = JWTBearer(tokenUrl=AUTH_TOKEN_URL)
 
