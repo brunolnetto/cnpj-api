@@ -23,6 +23,7 @@ def get_cnaes(
     search_token: str = "",
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
+    
     """
     Get a list of CNAEs from the database.
 
@@ -35,9 +36,7 @@ def get_cnaes(
     return (
         cnpj_service.get_cnae_by_token(search_token)
         if search_token != ""
-        else cnpj_service.get_cnaes(
-            query_params.limit, query_params.offset, query_params.enable_pagination
-        )
+        else cnpj_service.get_cnaes(query_params)
     )
 
 
@@ -65,7 +64,7 @@ def get_cnae_objects(
 def get_cnpjs_by_cnaes(
     request: Request,
     cnae_batch: BatchModel,
-    query_params: Annotated[LimitOffsetParams, Query()],
+    query_params: Annotated[PaginatedLimitOffsetParams, Query()],
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
@@ -79,9 +78,7 @@ def get_cnpjs_by_cnaes(
     Returns:
     - A list of establishments as dictionaries.
     """
-    return cnpj_service.get_cnpjs_by_cnaes(
-        cnae_batch, query_params.limit, query_params.offset
-    )
+    return cnpj_service.get_cnpjs_by_cnaes(cnae_batch, query_params)
 
 
 @rate_limit()
@@ -289,9 +286,7 @@ def get_legal_natures(
     Returns:
     - A list of legal natures as dictionaries.
     """
-    return cnpj_service.get_legal_natures(
-        query_params.limit, query_params.offset, query_params.enable_pagination
-    )
+    return cnpj_service.get_legal_natures(query_params)
 
 
 @rate_limit()
@@ -348,9 +343,7 @@ def get_registration_statuses(
     Returns:
     - A list of registration statuses as dictionaries.
     """
-    return cnpj_service.get_registration_statuses(
-        query_params.limit, query_params.offset, query_params.enable_pagination
-    )
+    return cnpj_service.get_registration_statuses(query_params)
 
 
 @rate_limit()
@@ -388,13 +381,7 @@ def get_cnpj_info(
     Returns:
     - A dictionary with information about the CNPJ.
     """
-    import time
-
-    time.perf_counter()
-    cnpj_info = cnpj_service.get_cnpj_info(cnpj)
-    time.perf_counter()
-
-    return cnpj_info
+    return cnpj_service.get_cnpj_info(cnpj)
 
 
 @rate_limit()
@@ -528,15 +515,7 @@ def get_cnpjs(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    return cnpj_service.get_cnpjs(
-        query_params.state_abbrev,
-        query_params.city_name,
-        query_params.cnae_code,
-        query_params.zipcode,
-        query_params.is_all,
-        query_params.limit,
-        query_params.offset,
-    )
+    return cnpj_service.get_cnpjs(query_params)
 
 
 @rate_limit()

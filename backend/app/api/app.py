@@ -1,6 +1,7 @@
 # Description: This file initializes the FastAPI application and sets up
 # configurations.
 from contextlib import asynccontextmanager
+from time import perf_counter
 
 from fastapi import FastAPI, status, Request
 from fastapi.responses import FileResponse
@@ -40,6 +41,7 @@ async def lifespan(app_: FastAPI):
     initialization and cleanup tasks related to the application's lifespan
     :type app: FastAPI
     """
+    t0=perf_counter()
 
     # Data related entities
     print_execution_time(init_database)()
@@ -62,7 +64,11 @@ async def lifespan(app_: FastAPI):
     # Initialize NLTK
     print_execution_time(init_nltk)()
 
+    print(f"Start up took {perf_counter()-t0} seconds")
+
     yield
+
+    t0=perf_counter()
 
     # Cleanup tasks
     await print_execution_time(task_orchestrator.shutdown)()
@@ -70,6 +76,7 @@ async def lifespan(app_: FastAPI):
     # Disconnect from databases
     print_execution_time(multi_database.disconnect)()
 
+    print(f"Shutdown took {perf_counter()-t0} seconds")    
 
 def create_app():
     # Generates the FastAPI application
@@ -86,30 +93,11 @@ def create_app():
     return app_
 
 
-def setup_app(app_: FastAPI):
-    """
-    Setup the application with the necessary configurations.
-
-    Args:
-        app_ (FastAPI): FastAPI application instance
-
-    Returns:
-        FastAPI: FastAPI application instance with the necessary configurations
-    """
-
-    ##########################################################################
-    # Routers
-    ##########################################################################
-    app_.include_router(api_router, prefix=settings.API_V1_STR)
-
-    ##########################################################################
-    # Middlewares
-    ##########################################################################
-    # Set all CORS enabled origins
+def setup_cors(app: FastAPI) -> None:
+    """Sets up CORS middleware for the application."""
     if settings.BACKEND_CORS_ORIGINS:
         urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]
-
-        app_.add_middleware(
+        app.add_middleware(
             CORSMiddleware,
             allow_origins=urls,
             allow_credentials=True,
@@ -117,46 +105,47 @@ def setup_app(app_: FastAPI):
             allow_headers=["*"],
         )
 
-    # Add request logging middleware
-    app_.add_middleware(AsyncRequestLoggingMiddleware)
 
-    # Add gzip middleware
-    app_.add_middleware(GZipMiddleware, minimum_size=1000)
+def setup_middlewares(app: FastAPI) -> None:
+    """Adds middleware to the FastAPI application."""
+    app.add_middleware(AsyncRequestLoggingMiddleware)
+    app.add_middleware(GZipMiddleware, minimum_size=1000)
+    app.add_middleware(TimingMiddleware)
 
-    # Add timing middleware
-    app_.add_middleware(TimingMiddleware)
 
-    ##########################################################################
-    # Static files
-    ##########################################################################
-    obj = StaticFiles(directory="static")
-    app_.mount("/static", obj, name="static")
+def setup_static_files(app: FastAPI) -> None:
+    """Sets up static file serving for the FastAPI application."""
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    ##########################################################################
-    # Favicon file
-    ##########################################################################
+
+def setup_favicon(app: FastAPI) -> None:
+    """Sets up the favicon endpoint for the FastAPI application."""
+
     @rate_limit()
-    @app_.get("/favicon.ico", include_in_schema=False)
+    @app.get("/favicon.ico", include_in_schema=False)
     async def get_favicon(request: Request):
         return FileResponse("static/favicon.ico")
 
-    ##########################################################################
-    # Exceptions
-    ##########################################################################
-    # Add exception handlers
-    app_.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
-    app_.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
-    app_.add_exception_handler(Exception, general_exception_handler)
+
+def setup_exception_handlers(app: FastAPI) -> None:
+    """Sets up exception handlers for the FastAPI application."""
+    app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
+    app.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
+    app.add_exception_handler(Exception, general_exception_handler)
 
 
-def init_app():
-    # Get the number of applications from the environment variable
-    app_ = create_app()
+def init_app() -> FastAPI:
+    """Initializes and configures the FastAPI application."""
+    app = create_app()
+    setup_cors(app)
+    setup_middlewares(app)
+    setup_static_files(app)
+    setup_favicon(app)
+    setup_exception_handlers(app)
 
-    # Setup the application
-    setup_app(app_)
+    app.include_router(api_router, prefix=settings.API_V1_STR)
 
-    return app_
+    return app
 
 
 # Initialize the application

@@ -1,4 +1,5 @@
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
 
 import nltk
@@ -8,81 +9,69 @@ from nltk.metrics import edit_distance
 from backend.app.setup.logging import logger
 
 
-def init_nltk():
-    """
-    This function initializes the NLTK library.
-    """
+def init_nltk() -> None:
+    """Initializes NLTK by downloading necessary datasets."""
     try:
         nltk.download("stopwords")
-    except Exception as e:
-        logger.error(f"Error downloading NLTK package 'stopwords': {e}")
-
-    try:
         nltk.download("punkt")
-    except Exception as e:
-        logger.error(f"Error downloading NLTK package 'punkt': {e}")
-
-    try:
         nltk.download("punkt_tab")
     except Exception as e:
-        logger.error(f"Error downloading NLTK package 'punkt_tab': {e}")
+        logger.error(f"Error downloading NLTK packages: {e}")
+
+
+def compute_token_score(
+    name: str, processed_municipality: str, word_freq_municipality: Counter
+) -> tuple[float, str]:
+    """Helper function to compute the score for each eligible token."""
+    # Calculate the edit distance
+    distance = edit_distance(name.lower(), processed_municipality)
+    
+    # Compute word frequency score
+    word_score = sum(
+        word_freq_municipality.get(word, 0) for word in nltk.word_tokenize(name.lower())
+    ) / 2
+    
+    # Return combined score and token name
+    return distance + word_score, name
 
 
 def find_most_possible_tokens(
     eligible_tokens: List[str], token: str, limit_count: int
 ) -> List[str]:
     """
-    This function finds the most possible city names from a list of eligible tokens based on a
-    given token,
-    using a combination of word overlap and Levenshtein distance.
+    Finds the most possible tokens from a list of eligible tokens based on a given token.
 
     Args:
-        eligible_tokens (list[str]): The list of eligible city names.
-        token (str): The reference city name to compare with.
-        limit_count (int): The number of most possible city names to return.
+        eligible_tokens (List[str]): The list of eligible tokens (e.g., city names).
+        token (str): The reference token (e.g., city name) to compare with.
+        limit_count (int): The number of most possible tokens to return.
 
     Returns:
-        list[str]: The list of the most possible city names.
+        List[str]: The list of the most possible tokens.
     """
-    # Preprocess data
-    stop_words = stopwords.words("english")
-
-    processed_tokens = [name.lower() for name in eligible_tokens]
+    stop_words = set(stopwords.words("english"))
     processed_municipality = token.lower()
+    token_words = nltk.word_tokenize(processed_municipality)
 
-    # Calculate word frequencies (optional, for combined scoring)
-    word_freq_municipality = Counter()
-    for word in nltk.word_tokenize(processed_municipality):
-        if word not in stop_words:  # Exclude stop words
-            word_freq_municipality[word] += 1
+    # Calculate word frequencies for the reference token
+    word_freq_municipality = Counter(
+        word for word in token_words if word not in stop_words
+    )
 
-    # Score tokens based on combined factors
+    # Parallelize the scoring of tokens
     scored_tokens = []
-    for i, name in enumerate(processed_tokens):
-        # Calculate Levenshtein distance
-        lev_distance = edit_distance(name, processed_municipality)
-
-        # Combine score (optional, adjust weights as needed)
-        # You can experiment with different weights for word overlap and Levenshtein distance
-        # based on your specific needs. Here, we use a simple average.
-        # score =
-        # (
-        #   sum(word_freq_municipality.get(word, 0) for word in nltk.word_tokenize(name)) /
-        #   len(name)) * 0.5 + (1 - lev_distance / len(name)) * 0.5
-        score = (
-            lev_distance
-            + sum(
-                word_freq_municipality.get(word, 0) for word in nltk.word_tokenize(name)
+    with ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(
+                compute_token_score, name, processed_municipality, word_freq_municipality
             )
-        ) / 2
+            for name in eligible_tokens
+        ]
 
-        scored_tokens.append((score, i))  # Store index instead of name
+        # Collect the results as they complete
+        for future in as_completed(futures):
+            scored_tokens.append(future.result())
 
-    # Sort and select top results based on index
-    sorted_tokens = sorted(
-        scored_tokens, key=lambda x: x[0]
-    )  # Sort by ascending score (lower score is better)
-    results = {(score, eligible_tokens[i]) for score, i in sorted_tokens[:limit_count]}
-    results = sorted(results, key=lambda x: x[0])
-    results = [name for score, name in results]
-    return results
+    # Sort and select top results based on score
+    results = sorted(scored_tokens, key=lambda x: x[0])[:limit_count]
+    return [name for _, name in results]

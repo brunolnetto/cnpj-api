@@ -122,7 +122,7 @@ class DebugLog(logs_database.base):
         UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4
     )
     delo_created_at = Column(DateTime(timezone=True), server_default=func.now())
-    delo_environment = Column(String)  # New column to store the environment
+    delo_environment = Column(String)
     delo_machine = Column(String)
     delo_level = Column(String, index=True)
     delo_message = Column(String)

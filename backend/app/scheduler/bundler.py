@@ -1,45 +1,45 @@
-# This code snippet is setting up a scheduler in Python using the `asyncio` library for scheduling a
-# task to clean up logs at regular intervals. Here's a breakdown of what
-# the code is doing:
 import asyncio
 
 from backend.app.scheduler.base import TaskOrchestrator, TaskRegister
 from backend.app.api.repositories.tasks import get_task_repository
 from backend.app.scheduler.tasks.bundler import task_configs
+from backend.app.setup.logging import logger
 
 task_orchestrator = TaskOrchestrator()
 
 
 async def add_tasks():
     """
-    This function creates a task orchestrator and adds tasks to it.
+    Create a task orchestrator and add tasks to it.
 
-    The tasks are defined in the `task_configs` list, which contains
-    instances of TaskConfig.
+    This function checks for existing tasks in the database to avoid duplication.
+    It uses the task configurations defined in `task_configs`, which contains instances of TaskConfig.
+
+    Raises:
+        Exception: If there are issues during task registration.
     """
-
     task_repository = get_task_repository()
-
-    # Check if a task with the same name already exists in the database
+    # Ensure this is an async call if needed
     existing_tasks = task_repository.get_all()
 
-    for index, task_config in enumerate(task_configs):
-        # Compare existing tasks with the new one to avoid duplication
-        duplicate_task = None
-        for existing_task in existing_tasks:
-            if existing_task == task_config:
-                duplicate_task = existing_task
-                break
+    # Use a set for fast lookup
+    existing_task_ids = {task.task_id for task in existing_tasks}
 
-        # Add the task to the orchestrator
-        await task_orchestrator.add_task(task_configs[index])
+    task_register = TaskRegister(task_repository)
 
-        if duplicate_task:
-            task_configs[index].task_id = duplicate_task.task_id
+    for task_config in task_configs:
+        if task_config.task_id in existing_task_ids:
+            # Skip adding duplicate tasks
             continue
 
+        # Add the task to the orchestrator
+        await task_orchestrator.add_task(task_config)
+
         # Save the new task to the database using the repository
-        task_register = TaskRegister(task_repository)
-        task_register.register(task_configs)
+        try:
+            # Register as a list if the method requires it
+            task_register.register([task_config])
+        except Exception as e:
+            logger.error(f"Error registering task {task_config.task_name}: {e}")
 
     await asyncio.sleep(1)

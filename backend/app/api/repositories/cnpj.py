@@ -3,13 +3,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from json import loads
 
 import pandas as pd
-from sqlalchemy import text
+from sqlalchemy import text, Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.utils.misc import string_to_json
 from backend.app.api.utils.cnpj import format_cnpj_list
 from backend.app.api.utils.misc import paginate_dict
-from backend.app.api.models.cnpj import CNPJ
+from backend.app.api.models.cnpj import CNPJ, CNPJQueryParams
+from backend.app.api.models.misc import PaginatedLimitOffsetParams, LimitOffsetParams
 from backend.app.database.models.cnpj import CNAE
 
 from backend.app.utils.repositories import (
@@ -87,39 +88,32 @@ class CNPJRepository:
         if not hasattr(cls, "cnaes_dict"):
             cls.initialize_static_properties(session)
 
-    def get_cnpjs_raw(
-        self,
-        state_abbrev: str = "",
-        city_code: str = "",
-        cnae_code: str = "",
-        zipcode: str = "",
-        is_all: bool = False,
-        limit: int = settings.PAGE_SIZE,
-        offset: int = 0,
-    ):
+    def get_cnpjs_raw(self, query_params: CNPJQueryParams):
         """
         Get CNPJs on database according to (state_abbrev, city_code, cnae_code, zipcode).
         One may set filters is_all for checking all CNAE codes, limit for page size and
         offset for page start point.
         """
         # Filters
-        state_condition = f"uf='{state_abbrev}'" if state_abbrev else "1=1"
-        city_condition = f"municipio='{city_code}'" if city_code else "1=1"
-        filled_zipcode = str(float(zipcode)) if zipcode else ""
+        state_condition = f"uf='{query_params.state_abbrev}'" \
+            if query_params.state_abbrev else "1=1"
+        city_condition = f"municipio='{query_params.city_name}'" \
+            if query_params.city_name else "1=1"
+        filled_zipcode = str(float(query_params.zipcode)) if query_params.zipcode else ""
         zipcode_condition = f"cep = '{filled_zipcode}'" if filled_zipcode else "1=1"
 
-        if cnae_code:
+        if query_params.cnae_code:
             cnae_condition = (
                 f"""(
             (
-                cnae_fiscal_principal = '{cnae_code}' or
-                cnae_fiscal_secundaria @> Array[{cnae_code}]
+                cnae_fiscal_principal = '{query_params.cnae_code}' or
+                cnae_fiscal_secundaria @> Array[{query_params.cnae_code}]
             ) and situacao_cadastral = '2'
         ) -- ATIVA"""
-                if is_all
+                if query_params.is_all
                 else f"""(
             (
-                cnae_fiscal_principal = '{cnae_code}'
+                cnae_fiscal_principal = '{query_params.cnae_code}'
             ) and situacao_cadastral = '2'
         ) -- ATIVA"""
             )
@@ -162,13 +156,13 @@ class CNPJRepository:
                 where
                     {cnae_condition}
                 limit
-                    {limit}
+                    {query_params.limit}
                 offset
-                    {offset}
+                    {query_params.offset}
             """
         )
 
-        cnpjs_result = replace_invalid_fields_on_list_tuple(
+        cnpjs_result: Result = replace_invalid_fields_on_list_tuple(
             self.session.execute(query).fetchall()
         )
 
@@ -241,7 +235,7 @@ class CNPJRepository:
             return []
 
         # Use parameterized queries to safely include the token in the query
-        cnae_result = (
+        cnae_result: Result = (
             self.session.query(CNAE).filter(CNAE.descricao.ilike(f"%{token}%")).all()
         )
 
@@ -262,15 +256,14 @@ class CNPJRepository:
         """
         return get_cnpj_code_description_entries(session, "cnae")
 
-    def get_paginated_cnaes(
-        self,
-        limit: int = settings.PAGE_SIZE,
-        offset: int = 0,
-        enable_pagination: bool = False,
-    ):
+    def get_paginated_cnaes(self, query_params: PaginatedLimitOffsetParams):
         return (
-            list(paginate_dict(self.__class__.cnaes_dict, limit, offset).values())
-            if enable_pagination
+            list(paginate_dict(
+                self.__class__.cnaes_dict, 
+                query_params.limit, 
+                query_params.offset).values()
+            )
+            if query_params.enable_pagination
             else list(self.__class__.cnaes_dict.items())
         )
 
@@ -317,17 +310,15 @@ class CNPJRepository:
         """
         return get_cnpj_code_description_entries(session, "natju")
 
-    def get_paginated_legal_natures(
-        self,
-        limit: int = settings.PAGE_SIZE,
-        offset: int = 0,
-        enable_pagination: bool = False,
-    ):
+    def get_paginated_legal_natures(self, query_params: PaginatedLimitOffsetParams):
         return (
             list(
-                paginate_dict(self.__class__.legal_nature_dict, limit, offset).values()
-            )
-            if enable_pagination
+                paginate_dict(
+                    self.__class__.legal_nature_dict, 
+                    query_params.limit, 
+                    query_params.offset
+                ).values()
+            ) if query_params.enable_pagination
             else list(self.__class__.legal_nature_dict.items())
         )
 
@@ -364,12 +355,7 @@ class CNPJRepository:
         """
         return get_cnpj_code_description_entries(session, "moti")
 
-    def get_paginated_registration_statuses(
-        self,
-        limit: int = settings.PAGE_SIZE,
-        offset: int = 0,
-        enable_pagination: bool = False,
-    ):
+    def get_paginated_registration_statuses(self, query_params: PaginatedLimitOffsetParams):
         """
         Get all registration statuses from the database.
 
@@ -379,10 +365,12 @@ class CNPJRepository:
         return (
             list(
                 paginate_dict(
-                    self.__class__.registration_statuses_dict, limit, offset
+                    self.__class__.registration_statuses_dict, 
+                    query_params.limit, 
+                    query_params.offset
                 ).values()
             )
-            if enable_pagination
+            if query_params.enable_pagination
             else list(self.__class__.registration_statuses_dict.items())
         )
 
@@ -410,7 +398,7 @@ class CNPJRepository:
             """
         )
 
-        city_result = self.session.execute(query).fetchall()
+        city_result: Result = self.session.execute(query).fetchall()
 
         columns = ["code", "text"]
         empty_df = pd.DataFrame(columns=columns)
@@ -563,10 +551,10 @@ class CNPJRepository:
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            company_result = session.execute(query).fetchall()
+            company_result: Result = session.execute(query).fetchall()
 
-        company_result = replace_invalid_fields_on_list_tuple(company_result)
-        company_result = replace_spaces_on_list_tuple(company_result)
+        company_result: Result = replace_invalid_fields_on_list_tuple(company_result)
+        company_result: Result = replace_spaces_on_list_tuple(company_result)
 
         empty_df = pd.DataFrame(columns=columns)
         company_df = pd.DataFrame(company_result, columns=columns)
@@ -784,7 +772,7 @@ class CNPJRepository:
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            establishment_result = session.execute(query).fetchall()
+            establishment_result: Result = session.execute(query).fetchall()
 
         empty_df = pd.DataFrame(columns=columns)
         df_is_empty = len(establishment_result) == 0
@@ -866,7 +854,7 @@ class CNPJRepository:
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
             establishment_result = session.execute(query)
-            establishment_result = establishment_result.fetchall()
+            establishment_result: Result = establishment_result.fetchall()
 
         establishment_result = replace_invalid_fields_on_list_tuple(
             establishment_result
@@ -937,10 +925,10 @@ class CNPJRepository:
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
             partners_result = session.execute(query)
-            partners_result = partners_result.fetchall()
+            partners_result: Result = partners_result.fetchall()
 
-        partners_result = replace_invalid_fields_on_list_tuple(partners_result)
-        partners_result = replace_spaces_on_list_tuple(partners_result)
+        partners_result: Result = replace_invalid_fields_on_list_tuple(partners_result)
+        partners_result: Result = replace_spaces_on_list_tuple(partners_result)
 
         columns = ["cnpj_basico", "qsa"]
         empty_df = pd.DataFrame(columns=columns)
@@ -1066,16 +1054,15 @@ class CNPJRepository:
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            simples_simei_result = session.execute(query)
+            simples_simei_result: Result = session.execute(query)
 
-        simples_simei_result = simples_simei_result.fetchall()
+        simples_simei_result: Result = simples_simei_result.fetchall()
         simples_simei_result = replace_invalid_fields_on_list_tuple(
             simples_simei_result
         )
         simples_simei_result = replace_spaces_on_list_tuple(simples_simei_result)
 
         columns = ["cnpj_basico", "simples", "simei"]
-        pd.DataFrame(columns=columns)
 
         simples_simei_df = pd.DataFrame(simples_simei_result, columns=columns)
         simples_simei_df = (
@@ -1215,7 +1202,7 @@ class CNPJRepository:
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            activities_result = session.execute(query).fetchall()
+            activities_result: Result = session.execute(query).fetchall()
 
         activities_result = replace_invalid_fields_on_list_tuple(activities_result)
         activities_result = replace_spaces_on_list_tuple(activities_result)
@@ -1292,10 +1279,6 @@ class CNPJRepository:
 
         results = {}
 
-        import time
-
-        time.perf_counter()
-
         # Run the tasks in parallel using ThreadPoolExecutor
         with ThreadPoolExecutor() as executor:
             # Create a future for each task
@@ -1312,31 +1295,19 @@ class CNPJRepository:
                     results[task_name] = f"Error occurred: {e}"
 
         # Combine all the results into a single dictionary and return it
-        establishment_dict = results.get("establishment", {})
-        company_dict = results.get("company", {})
-        partners_dict = results.get("partners", {})
-        simples_simei_dict = results.get("simples_simei", {})
-
-        establ_set = set(establishment_dict)
-        companies_set = set(company_dict)
-        partners_set = set(partners_dict)
-        simples_simei_set = set(simples_simei_dict)
-
-        # XXX: Review missing information on original methods
-        common_keys = list(
-            establ_set.intersection(companies_set)
-            .intersection(partners_set)
-            .intersection(simples_simei_set)
-        )
+        establishment_dict: dict = results.get("establishment", {})
+        company_dict: dict = results.get("company", {})
+        partners_dict: dict = results.get("partners", {})
+        simples_simei_dict: dict = results.get("simples_simei", {})
 
         cnpj_info_dict = {
             common_key: {
-                **establishment_dict[common_key],
-                **company_dict[common_key],
-                **partners_dict[common_key],
-                **simples_simei_dict[common_key],
+                **establishment_dict.get(common_key.to_raw(), {}),
+                **company_dict.get(common_key.to_raw(), {}),
+                **partners_dict.get(common_key.to_raw(), {"qsa": []}),
+                **simples_simei_dict.get(common_key.to_raw(), {}),
             }
-            for common_key in common_keys
+            for common_key in cnpj_list
         }
 
         cnpj_infos = {
@@ -1431,7 +1402,7 @@ class CNPJRepository:
             """
         )
 
-        result = self.session.execute(query)
+        result: Result = self.session.execute(query)
         cnpj_tuples = result.fetchall()
 
         cnpjs_str_list = [
@@ -1441,9 +1412,7 @@ class CNPJRepository:
 
         return self.get_cnpjs_info(cnpjs_str_list)
 
-    def get_cnpjs_by_cnaes(
-        self, cnaes_list: CodeListType, limit: int = settings.PAGE_SIZE, offset: int = 0
-    ):
+    def get_cnpjs_by_cnaes(self, cnaes_list: CodeListType, query_params: LimitOffsetParams):
         """
         Get the companies by the CNAEs.
 
@@ -1476,13 +1445,13 @@ class CNPJRepository:
                 order by
                     1, 2
                 limit
-                    {limit}
+                    {query_params.limit}
                 offset
-                    {offset}
+                    {query_params.offset}
             """
         )
-
-        result = self.session.execute(query)
+        
+        result: Result = self.session.execute(query)
         cnpj_tuples = result.fetchall()
 
         cnpjs_str_list = [
@@ -1528,7 +1497,7 @@ class CNPJRepository:
             """
         )
 
-        result = self.session.execute(query)
+        result: Result = self.session.execute(query)
         cnpj_tuples = result.fetchall()
 
         cnpjs_str_list = [

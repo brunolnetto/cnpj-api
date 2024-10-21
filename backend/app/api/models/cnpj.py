@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator, field_validator
 
 from backend.app.api.utils.cnpj import is_cnpj_str_valid
 from .base import BatchModel
@@ -11,12 +11,48 @@ class CNPJBatch(BatchModel):
 
 
 class CNPJQueryParams(LimitOffsetParams):
-    state_abbrev: str = Field("")
-    city_name: str = Field("")
-    zipcode: str = Field("")
-    cnae_code: str = Field("")
-    is_all: bool = Field(True)
+    """Query parameters for filtering CNPJ data."""
 
+    state_abbrev: Optional[str] = Field(
+        None, description="State abbreviation (e.g., 'SP' for São Paulo)"
+    )
+
+    city_name: Optional[str] = Field(None, description="City name to filter the data")
+    zipcode: Optional[str] = Field(None, description="8-digit ZIP code to filter the data")
+
+    cnae_code: Optional[str] = Field(None, description="CNAE code to filter the data")
+
+    is_all: bool = Field(True, description="Flag to return all records")
+
+    @field_validator('zipcode')
+    def validate_zipcode(cls, value: str):
+        """Validate that the ZIP code is numeric and 8 digits."""
+        if value and not value.isdigit():
+            raise ValueError("ZIP code must contain only digits.")
+        return value
+
+    @field_validator('state_abbrev')
+    def validate_state_abbrev(cls, value: str):
+        """Validate that the state abbreviation is valid (optional but must be 2 letters if provided)."""
+        if value and len(value) != 2:
+            raise ValueError("State abbreviation must be exactly 2 characters.")
+        return value.upper()
+
+    @model_validator(mode='before')
+    def clean_inputs(cls, values: dict):
+        """Sanitize and validate inputs."""
+        values['city_name'] = cls._remove_quotes(values.get('city_name', ''))
+        values['cnae_code'] = cls._remove_quotes(values.get('cnae_code', ''))
+        values['state_abbrev'] = cls._remove_quotes(values.get('state_abbrev', ''))
+        values['zipcode'] = cls._remove_quotes(values.get('zipcode', ''))
+        return values
+
+    @staticmethod
+    def _remove_quotes(value: str) -> str:
+        """Utility to remove quotes from string."""
+        if value:
+            return value.replace('"', '').replace("'", '')
+        return value
 
 class ModeloSimplesSimei(BaseModel):
     optante: bool = False
