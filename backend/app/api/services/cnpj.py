@@ -181,7 +181,7 @@ class CNPJService:
 
         return cnpjs
 
-    def get_cnpjs_by_cnaes(self, cnae_batch: BatchModel, query_params: LimitOffsetParams):
+    def get_cnpjs_by_cnaes(self, cnae_batch: BatchModel, query_params: PaginatedLimitOffsetParams):
         """
         Get a list of establishments with the specified CNAE codes.
 
@@ -193,6 +193,7 @@ class CNPJService:
         Returns:
         - A list of establishments as dictionaries.
         """
+        print(':)')
         try:
             cnae_list = list(set(cnae_batch.batch))
 

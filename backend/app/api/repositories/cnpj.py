@@ -1412,7 +1412,9 @@ class CNPJRepository:
 
         return self.get_cnpjs_info(cnpjs_str_list)
 
-    def get_cnpjs_by_cnaes(self, cnaes_list: CodeListType, query_params: LimitOffsetParams):
+    def get_cnpjs_by_cnaes(
+        self, cnaes_list: CodeListType, query_params: PaginatedLimitOffsetParams
+    ):
         """
         Get the companies by the CNAEs.
 
