@@ -36,7 +36,7 @@ class CNPJQueryParams(LimitOffsetParams):
         """Validate that the state abbreviation is valid (optional but must be 2 letters if provided)."""
         if value and len(value) != 2:
             raise ValueError("State abbreviation must be exactly 2 characters.")
-        return value.upper()
+        return value.upper() if type(value) == str else value
 
     @model_validator(mode='before')
     def clean_inputs(cls, values: dict):

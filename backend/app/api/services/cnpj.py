@@ -55,13 +55,7 @@ class CNPJService:
         - A list of CNAEs as dictionaries.
         """
         try:
-            cnaes = self.repository.get_paginated_cnaes(
-                limit=query_params.limit, 
-                offset=query_params.offset, 
-                enable_pagination=query_params.enable_pagination
-            )
-
-            return cnaes
+            return self.repository.get_paginated_cnaes(query_params)
 
         except Exception as e:
             logger.error(f"Error getting CNAEs: {e}")
@@ -142,9 +136,7 @@ class CNPJService:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-    def get_cnpjs_with_cnae(
-        self, cnae_code: CodeType, limit: int = settings.PAGE_SIZE, offset: int = 0
-    ):
+    def get_cnpjs_with_cnae(self, cnae_code: CodeType, query_params: PaginatedLimitOffsetParams):
         """
         Get a list of establishments with a given CNAE code.
 
@@ -166,9 +158,7 @@ class CNPJService:
                 raise ValueError(f"There isn't CNAE code {cnae_code}.")
 
             cnae_code_list = [cnae_code]
-            cnpjs = self.repository.get_cnpjs_by_cnaes(
-                cnae_code_list, limit=limit, offset=offset
-            )
+            cnpjs = self.repository.get_cnpjs_by_cnaes(cnae_code_list, query_params)
 
         except Exception as e:
             logger.error(f"Error getting CNPJs with CNAE: {e}")
@@ -783,11 +773,12 @@ class CNPJService:
 
         try:
             # Validate inputs
-            city_code = self._validate_city(query_params.city_name)
+            query_params.city_name = self._validate_city(query_params.city_name)
+
             self._validate_state(query_params.state_abbrev)
             cnae_code = self._validate_cnae(query_params.cnae_code)
-            zipcode = self._validate_zipcode(query_params.zipcode)
-            
+            query_params.zipcode = self._validate_zipcode(query_params.zipcode)
+
             # Get raw CNPJs and process them
             cnpjs_raw_list = self.repository.get_cnpjs_raw(query_params)
 
@@ -952,3 +943,4 @@ def get_cnpj_service(
 
 
 CNPJServiceDependency = Depends(get_cnpj_service)
+

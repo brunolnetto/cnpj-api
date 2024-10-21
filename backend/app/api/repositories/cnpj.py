@@ -101,7 +101,7 @@ class CNPJRepository:
             if query_params.city_name else "1=1"
         filled_zipcode = str(float(query_params.zipcode)) if query_params.zipcode else ""
         zipcode_condition = f"cep = '{filled_zipcode}'" if filled_zipcode else "1=1"
-
+        
         if query_params.cnae_code:
             cnae_condition = (
                 f"""(
@@ -235,13 +235,16 @@ class CNPJRepository:
             return []
 
         # Use parameterized queries to safely include the token in the query
-        cnae_result: Result = (
-            self.session.query(CNAE).filter(CNAE.descricao.ilike(f"%{token}%")).all()
-        )
+        query=CNAE.descricao.ilike(f"%{token}%")
+        cnae_result: List[CNAE] = self.session.query(CNAE).filter(query).all()
 
         # Map the results to the desired format
         cnae_dict = [
-            {"code": codigo, "text": descricao} for codigo, descricao in cnae_result
+            {
+                "code": cnae_object.codigo, 
+                "text": cnae_object.descricao
+            } 
+            for cnae_object in cnae_result
         ]
 
         return cnae_dict
@@ -1283,7 +1286,8 @@ class CNPJRepository:
         with ThreadPoolExecutor() as executor:
             # Create a future for each task
             future_to_task = {
-                executor.submit(task, cnpj_list): name for name, task in tasks.items()
+                executor.submit(task, cnpj_list): name 
+                for name, task in tasks.items()
             }
 
             # Collect the results as they complete
@@ -1300,8 +1304,11 @@ class CNPJRepository:
         partners_dict: dict = results.get("partners", {})
         simples_simei_dict: dict = results.get("simples_simei", {})
 
+        if(len(establishment_dict) == 0):
+            return {}
+        
         cnpj_info_dict = {
-            common_key: {
+            common_key.to_raw(): {
                 **establishment_dict.get(common_key.to_raw(), {}),
                 **company_dict.get(common_key.to_raw(), {}),
                 **partners_dict.get(common_key.to_raw(), {"qsa": []}),
