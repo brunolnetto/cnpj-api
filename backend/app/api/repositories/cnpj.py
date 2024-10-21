@@ -1286,8 +1286,7 @@ class CNPJRepository:
         with ThreadPoolExecutor() as executor:
             # Create a future for each task
             future_to_task = {
-                executor.submit(task, cnpj_list): name 
-                for name, task in tasks.items()
+                executor.submit(task, cnpj_list): name for name, task in tasks.items()
             }
 
             # Collect the results as they complete
