@@ -147,7 +147,7 @@ class CNPJService:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-    async def get_cnpjs_with_cnae(
+    def get_cnpjs_with_cnae(
         self, cnae_code: CodeType, limit: int = settings.PAGE_SIZE, offset: int = 0
     ):
         """
