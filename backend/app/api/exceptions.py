@@ -12,9 +12,9 @@ async def not_found_handler(request: Request, exc: HTTPException) -> JSONRespons
     endpoints = f"{settings.API_V1_STR}/docs or {settings.API_V1_STR}/redoc"
     suggestion_msg = f"Refer to the API documentation on endpoints {endpoints}."
 
-    # Structured JSON response
     return JSONResponse(
         content={
+            "error_code": "RESOURCE_NOT_FOUND",
             "detail": warning_msg,
             "suggestion": suggestion_msg,
         },
@@ -24,12 +24,13 @@ async def not_found_handler(request: Request, exc: HTTPException) -> JSONRespons
 
 async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handles all uncaught exceptions."""
-    # Log the exception details with context
-    logger.error(f"Unhandled exception occurred at {request.url}: {exc}")
+    logger.error(
+        f"Unhandled exception occurred at {request.method} {request.url}: {exc}"
+    )
 
-    # Return a generic error response to the client
     return JSONResponse(
         content={
+            "error_code": "INTERNAL_SERVER_ERROR",
             "detail": "An unexpected error occurred. Please try again later.",
         },
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -40,7 +41,10 @@ async def custom_rate_limit_handler(
     request: Request, exc: RateLimitExceeded
 ) -> JSONResponse:
     """Handles rate limit exceeded exceptions."""
-    detail_dict = {"detail": "Too many requests, please slow down!"}
     return JSONResponse(
-        status_code=status.HTTP_429_TOO_MANY_REQUESTS, content=detail_dict
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={
+            "error_code": "RATE_LIMIT_EXCEEDED",
+            "detail": "Too many requests, please slow down!"
+        }
     )

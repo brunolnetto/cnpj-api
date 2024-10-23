@@ -19,7 +19,6 @@ class TimingMiddleware(BaseHTTPMiddleware):
             )
             session.add(request_timing)
             session.commit()
-            session.close()
 
     async def dispatch(self, request: Request, call_next):
         # Record the start time

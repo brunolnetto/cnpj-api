@@ -75,17 +75,9 @@ def is_cnpj_str_valid(cnpj: str) -> Dict[str, Union[bool, str]]:
     return {"is_valid": True, "reason": ""}
 
 
-def are_cnpj_str_valid(cnpjs: List[str]):
-    """
-    Check if a list of CNPJ strings are valid.
-
-    Args:
-        cnpjs (List[str]): A list of CNPJ strings to be validated.
-
-    Returns:
-        List[bool]: A list of boolean values indicating whether each CNPJ string is valid or not.
-    """
-    return list(map(is_cnpj_str_valid, cnpjs))
+def are_cnpj_str_valid(cnpjs: List[str]) -> List[Dict[str, Union[bool, str]]]:
+    """Check if a list of CNPJ strings are valid."""
+    return [is_cnpj_str_valid(cnpj) for cnpj in cnpjs]
 
 
 def parse_cnpj_str(cnpj: str) -> List[str]:
@@ -107,52 +99,18 @@ def parse_cnpj_str(cnpj: str) -> List[str]:
 
 
 def format_cnpj(cnpj_str: str) -> str:
-    """
-    Formats a CNPJ string.
-
-    Args:
-        cnpj_str (str): The CNPJ string to format.
-    """
-
+    """Formats a CNPJ string."""
     basico, ordem, digitos_verificadores = parse_cnpj_str(cnpj_str)
-
-    basico = f"{basico[:2]}.{basico[2:5]}.{basico[5:8]}"
-    ordem = f"{ordem}"
-    digitos_verificadores = f"{digitos_verificadores}"
-
-    return f"{basico}/{ordem}-{digitos_verificadores}"
+    return f"{basico[:2]}.{basico[2:5]}.{basico[5:8]}/{ordem}-{digitos_verificadores}"
 
 
-def format_cnpj_list(cnpj_list: List[str]) -> List[str]:
-    """
-    Formats a list of CNPJ strings.
-
-    Args:
-        cnpj_list (List[str]): The list of CNPJ strings to format.
-    """
-    cnpj_basicos = [f"'{str(cnpj_obj.basico_int)}'" for cnpj_obj in cnpj_list]
-    return ",".join(cnpj_basicos)
+def format_cnpj_list(cnpj_list: List[str]) -> str:
+    """Formats a list of CNPJ strings."""
+    return ",".join(f"'{cnpj}'" for cnpj in cnpj_list)
 
 
-def get_cnpj_code_description_entries(session: Session, table_name: str):
-    """
-    Get all code-description entrie from the specified table.
-
-    Args:
-        table_name (str): The name of the table to query.
-        limit (int, optional): The number of rows to fetch. Defaults to 10.
-        offset (int, optional): The starting offset for the query. Defaults to 0.
-        enable_pagination (bool, optional): Whether to enable pagination. Defaults to True.
-
-    Returns:
-        dict: A dictionary containing the CNAEs.
-    """
-    entries_result = session.execute(
-        text(f"SELECT codigo, descricao FROM {table_name}")
-    )
-    entries_result = entries_result.fetchall()
-
+def get_cnpj_code_description_entries(session: Session, table_name: str) -> List[Dict[str, str]]:
+    """Get all code-description entries from the specified table."""
+    entries_result = session.execute(text(f"SELECT codigo, descricao FROM {table_name}")).fetchall()
     entries_df = pd.DataFrame(entries_result, columns=["code", "text"])
-    entries_dict = entries_df.to_dict(orient="records")
-
-    return entries_dict
+    return entries_df.to_dict(orient="records")

@@ -133,17 +133,20 @@ def setup_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
     app.add_exception_handler(Exception, general_exception_handler)
 
+def setup_app(app_: FastAPI):
+    setup_cors(app_)
+    setup_middlewares(app_)
+    setup_static_files(app_)
+    setup_favicon(app_)
+    setup_exception_handlers(app_)
+    
+    app.include_router(api_router, prefix=settings.API_V1_STR)
 
 def init_app() -> FastAPI:
     """Initializes and configures the FastAPI application."""
     app = create_app()
-    setup_cors(app)
-    setup_middlewares(app)
-    setup_static_files(app)
-    setup_favicon(app)
-    setup_exception_handlers(app)
-
-    app.include_router(api_router, prefix=settings.API_V1_STR)
+    
+    setup_app(app)
 
     return app
 

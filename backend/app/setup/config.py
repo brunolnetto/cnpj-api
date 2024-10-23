@@ -1,6 +1,7 @@
 from datetime import timedelta
 from warnings import warn
 import platform
+import functools
 
 from typing import Optional, Dict, Literal, List, Any, Union
 
@@ -92,12 +93,13 @@ class Settings(BaseSettings):
     ] = []
 
     # 1 day
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1 * 24 * 60
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(1 * 24 * 60, env="ACCESS_TOKEN_EXPIRE_MINUTES")
 
     # Page size
     PAGE_SIZE: int = 10
 
     @computed_field  # type: ignore[misc]
+    @functools.lru_cache(maxsize=1)  # Cache the result for optimization
     @property
     def server_host(self) -> str:
         # Use HTTPS for anything other than local development
@@ -137,10 +139,7 @@ class Settings(BaseSettings):
     }
 
     # Define the age of request logs to be cleaned up
-    REQUEST_CLEANUP_AGE: Dict[str, Any] = {"days": 30}
-
-    # Define the age of task logs to be cleaned up
-    TASK_CLEANUP_AGE: timedelta = timedelta(days=30)
+    REQUEST_CLEANUP_AGE: timedelta = timedelta(days=30)
 
     # Define the age of task logs to be cleaned up
     DEBUG_CLEANUP_AGE: timedelta = timedelta(days=14)
@@ -155,6 +154,20 @@ class Settings(BaseSettings):
         burst_rate_limit = values.data.get("DEFAULT_BURST_RATE_LIMIT")
         return [rate_limit, burst_rate_limit]
 
+    @field_validator("JWT_SECRET_KEY", mode="before")
+    @classmethod
+    def validate_jwt_secret_key(cls, v: str) -> str:
+        if not v or len(v) < 16:
+            raise ValueError("JWT_SECRET_KEY must be at least 16 characters long.")
+        return v
+
+    @field_validator('DEFAULT_RATE_LIMIT', mode='before')
+    @classmethod
+    def validate_default_rate_limit(cls, v: str) -> str:
+        if not v:
+            raise ValueError("DEFAULT_RATE_LIMIT must be provided and cannot be empty.")
+        return v
+    
     def _check_default_secret(self, var_name: str, value: Union[str, None]) -> None:
         if value == DEFAULT_PASSWORD:
             message = (

@@ -59,6 +59,8 @@ class ModeloSimplesSimei(BaseModel):
     data_opcao: Optional[str]
     data_exclusao: Optional[str]
 
+class InvalidCNPJError(ValueError):
+    pass
 
 class CNPJ:
     def __init__(self, basico: str, ordem: str, digitos_verificadores: str):
@@ -81,9 +83,15 @@ class CNPJ:
                 "Digits 'digitos_verificadores' contains non-numeric characters."
             ) from exc
 
-        self.basico_str = str(basico).zfill(8)
-        self.ordem_str = str(ordem).zfill(4)
-        self.digitos_verificadores_str = str(digitos_verificadores).zfill(2)
+        self.basico_str = self._validate_digits(basico, 8, 'basico')
+        self.ordem_str = self._validate_digits(ordem, 4, 'ordem')
+        self.digitos_verificadores_str = self._validate_digits(digitos_verificadores, 2, 'digitos_verificadores')
+
+    def _validate_digits(self, value: str, length: int, field_name: str) -> str:
+        """Validate if the string contains numeric characters and has the expected length."""
+        if not value.isdigit():
+            raise InvalidCNPJError(f"Digits '{field_name}' contains non-numeric characters.")
+        return value.zfill(length)
 
     def is_valid_dict(self):
         """

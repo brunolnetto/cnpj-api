@@ -1,5 +1,6 @@
-from typing import Dict, Optional, ContextManager
+from typing import Dict, Optional, ContextManager, Any
 from contextlib import contextmanager
+from sqlalchemy.orm import Session
 
 from psycopg2 import OperationalError
 from sqlalchemy.exc import SQLAlchemyError
@@ -50,11 +51,14 @@ class Database(BaseDatabase):
         self.session_maker = sessionmaker(bind=self.engine)
 
     @contextmanager
-    def get_session(self) -> ContextManager:
+    def get_session(self) -> ContextManager[Session, Any, Any]:
         """Context manager to get a database session."""
         session = self.session_maker()
         try:
             yield session
+        except Exception:
+            session.rollback()
+            raise
         finally:
             session.close()
 
@@ -125,6 +129,9 @@ class Database(BaseDatabase):
             print(f"Database {masked_uri} connections closed.")
         except Exception as e:
             print(f"Error closing database connections: {e}")
+
+    def __str__(self) -> str:
+        return f"Database(uri={self.mask_sensitive_data()}, engine={self.engine})"
 
     def __repr__(self) -> str:
         masked_uri = self.mask_sensitive_data()
