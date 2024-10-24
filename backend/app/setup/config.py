@@ -99,7 +99,6 @@ class Settings(BaseSettings):
     PAGE_SIZE: int = 10
 
     @computed_field  # type: ignore[misc]
-    @functools.lru_cache(maxsize=1)  # Cache the result for optimization
     @property
     def server_host(self) -> str:
         # Use HTTPS for anything other than local development
