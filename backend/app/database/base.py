@@ -51,7 +51,7 @@ class Database(BaseDatabase):
         self.session_maker = sessionmaker(bind=self.engine)
 
     @contextmanager
-    def get_session(self) -> ContextManager[Session, Any, Any]:
+    def get_session(self) -> ContextManager[Session]:
         """Context manager to get a database session."""
         session = self.session_maker()
         try:
