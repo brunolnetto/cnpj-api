@@ -140,7 +140,7 @@ def setup_app(app_: FastAPI):
     setup_favicon(app_)
     setup_exception_handlers(app_)
     
-    app.include_router(api_router, prefix=settings.API_V1_STR)
+    app_.include_router(api_router, prefix=settings.API_V1_STR)
 
 def init_app() -> FastAPI:
     """Initializes and configures the FastAPI application."""
