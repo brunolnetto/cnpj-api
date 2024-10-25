@@ -1,5 +1,7 @@
 from typing import Optional
+from datetime import date, datetime
 from pydantic import BaseModel, Field, model_validator, field_validator
+from fastapi import HTTPException
 
 from backend.app.api.utils.cnpj import is_cnpj_str_valid
 from .base import BatchModel
@@ -13,16 +15,17 @@ class CNPJBatch(BatchModel):
 class CNPJQueryParams(LimitOffsetParams):
     """Query parameters for filtering CNPJ data."""
 
+    zipcode: Optional[str] = Field(None, description="8-digit ZIP code to filter the data")
+    city_name: Optional[str] = Field(None, description="City name to filter the data")
     state_abbrev: Optional[str] = Field(
         None, description="State abbreviation (e.g., 'SP' for São Paulo)"
     )
-
-    city_name: Optional[str] = Field(None, description="City name to filter the data")
-    zipcode: Optional[str] = Field(None, description="8-digit ZIP code to filter the data")
-
+    activity_start_date: Optional[str] = Field(
+        None, description="The date when the activity started.")
     cnae_code: Optional[str] = Field(None, description="CNAE code to filter the data")
-
-    is_all: bool = Field(True, description="Flag to return all records")
+    has_secondary_cnae: bool = Field(True, description="Flag to return all records")
+    only_headquarters: Optional[bool] = Field(
+        False, description="Flag to return only headquarters records")
 
     @field_validator('zipcode')
     def validate_zipcode(cls, value: str):
@@ -38,6 +41,18 @@ class CNPJQueryParams(LimitOffsetParams):
             raise ValueError("State abbreviation must be exactly 2 characters.")
         return value.upper() if type(value) == str else value
 
+    @field_validator("activity_start_date")
+    def parse_date(cls, value):
+        if isinstance(value, str):
+            for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
+                try:
+                    return datetime.strptime(value, fmt).date()
+                except ValueError:
+                    continue
+            # Raise an error if neither format worked
+            raise ValueError("Date must be in 'DD/MM/YYYY' or 'YYYY-MM-DD' format")
+        return value
+
     @model_validator(mode='before')
     def clean_inputs(cls, values: dict):
         """Sanitize and validate inputs."""
@@ -45,6 +60,10 @@ class CNPJQueryParams(LimitOffsetParams):
         values['cnae_code'] = cls._remove_quotes(values.get('cnae_code', ''))
         values['state_abbrev'] = cls._remove_quotes(values.get('state_abbrev', ''))
         values['zipcode'] = cls._remove_quotes(values.get('zipcode', ''))
+
+        if values.get('only_mei') and values.get('unable_mei'):
+            raise ValueError("Cannot filter for both MEI and non-MEI records.")
+
         return values
 
     @staticmethod

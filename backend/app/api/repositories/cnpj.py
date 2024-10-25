@@ -4,7 +4,7 @@ from json import loads
 
 import pandas as pd
 from sqlalchemy import text, Result
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from backend.app.utils.misc import string_to_json
 from backend.app.api.utils.cnpj import format_cnpj_list
@@ -46,21 +46,20 @@ from backend.app.api.repositories.constants import (
 )
 from backend.app.database.base import get_session
 from backend.app.setup.config import settings
-
-# Types
-CNPJList = List[CNPJ]
-JSON = Dict[str, Any]
-CodeType = Union[str, int]
-CodeListType = List[CodeType]
-PayloadType = Dict[str, str]
-
+from backend.app.api.repositories.types import (
+    CNPJList,
+    JSON,
+    CodeType,
+    CodeListType,
+    PayloadType,
+)
 
 class CNPJRepository:
-    def __init__(self, session: AsyncSession):
-        self.session = session
+    def __init__(self, session: Session):
+        self.session: Session = session
 
     @classmethod
-    def initialize_static_properties(cls, session: AsyncSession):
+    def initialize_static_properties(cls, session: Session):
         # Run the tasks sequentially to avoid concurrent session operations
         cnaes = cls.get_cnaes(session)
         legal_natures = cls.get_legal_natures(session)
@@ -84,38 +83,57 @@ class CNPJRepository:
         cls.establishment_type_dict = get_establishment_type_dict()
 
     @classmethod
-    def initialize_on_startup(cls, session: AsyncSession):
+    def initialize_on_startup(cls, session: Session):
         if not hasattr(cls, "cnaes_dict"):
             cls.initialize_static_properties(session)
 
     def get_cnpjs_raw(self, query_params: CNPJQueryParams):
         """
         Get CNPJs on database according to (state_abbrev, city_code, cnae_code, zipcode).
-        One may set filters is_all for checking all CNAE codes, limit for page size and
+        One may set filters has_secondary_cnae for checking all CNAE codes, limit for page size and
         offset for page start point.
         """
         # Filters
-        state_condition = f"uf='{query_params.state_abbrev}'" \
-            if query_params.state_abbrev else "1=1"
-        city_condition = f"municipio='{query_params.city_name}'" \
+        filled_zipcode = str(int(query_params.zipcode)) \
+            if query_params.zipcode else ""
+        zipcode_condition = f"cep='{filled_zipcode}'" \
+            if filled_zipcode else "1=1"
+
+        city_name=query_params.city_name
+        city_condition = f"municipio='{city_name.upper()}'" \
             if query_params.city_name else "1=1"
-        filled_zipcode = str(float(query_params.zipcode)) if query_params.zipcode else ""
-        zipcode_condition = f"cep = '{filled_zipcode}'" if filled_zipcode else "1=1"
-        
+
+        state_abbrev=query_params.state_abbrev
+        state_condition = f"uf='{state_abbrev.upper()}'" \
+            if query_params.state_abbrev else "1=1"
+
+        activity_start_date = query_params.activity_start_date
+
+        activity_start_date_condition = f"data_inicio_atividade>='{activity_start_date.strftime('%Y%m%d')}'" \
+            if activity_start_date else "1=1"
+
+        only_headquarters = query_params.only_headquarters
+        only_headquarters_condition = f"identificador_matriz_filial='1'" \
+            if only_headquarters else "1=1"
+
         if query_params.cnae_code:
             cnae_condition = (
-                f"""(
-            (
-                cnae_fiscal_principal = '{query_params.cnae_code}' or
-                cnae_fiscal_secundaria @> Array[{query_params.cnae_code}]
-            ) and situacao_cadastral = '2'
-        ) -- ATIVA"""
-                if query_params.is_all
-                else f"""(
-            (
-                cnae_fiscal_principal = '{query_params.cnae_code}'
-            ) and situacao_cadastral = '2'
-        ) -- ATIVA"""
+                f"""
+                (
+                    (
+                        cnae_fiscal_principal = '{query_params.cnae_code}' or
+                        cnae_fiscal_secundaria @> Array[{query_params.cnae_code}]
+                    )
+                )
+                """
+                if query_params.has_secondary_cnae
+                else f"""
+                (
+                    (
+                        cnae_fiscal_principal = '{query_params.cnae_code}'
+                    )
+                )
+                """
             )
         else:
             cnae_condition = "1=1"
@@ -130,15 +148,17 @@ class CNPJRepository:
                             lpad(cnpj_dv::text, 2, '0')
                         ) as cnpj,
                         situacao_cadastral,
-                        municipio,
-                        uf,
                         cep,
+                        uf,
+                        municipio,
+                        data_inicio_atividade,
                         cnae_fiscal_principal,
                         case
                             WHEN cnae_fiscal_secundaria = 'nan' THEN '{{}}'
                         else
                             string_to_array(cnae_fiscal_secundaria, ',')::INT[]
-                        end as cnae_fiscal_secundaria
+                        end as cnae_fiscal_secundaria,
+                        identificador_matriz_filial
                     from estabelecimento
                     where {state_condition}
                 ),
@@ -149,18 +169,42 @@ class CNPJRepository:
                         estabelecimento_uf
                     where
                         {city_condition} and {zipcode_condition}
+                ),
+                estabelecimento_cnae as (
+                    select
+                        *
+                    from
+                        estabelecimento_uf_cidade
+                    where
+                        {cnae_condition}
+                ),
+                estabelecimento_date as (
+                    select
+                        *
+                    from
+                        estabelecimento_cnae
+                    where
+                        {activity_start_date_condition}
+                ),
+                estabelecimento_matriz as (
+                    select
+                        *
+                    from
+                        estabelecimento_date
+                    where
+                        {only_headquarters_condition}
                 )
 
                 select cnpj
-                from estabelecimento_uf_cidade
-                where
-                    {cnae_condition}
+                from estabelecimento_matriz
                 limit
                     {query_params.limit}
                 offset
                     {query_params.offset}
             """
         )
+        
+        print(query)
 
         cnpjs_result: Result = replace_invalid_fields_on_list_tuple(
             self.session.execute(query).fetchall()

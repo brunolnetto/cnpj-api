@@ -136,7 +136,9 @@ class CNPJService:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-    def get_cnpjs_with_cnae(self, cnae_code: CodeType, query_params: PaginatedLimitOffsetParams):
+    def get_cnpjs_with_cnae(
+        self, cnae_code: CodeType, query_params: PaginatedLimitOffsetParams
+    ):
         """
         Get a list of establishments with a given CNAE code.
 
@@ -729,7 +731,7 @@ class CNPJService:
         """Validate the state abbreviation."""
         if state_abbrev and state_abbrev not in STATES_BRAZIL:
             raise ValueError(f"State {state_abbrev} not found.")
-
+    
     def _validate_cnae(self, cnae_code: str):
         """Validate the CNAE code."""
         if cnae_code:
@@ -741,6 +743,17 @@ class CNPJService:
             except ValueError:
                 raise ValueError(f"Invalid CNAE code {cnae_code}.")
 
+    def _validate_legal_nature(self, legal_nature_code: str):
+        """Validate the CNAE code."""
+        if legal_nature_code:
+            try:
+                if not self.repository.get_legal_nature(legal_nature_code):
+                    raise ValueError(f"Legal nature code {legal_nature_code} not found.")
+
+                return str(int(legal_nature_code))
+            except ValueError:
+                raise ValueError(f"Invalid Legal nature code {legal_nature_code}.")
+
     def _validate_zipcode(self, zipcode: str) -> str:
         """Validate the zipcode."""
         if zipcode:
@@ -749,9 +762,16 @@ class CNPJService:
             except ValueError:
                 raise ValueError(f"Invalid Zipcode {zipcode}.")
         return ""
+    
+    def validate_cnpj_query_params(self, query_params: CNPJQueryParams):
+        # Validate inputs
+        query_params.city_name = self._validate_city(query_params.city_name)
 
-    def validate_query_params(self, query_params):
-        pass
+        self._validate_state(query_params.state_abbrev)
+        query_params.cnae_code = self._validate_cnae(query_params.cnae_code)
+        query_params.zipcode = self._validate_zipcode(query_params.zipcode)
+        
+        return query_params
 
     def _process_cnpjs(self, cnpjs_raw_list: list) -> dict:
         """Convert raw CNPJs to objects and fetch additional info if available."""
@@ -772,14 +792,7 @@ class CNPJService:
         """
 
         try:
-            # Validate inputs
-            query_params.city_name = self._validate_city(query_params.city_name)
-
-            self._validate_state(query_params.state_abbrev)
-            cnae_code = self._validate_cnae(query_params.cnae_code)
-            query_params.zipcode = self._validate_zipcode(query_params.zipcode)
-
-            # Get raw CNPJs and process them
+            query_params=self.validate_cnpj_query_params(query_params)
             cnpjs_raw_list = self.repository.get_cnpjs_raw(query_params)
 
             return self._process_cnpjs(cnpjs_raw_list)
