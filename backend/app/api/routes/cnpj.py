@@ -512,7 +512,6 @@ def get_cnpjs(
     Returns:
     - A list of CNPJs as dictionaries.
     """
-    print(':DD')
     return cnpj_service.get_cnpjs(query_params)
 
 

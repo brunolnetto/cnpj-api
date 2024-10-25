@@ -812,7 +812,6 @@ class CNPJService:
         try:
             query_params = self.validate_cnpj_query_params(query_params)
             cnpjs_raw_list = self.repository.get_cnpjs_raw(query_params)
-
             return self._process_cnpjs(cnpjs_raw_list)
 
         except Exception as e:
