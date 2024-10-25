@@ -65,7 +65,9 @@ def is_cnpj_str_valid(cnpj: str) -> Dict[str, Union[bool, str]]:
         digit1, digit2 = calculate_cnpj_verification_digits(cnpj)
 
     except ValueError:
-        return {"is_valid": False, "reason": "CNPJ contains non-numeric characters."}
+        return {
+            "is_valid": False,
+            "reason": "CNPJ contains non-numeric characters."}
 
     # Check verification digits
     if cnpj[12] != str(digit1) or cnpj[13] != str(digit2):
@@ -109,8 +111,10 @@ def format_cnpj_list(cnpj_list: List[str]) -> str:
     return ",".join(f"'{cnpj}'" for cnpj in cnpj_list)
 
 
-def get_cnpj_code_description_entries(session: Session, table_name: str) -> List[Dict[str, str]]:
+def get_cnpj_code_description_entries(
+        session: Session, table_name: str) -> List[Dict[str, str]]:
     """Get all code-description entries from the specified table."""
-    entries_result = session.execute(text(f"SELECT codigo, descricao FROM {table_name}")).fetchall()
+    entries_result = session.execute(
+        text(f"SELECT codigo, descricao FROM {table_name}")).fetchall()
     entries_df = pd.DataFrame(entries_result, columns=["code", "text"])
     return entries_df.to_dict(orient="records")

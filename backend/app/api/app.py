@@ -41,7 +41,7 @@ async def lifespan(app_: FastAPI):
     initialization and cleanup tasks related to the application's lifespan
     :type app: FastAPI
     """
-    t0=perf_counter()
+    t0 = perf_counter()
 
     # Data related entities
     print_execution_time(init_database)()
@@ -68,7 +68,7 @@ async def lifespan(app_: FastAPI):
 
     yield
 
-    t0=perf_counter()
+    t0 = perf_counter()
 
     # Cleanup tasks
     await print_execution_time(task_orchestrator.shutdown)()
@@ -76,7 +76,8 @@ async def lifespan(app_: FastAPI):
     # Disconnect from databases
     print_execution_time(multi_database.disconnect)()
 
-    print(f"Shutdown took {perf_counter()-t0} seconds")    
+    print(f"Shutdown took {perf_counter()-t0} seconds")
+
 
 def create_app():
     # Generates the FastAPI application
@@ -96,7 +97,8 @@ def create_app():
 def setup_cors(app: FastAPI) -> None:
     """Sets up CORS middleware for the application."""
     if settings.BACKEND_CORS_ORIGINS:
-        urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]
+        urls = [str(origin).strip("/")
+                for origin in settings.BACKEND_CORS_ORIGINS]
         app.add_middleware(
             CORSMiddleware,
             allow_origins=urls,
@@ -133,19 +135,21 @@ def setup_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
     app.add_exception_handler(Exception, general_exception_handler)
 
+
 def setup_app(app_: FastAPI):
     setup_cors(app_)
     setup_middlewares(app_)
     setup_static_files(app_)
     setup_favicon(app_)
     setup_exception_handlers(app_)
-    
+
     app_.include_router(api_router, prefix=settings.API_V1_STR)
+
 
 def init_app() -> FastAPI:
     """Initializes and configures the FastAPI application."""
     app = create_app()
-    
+
     setup_app(app)
 
     return app

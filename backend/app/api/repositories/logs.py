@@ -27,7 +27,10 @@ class RequestLogRepository(BaseRepository):
         self.session.refresh(db_log)
         return db_log
 
-    def update(self, item_id: UUID, data: Dict[str, Any]) -> Optional[RequestLog]:
+    def update(self,
+               item_id: UUID,
+               data: Dict[str,
+                          Any]) -> Optional[RequestLog]:
         # Not typically used for RequestLog, but implemented for completeness
         return None
 
@@ -43,7 +46,8 @@ class RequestLogRepository(BaseRepository):
         return True
 
     def get_all(self, limit: int = 100, offset: int = 0) -> List[RequestLog]:
-        result = self.session.execute(select(RequestLog).offset(offset).limit(limit))
+        result = self.session.execute(
+            select(RequestLog).offset(offset).limit(limit))
         return result.scalars().all()
 
     def delete_old_logs(self, time_delta: timedelta):
@@ -55,7 +59,8 @@ class RequestLogRepository(BaseRepository):
         self.session.commit()
 
     def delete_excess_logs(self, max_rows: int):
-        query = self.session.query(RequestLog).order_by(RequestLog.relo_inserted_at)
+        query = self.session.query(RequestLog).order_by(
+            RequestLog.relo_inserted_at)
         total_rows = query.count()
         if total_rows > max_rows:
             delete_query = query.delete(synchronize_session="fetch")
@@ -65,8 +70,8 @@ class RequestLogRepository(BaseRepository):
     def lookup_and_update_ip_info(self):
         # Get all logs with missing IP info
         logs_without_ip_info = (
-            self.session.query(RequestLog).filter(RequestLog.relo_ip_info == {}).all()
-        )
+            self.session.query(RequestLog).filter(
+                RequestLog.relo_ip_info == {}).all())
 
         for log in logs_without_ip_info:
             ip_address_ = log.relo_ip_address
@@ -79,8 +84,7 @@ class RequestLogRepository(BaseRepository):
 
                     # Check if the IP is public
                     if not (
-                        ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved
-                    ):
+                            ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved):
                         # Perform IP lookup only for public IPs
                         obj = IPWhois(ip_address_)
                         results = obj.lookup_rdap(depth=1)
@@ -172,7 +176,8 @@ class AppStartLogRepository(BaseRepository):
         """
         Retrieves all AppStartLog entries with pagination support.
         """
-        result = self.session.execute(select(AppStartLog).offset(offset).limit(limit))
+        result = self.session.execute(
+            select(AppStartLog).offset(offset).limit(limit))
         return result.scalars().all()
 
     def delete_by_id(self, item_id: UUID) -> bool:
@@ -200,7 +205,8 @@ class AppStartLogRepository(BaseRepository):
         """
         Deletes excess AppStartLog entries, keeping only a specified number of rows.
         """
-        query = self.session.query(AppStartLog).order_by(AppStartLog.stlo_start_time)
+        query = self.session.query(AppStartLog).order_by(
+            AppStartLog.stlo_start_time)
         total_rows = query.count()
         if total_rows > max_rows:
             delete_query = query.delete(synchronize_session="fetch")

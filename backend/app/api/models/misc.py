@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from backend.app.setup.config import settings
 from backend.app.api.constants import MAX_LIMIT
 
+
 class LimitOffsetParams(BaseModel):
     """Pagination parameters based on limit-offset."""
 
@@ -17,4 +18,5 @@ class LimitOffsetParams(BaseModel):
 class PaginatedLimitOffsetParams(LimitOffsetParams):
     """Extended limit-offset parameters with optional pagination toggle."""
 
-    enable_pagination: bool = Field(True, description="Enable or disable pagination")
+    enable_pagination: bool = Field(
+        True, description="Enable or disable pagination")

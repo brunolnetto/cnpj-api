@@ -68,7 +68,8 @@ class TaskRepository(BaseRepository):
 
     def get_all(self, limit: int = 100, offset: int = 0) -> List[Task]:
         try:
-            result = self.session.execute(select(Task).offset(offset).limit(limit))
+            result = self.session.execute(
+                select(Task).offset(offset).limit(limit))
             return result.scalars().all()
 
         except Exception as e:
@@ -93,4 +94,5 @@ def get_task_repository():
         return TaskRepository(session)
 
 
-TaskRepositoryDependency = Annotated[TaskRepository, Depends(get_task_repository)]
+TaskRepositoryDependency = Annotated[TaskRepository, Depends(
+    get_task_repository)]

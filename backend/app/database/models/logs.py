@@ -51,7 +51,10 @@ class Task(logs_database.base):
     task_id = Column(
         UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4
     )
-    task_created_at = Column(DateTime(timezone=True), server_default=func.now())
+    task_created_at = Column(
+        DateTime(
+            timezone=True),
+        server_default=func.now())
     task_schedule_type = Column(String, index=True)
     task_schedule_params = Column(JSONB)
     task_name = Column(String, index=True)
@@ -61,8 +64,10 @@ class Task(logs_database.base):
 
     # Define a relationship with TaskLog model (one-to-many)
     logs = relationship(
-        "TaskLog", back_populates="task", cascade="all, delete", passive_updates=False
-    )
+        "TaskLog",
+        back_populates="task",
+        cascade="all, delete",
+        passive_updates=False)
 
     def __repr__(self):
         params = f"id={self.task_id}, name={self.task_name}, type={self.task_type}, active={self.task_is_active}"
@@ -93,7 +98,10 @@ class TaskLog(logs_database.base):
     talo_success = Column(Boolean, default=False)
     talo_error_message = Column(Text, nullable=True)
     talo_error_trace = Column(Text, nullable=True)
-    talo_inserted_at = Column(DateTime(timezone=True), server_default=func.now())
+    talo_inserted_at = Column(
+        DateTime(
+            timezone=True),
+        server_default=func.now())
 
     task = relationship("Task", back_populates="logs")
 
@@ -108,7 +116,10 @@ class AppStartLog(logs_database.base):
     stlo_id = Column(
         UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4
     )
-    stlo_start_time = Column(DateTime(timezone=True), server_default=func.now())
+    stlo_start_time = Column(
+        DateTime(
+            timezone=True),
+        server_default=func.now())
 
     def __repr__(self):
         params = f"id={self.stlo_id}, time={self.stlo_start_time}"
@@ -121,7 +132,10 @@ class DebugLog(logs_database.base):
     delo_id = Column(
         UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4
     )
-    delo_created_at = Column(DateTime(timezone=True), server_default=func.now())
+    delo_created_at = Column(
+        DateTime(
+            timezone=True),
+        server_default=func.now())
     delo_environment = Column(String)
     delo_machine = Column(String)
     delo_level = Column(String, index=True)
@@ -137,7 +151,10 @@ class RequestTimingLog(logs_database.base):
     rtlo_id = Column(
         UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4
     )
-    rtlo_created_at = Column(DateTime(timezone=True), server_default=func.now())
+    rtlo_created_at = Column(
+        DateTime(
+            timezone=True),
+        server_default=func.now())
     rtlo_url_path = Column(String, index=True)
     rtlo_method = Column(String)
     rtlo_process_time = Column(Float)

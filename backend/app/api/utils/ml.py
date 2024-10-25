@@ -25,12 +25,11 @@ def compute_token_score(
     """Helper function to compute the score for each eligible token."""
     # Calculate the edit distance
     distance = edit_distance(name.lower(), processed_municipality)
-    
+
     # Compute word frequency score
-    word_score = sum(
-        word_freq_municipality.get(word, 0) for word in nltk.word_tokenize(name.lower())
-    ) / 2
-    
+    word_score = sum(word_freq_municipality.get(word, 0)
+                     for word in nltk.word_tokenize(name.lower())) / 2
+
     # Return combined score and token name
     return distance + word_score, name
 

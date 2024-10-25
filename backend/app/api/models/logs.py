@@ -2,7 +2,7 @@
 from typing import Dict, Optional
 from datetime import datetime
 
-from pydantic import BaseModel, Field, AnyUrl
+from pydantic import BaseModel, Field
 
 
 class RequestLogBase(BaseModel):
@@ -17,7 +17,8 @@ class RequestLogBase(BaseModel):
     relo_status_code: int = Field(
         ..., description="HTTP status code of the response", ge=100, le=599
     )
-    relo_ip_address: Optional[str] = Field(None, description="Client's IP address")
+    relo_ip_address: Optional[str] = Field(
+        None, description="Client's IP address")
     relo_device_info: Optional[str] = Field(
         None, description="Information about the client device"
     )
@@ -49,8 +50,10 @@ class TaskLogCreate(BaseModel):
     talo_details: Dict[str, Optional[str]] = Field(
         default_factory=dict, description="Detailed information about the task"
     )
-    talo_start_time: datetime = Field(..., description="Start time of the task")
-    talo_end_time: Optional[datetime] = Field(None, description="End time of the task")
+    talo_start_time: datetime = Field(...,
+                                      description="Start time of the task")
+    talo_end_time: Optional[datetime] = Field(
+        None, description="End time of the task")
     talo_success: bool = Field(
         False, description="Indicates whether the task was successful"
     )

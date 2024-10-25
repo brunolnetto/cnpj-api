@@ -6,7 +6,9 @@ from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 
 
-async def not_found_handler(request: Request, exc: HTTPException) -> JSONResponse:
+async def not_found_handler(
+        request: Request,
+        exc: HTTPException) -> JSONResponse:
     """Handles 404 Not Found exceptions."""
     warning_msg = "The requested resource could not be found."
     endpoints = f"{settings.API_V1_STR}/docs or {settings.API_V1_STR}/redoc"
@@ -22,7 +24,9 @@ async def not_found_handler(request: Request, exc: HTTPException) -> JSONRespons
     )
 
 
-async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+async def general_exception_handler(
+        request: Request,
+        exc: Exception) -> JSONResponse:
     """Handles all uncaught exceptions."""
     logger.error(
         f"Unhandled exception occurred at {request.method} {request.url}: {exc}"

@@ -14,7 +14,8 @@ def format_database_date(date_str_: str, delimiter: str = "/") -> str:
         str: The formatted date string.
     """
     date_str_ = str(date_str_)
-    if not is_field_valid(date_str_) or not is_number(date_str_) or len(date_str_) != 8:
+    if not is_field_valid(date_str_) or not is_number(
+            date_str_) or len(date_str_) != 8:
         return None
 
     return f"{date_str_[6:]}{delimiter}{date_str_[4:6]}{delimiter}{date_str_[:4]}"
@@ -66,7 +67,8 @@ def format_phone(
     """
 
     def is_phone_valid(phone_):
-        return is_number(phone_) and is_field_valid(phone_) and len(phone_) in (8, 9)
+        return is_number(phone_) and is_field_valid(
+            phone_) and len(phone_) in (8, 9)
 
     def is_ddd_valid(ddd_):
         return is_number(ddd_) and is_field_valid(ddd_) and len(ddd_) in (1, 2)

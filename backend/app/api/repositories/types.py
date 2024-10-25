@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, Union, List, Any, Optional
+from typing import Dict, Union, List, Any
 from backend.app.api.models.cnpj import CNPJ
 
 # Types

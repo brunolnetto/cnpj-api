@@ -33,7 +33,8 @@ async def log_request(
     # Define log_request as a standalone function
     log_data = {
         "relo_method": request_data["method"],
-        "relo_url": str(request_data["url"]),
+        "relo_url": str(
+            request_data["url"]),
         "relo_headers": request_data["headers"],
         "relo_status_code": response_data["status_code"],
         "relo_ip_address": request_data["client_host"],
@@ -41,7 +42,9 @@ async def log_request(
         "relo_device_info": request_data["user_agent"],
         "relo_request_duration_seconds": f"{process_time:.6f}",
         "relo_response_size": response_data["response_size"],
-        "relo_inserted_at": strftime("%Y-%m-%d %H:%M:%S", localtime(start_time)),
+        "relo_inserted_at": strftime(
+            "%Y-%m-%d %H:%M:%S",
+            localtime(start_time)),
     }
 
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
@@ -71,7 +74,8 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
                 status_code=original_response.status_code,
                 headers=original_response.headers,
             )
-            wrapped_response.body_bytes = b"".join(body_bytes)  # Store full body
+            wrapped_response.body_bytes = b"".join(
+                body_bytes)  # Store full body
 
         # Extract serializable data from request and response
         request_data = {
@@ -105,7 +109,10 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
             # The log_request function should now only take serializable
             # arguments
             task_args=[request_data, response_data, process_time, start_time],
-            schedule_params={"run_time": datetime.now() + timedelta(seconds=5)},
+            schedule_params={
+                "run_time": datetime.now() +
+                timedelta(
+                    seconds=5)},
             # Delay execution by 5 seconds
             task_details={},  # No additional details required for this task
         )

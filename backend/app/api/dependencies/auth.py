@@ -31,7 +31,8 @@ class JWTBearer(OAuth2PasswordBearer):
             raise MissingTokenException()
 
         try:
-            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+            payload = jwt.decode(
+                token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
             # jwt.decode will raise ExpiredSignatureError if the token is
             # expired
         except ExpiredTokenException:

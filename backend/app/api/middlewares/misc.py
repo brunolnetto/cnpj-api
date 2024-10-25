@@ -32,7 +32,8 @@ class TimingMiddleware(BaseHTTPMiddleware):
 
         # Trigger a background task to save the execution time
         background_tasks = BackgroundTasks()
-        background_tasks.add_task(self.save_request_timing, request, process_time)
+        background_tasks.add_task(
+            self.save_request_timing, request, process_time)
 
         # Add background tasks to the response
         response.background = background_tasks

@@ -15,15 +15,19 @@ class CNPJBatch(BatchModel):
 class CNPJQueryParams(LimitOffsetParams):
     """Query parameters for filtering CNPJ data."""
 
-    zipcode: Optional[str] = Field(None, description="8-digit ZIP code to filter the data")
-    city_name: Optional[str] = Field(None, description="City name to filter the data")
+    zipcode: Optional[str] = Field(
+        None, description="8-digit ZIP code to filter the data")
+    city_name: Optional[str] = Field(
+        None, description="City name to filter the data")
     state_abbrev: Optional[str] = Field(
         None, description="State abbreviation (e.g., 'SP' for São Paulo)"
     )
     activity_start_date: Optional[str] = Field(
         None, description="The date when the activity started.")
-    cnae_code: Optional[str] = Field(None, description="CNAE code to filter the data")
-    has_secondary_cnae: bool = Field(True, description="Flag to return all records")
+    cnae_code: Optional[str] = Field(
+        None, description="CNAE code to filter the data")
+    has_secondary_cnae: bool = Field(
+        True, description="Flag to return all records")
     only_headquarters: Optional[bool] = Field(
         False, description="Flag to return only headquarters records")
 
@@ -38,8 +42,8 @@ class CNPJQueryParams(LimitOffsetParams):
     def validate_state_abbrev(cls, value: str):
         """Validate that the state abbreviation is valid (optional but must be 2 letters if provided)."""
         if value and len(value) != 2:
-            raise ValueError("State abbreviation must be exactly 2 characters.")
-        return value.upper() if type(value) == str else value
+            raise ValueError(
+                "State abbreviation must be exactly 2 characters.")
 
     @field_validator("activity_start_date")
     def parse_date(cls, value):
@@ -50,7 +54,8 @@ class CNPJQueryParams(LimitOffsetParams):
                 except ValueError:
                     continue
             # Raise an error if neither format worked
-            raise ValueError("Date must be in 'DD/MM/YYYY' or 'YYYY-MM-DD' format")
+            raise ValueError(
+                "Date must be in 'DD/MM/YYYY' or 'YYYY-MM-DD' format")
         return value
 
     @model_validator(mode='before')
@@ -58,7 +63,8 @@ class CNPJQueryParams(LimitOffsetParams):
         """Sanitize and validate inputs."""
         values['city_name'] = cls._remove_quotes(values.get('city_name', ''))
         values['cnae_code'] = cls._remove_quotes(values.get('cnae_code', ''))
-        values['state_abbrev'] = cls._remove_quotes(values.get('state_abbrev', ''))
+        values['state_abbrev'] = cls._remove_quotes(
+            values.get('state_abbrev', ''))
         values['zipcode'] = cls._remove_quotes(values.get('zipcode', ''))
 
         if values.get('only_mei') and values.get('unable_mei'):
@@ -73,13 +79,16 @@ class CNPJQueryParams(LimitOffsetParams):
             return value.replace('"', '').replace("'", '')
         return value
 
+
 class ModeloSimplesSimei(BaseModel):
     optante: bool = False
     data_opcao: Optional[str]
     data_exclusao: Optional[str]
 
+
 class InvalidCNPJError(ValueError):
     pass
+
 
 class CNPJ:
     def __init__(self, basico: str, ordem: str, digitos_verificadores: str):
@@ -93,7 +102,8 @@ class CNPJ:
         try:
             self.ordem_int = int(ordem)
         except ValueError as exc:
-            raise ValueError("Digits 'ordem' contains non-numeric characters.") from exc
+            raise ValueError(
+                "Digits 'ordem' contains non-numeric characters.") from exc
 
         try:
             self.digitos_verificadores_int = int(digitos_verificadores)
@@ -104,12 +114,18 @@ class CNPJ:
 
         self.basico_str = self._validate_digits(basico, 8, 'basico')
         self.ordem_str = self._validate_digits(ordem, 4, 'ordem')
-        self.digitos_verificadores_str = self._validate_digits(digitos_verificadores, 2, 'digitos_verificadores')
+        self.digitos_verificadores_str = self._validate_digits(
+            digitos_verificadores, 2, 'digitos_verificadores')
 
-    def _validate_digits(self, value: str, length: int, field_name: str) -> str:
+    def _validate_digits(
+            self,
+            value: str,
+            length: int,
+            field_name: str) -> str:
         """Validate if the string contains numeric characters and has the expected length."""
         if not value.isdigit():
-            raise InvalidCNPJError(f"Digits '{field_name}' contains non-numeric characters.")
+            raise InvalidCNPJError(
+                f"Digits '{field_name}' contains non-numeric characters.")
         return value.zfill(length)
 
     def is_valid_dict(self):

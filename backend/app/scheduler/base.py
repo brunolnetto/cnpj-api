@@ -119,13 +119,11 @@ class ScheduledTask:
                 if inspect.iscoroutinefunction(self.task_config.task_callable):
                     result = asyncio.run(
                         self.task_config.task_callable(
-                            *self.task_config.task_args, **self.task_config.task_details
-                        )
-                    )
+                            *self.task_config.task_args,
+                            **self.task_config.task_details))
                 else:
                     result = self.task_config.task_callable(
-                        *self.task_config.task_args, **self.task_config.task_details
-                    )
+                        *self.task_config.task_args, **self.task_config.task_details)
 
                 task_log.talo_success = True
                 task_log.talo_status = "success"

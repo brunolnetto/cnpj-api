@@ -13,7 +13,8 @@ limiter = Limiter(
 DISABLE_RATE_LIMITING = settings.ENVIRONMENT == "development"
 
 
-def rate_limit(rate_limit_config: str = settings.DEFAULT_RATE_LIMIT) -> callable:
+def rate_limit(
+        rate_limit_config: str = settings.DEFAULT_RATE_LIMIT) -> callable:
     """
     A decorator to apply rate limiting to a function.
 
@@ -30,7 +31,8 @@ def rate_limit(rate_limit_config: str = settings.DEFAULT_RATE_LIMIT) -> callable
         if DISABLE_RATE_LIMITING:
             return func
 
-        logger.info(f"Applying rate limit: {rate_limit_config} to {func.__name__}")
+        logger.info(
+            f"Applying rate limit: {rate_limit_config} to {func.__name__}")
 
         return limiter.limit(rate_limit_config)(func)
 

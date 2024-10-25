@@ -15,7 +15,8 @@ def print_execution_time(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
+        print(
+            f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
         return result
 
     @wraps(func)
@@ -24,7 +25,8 @@ def print_execution_time(func):
         result = await func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
+        print(
+            f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
         return result
 
     return async_wrapper if iscoroutinefunction(func) else sync_wrapper
@@ -56,7 +58,8 @@ def check_limit_and_offset(limit: int, offset: int) -> tuple[int, int]:
             f"Offset must be non-negative. Provided offset value: {offset}"
         )
     if not is_positive(limit):
-        raise ValueError(f"Limit must be positive. Provided limit value: {limit}")
+        raise ValueError(
+            f"Limit must be positive. Provided limit value: {limit}")
 
     return min(limit, MAX_LIMIT), offset
 

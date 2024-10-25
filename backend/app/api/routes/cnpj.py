@@ -1,6 +1,6 @@
-from typing import Union, Dict, Annotated, Optional
+from typing import Union, Dict
 
-from fastapi import APIRouter, Request, Query, Depends
+from fastapi import APIRouter, Request, Depends
 
 from backend.app.api.services.cnpj import CNPJService, CNPJServiceDependency
 from backend.app.rate_limiter import rate_limit
@@ -23,7 +23,6 @@ def get_cnaes(
     search_token: str = "",
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
-    
     """
     Get a list of CNAEs from the database.
 
@@ -57,6 +56,7 @@ def get_cnae_objects(
     - A list with the CNAE objects.
     """
     return cnpj_service.get_cnae_objects(cnae_code_batch)
+
 
 @rate_limit()
 @router.post("/cnaes/cnpjs")
