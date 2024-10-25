@@ -2,12 +2,18 @@ version: '3.3'
 
 services:
   backend-app:
+    ## In development: we use the build context to build the image 
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    # ports: 
+    #   - "8000:8000"
     image: josezago/cnpj-api
     networks:
       - ConexxoHubNet
     deploy:
       mode: replicated
-      replicas: 5
+      replicas: 10
       placement:
         constraints:
           - node.role == manager
