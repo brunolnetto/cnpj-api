@@ -2,7 +2,7 @@ alembic==1.13.3
 asyncpg==0.30.0
 APScheduler==4.0.0a5
 bs4==0.0.2
-fastapi==0.115.2
+fastapi==0.115.4
 fireducks==1.0.6
 gunicorn==23.0.0
 ipwhois==1.2.0
