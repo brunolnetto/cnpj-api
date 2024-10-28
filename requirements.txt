@@ -11,7 +11,7 @@ python-jose==3.3.0
 nltk==3.9.1
 numpy==2.0.2
 pandas==2.2.3
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10
 pyarrow==18.0.0
 pydantic-settings==2.6.0
 starlette==0.41.2
