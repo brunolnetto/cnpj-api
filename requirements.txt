@@ -13,7 +13,7 @@ numpy==2.0.2
 pandas==2.2.3
 psycopg2-binary==2.9.10
 pyarrow==17.0.0
-pydantic-settings==2.6.0
+pydantic-settings==2.6.1
 starlette==0.41.2
 slowapi==0.1.9
 SQLAlchemy==2.0.36
