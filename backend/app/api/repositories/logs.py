@@ -215,16 +215,17 @@ class AppStartLogRepository(BaseRepository):
 
 
 class DebuggingDatabaseHandler(logging.Handler):
-    """
-    A custom logging handler that logs messages to the database.
-    """
-
     def __init__(self, db_session: Session):
-        logging.Handler.__init__(self)
+        super().__init__()
         self.session = db_session
         self.queue = asyncio.Queue()
-        self.loop = asyncio.get_event_loop()
         self.stop_event = asyncio.Event()
+        
+        # Create a new event loop and set it as the current loop
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        
+        # Start the processing task
         self.loop.create_task(self.process_queue())
 
     def emit(self, record):
