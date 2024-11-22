@@ -24,7 +24,7 @@ from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware as AR
 from backend.app.api.utils.misc import print_execution_time
 from backend.app.api.middlewares.misc import TimingMiddleware
 from backend.app.api.dependencies.logs import log_app_start
-from backend.app.api.dependencies.cnpj import initialize_CNPJRepository_on_startup
+from backend.app.api.dependencies.cnpj import initialize_CNPJRepository
 from backend.app.database.base import init_database, multi_database
 from backend.app.api.utils.ml import init_nltk
 from backend.app.api.rate_limiter import rate_limit, limiter
@@ -52,7 +52,7 @@ async def lifespan(app_: FastAPI):
     await print_execution_time(setup_logger)()
 
     # Initialize CNPJ repository
-    print_execution_time(initialize_CNPJRepository_on_startup)()
+    print_execution_time(initialize_CNPJRepository)()
 
     # Log app startup
     print_execution_time(log_app_start)()
