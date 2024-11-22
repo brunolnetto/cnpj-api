@@ -22,7 +22,7 @@ class CNPJQueryParams(LimitOffsetParams):
     state_abbrev: Optional[str] = Field(
         None, description="State abbreviation (e.g., 'SP' for São Paulo)"
     )
-    activity_start_date: Optional[str] = Field(
+    activity_start_date: Optional[date] = Field(
         None, description="The date when the activity started.")
     cnae_code: Optional[str] = Field(
         None, description="CNAE code to filter the data")
@@ -42,29 +42,14 @@ class CNPJQueryParams(LimitOffsetParams):
     def validate_state_abbrev(cls, value: str):
         """Validate that the state abbreviation is valid (optional but must be 2 letters if provided)."""
         if value and len(value) != 2:
-            raise ValueError(
-                "State abbreviation must be exactly 2 characters.")
-
-    @field_validator("activity_start_date")
-    def parse_date(cls, value):
-        if isinstance(value, str):
-            for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
-                try:
-                    return datetime.strptime(value, fmt).date()
-                except ValueError:
-                    continue
-            # Raise an error if neither format worked
-            raise ValueError(
-                "Date must be in 'DD/MM/YYYY' or 'YYYY-MM-DD' format")
-        return value
+            raise ValueError("State abbreviation must be exactly 2 characters.")
 
     @model_validator(mode='before')
     def clean_inputs(cls, values: dict):
         """Sanitize and validate inputs."""
         values['city_name'] = cls._remove_quotes(values.get('city_name', ''))
         values['cnae_code'] = cls._remove_quotes(values.get('cnae_code', ''))
-        values['state_abbrev'] = cls._remove_quotes(
-            values.get('state_abbrev', ''))
+        values['state_abbrev'] = cls._remove_quotes(values.get('state_abbrev', ''))
         values['zipcode'] = cls._remove_quotes(values.get('zipcode', ''))
 
         if values.get('only_mei') and values.get('unable_mei'):

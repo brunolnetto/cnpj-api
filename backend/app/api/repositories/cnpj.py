@@ -613,6 +613,7 @@ class CNPJRepository:
             left join natju on natju.codigo::text = emp.natureza_juridica::text
             """
         )
+        print(query)
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
             company_result: Result = session.execute(query).fetchall()
@@ -966,7 +967,7 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the partners.
         """
-        cnpj_basicos_str = format_cnpj_list(cnpj_list)
+        cnpj_basicos_str = comma_stringify_list([cnpj.basico_int for cnpj in cnpj_list])
 
         query = text(
             f"""
@@ -1005,8 +1006,7 @@ class CNPJRepository:
             partners_result = session.execute(query)
             partners_result: Result = partners_result.fetchall()
 
-        partners_result: Result = replace_invalid_fields_on_list_tuple(
-            partners_result)
+        partners_result: Result = replace_invalid_fields_on_list_tuple(partners_result)
         partners_result: Result = replace_spaces_on_list_tuple(partners_result)
 
         columns = ["cnpj_basico", "qsa"]
@@ -1074,8 +1074,7 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the partners.
         """
-        cnpj_basicos_str = comma_stringify_list(
-            [cnpj.basico_int for cnpj in cnpj_list])
+        cnpj_basicos_str = comma_stringify_list([cnpj.basico_int for cnpj in cnpj_list])
 
         query = text(
             f"""
@@ -1139,9 +1138,7 @@ class CNPJRepository:
             simples_simei_result: Result = session.execute(query)
 
         simples_simei_result: Result = simples_simei_result.fetchall()
-        simples_simei_result = replace_invalid_fields_on_list_tuple(
-            simples_simei_result
-        )
+        simples_simei_result = replace_invalid_fields_on_list_tuple(simples_simei_result)
         simples_simei_result = replace_spaces_on_list_tuple(
             simples_simei_result)
 
@@ -1154,8 +1151,9 @@ class CNPJRepository:
         simples_simei_df["cnpj_basico"] = simples_simei_df["cnpj_basico"].apply(
             zfill_factory(8))
 
-        cnpjs_raw_base = [(cnpj.to_raw(), cnpj.to_tuple()[0])
-                          for cnpj in cnpj_list]
+        cnpjs_raw_base = [
+            (cnpj.to_raw(), cnpj.to_tuple()[0]) for cnpj in cnpj_list
+        ]
 
         not_selected_dict = {
             "optante": False,
@@ -1169,8 +1167,7 @@ class CNPJRepository:
         )
 
         def cnpj_map(cnpj_base_):
-            simples_str = simples_simei_dict.get(
-                cnpj_base_, {}).get("simples", "{}")
+            simples_str = simples_simei_dict.get(cnpj_base_, {}).get("simples", "{}")
             normalized_json = normalize_json(simples_str)
             simples_dict = loads(normalized_json)
 

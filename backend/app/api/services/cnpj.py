@@ -173,9 +173,8 @@ class CNPJService:
         return cnpjs
 
     def get_cnpjs_by_cnaes(
-            self,
-            cnae_batch: BatchModel,
-            query_params: PaginatedLimitOffsetParams):
+        self, cnae_batch: BatchModel, query_params: PaginatedLimitOffsetParams
+    ):
         """
         Get a list of establishments with the specified CNAE codes.
 
@@ -235,10 +234,8 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
     def get_cnpjs_by_states(
-            self,
-            state_batch: BatchModel,
-            limit: int = settings.PAGE_SIZE,
-            offset: int = 0):
+        self, state_batch: BatchModel, limit: int = settings.PAGE_SIZE, offset: int = 0
+    ):
         """
         Get a list of establishments in the specified states.
 
@@ -481,8 +478,7 @@ class CNPJService:
 
         return registration_status[0]
 
-    def get_registration_statuses_list(
-            self, registration_code_batch: BatchModel):
+    def get_registration_statuses_list(self, registration_code_batch: BatchModel):
         """
         Get a list of registration statuses from the database.
 
@@ -521,8 +517,7 @@ class CNPJService:
 
         return registration_status
 
-    def get_registration_statuses(
-            self, query_params: PaginatedLimitOffsetParams):
+    def get_registration_statuses(self, query_params: PaginatedLimitOffsetParams):
         """
         Get a list of registration statuses from the database.
 
@@ -535,8 +530,7 @@ class CNPJService:
         - A list of registration statuses as dictionaries.
         """
         try:
-            return self.repository.get_paginated_registration_statuses(
-                query_params)
+            return self.repository.get_paginated_registration_statuses(query_params)
         except Exception as e:
             logger.error(f"Error getting registration statuses: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
