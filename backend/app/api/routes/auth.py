@@ -27,8 +27,12 @@ async def generate_token(request: Request) -> TokenResponse:
     This endpoint generates a new access token for the user.
     """
     try:
-        access_token = create_token({"message": settings.SIGNATURE})
+        payload={"message": settings.SIGNATURE}
+        access_token = create_token(payload)
         return TokenResponse(access_token=access_token)
     except Exception:
         # Handle any potential errors (e.g., token generation failure)
-        raise HTTPException(status_code=500, detail="Could not generate token")
+        raise HTTPException(
+            status_code=500, 
+            detail="Could not generate token"
+        )
