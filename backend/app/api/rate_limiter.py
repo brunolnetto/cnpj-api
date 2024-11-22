@@ -5,16 +5,12 @@ from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 
 # Initialize the Limiter with a global rate limit
-limiter = Limiter(
-    key_func=get_remote_address, default_limits=settings.DEFAULT_RATE_LIMITS
-)
+limiter = Limiter(key_func=get_remote_address, default_limits=settings.DEFAULT_RATE_LIMITS)
 
 # Disable rate limiting in development
 DISABLE_RATE_LIMITING = settings.ENVIRONMENT == "development"
 
-
-def rate_limit(
-        rate_limit_config: str = settings.DEFAULT_RATE_LIMIT) -> callable:
+def rate_limit() -> callable:
     """
     A decorator to apply rate limiting to a function.
 
@@ -26,15 +22,10 @@ def rate_limit(
     """
 
     def decorator(func: callable) -> callable:
-        logger.info(f"Rate limiting enabled: {not DISABLE_RATE_LIMITING}")
-
         if DISABLE_RATE_LIMITING:
             return func
 
-        decorated_func = limiter.limit(rate_limit_config)(func)
-        logger.info(f"Applying rate limit: {rate_limit_config} to {func.__name__}")
-
+        decorated_func = limiter.limit(settings.DEFAULT_RATE_LIMIT)(func)
         return decorated_func
 
-    logger.info(f"Rate limit decorator created with limit: {rate_limit_config}")
     return decorator

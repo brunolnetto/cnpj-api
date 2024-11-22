@@ -6,7 +6,8 @@ from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 
 from backend.app.api.dependencies.auth import JWTDependency
-from backend.app.api.rate_limiter import rate_limit
+from backend.app.api.rate_limiter import limiter
+from backend.app.setup.config import settings
 
 router = APIRouter(tags=["Setup"], dependencies=[JWTDependency])
 
@@ -21,7 +22,7 @@ class InfoResponse(BaseModel):
     description: str
 
 
-@rate_limit()
+@limiter.limit("5/minute")
 @router.get("/health", response_model=HealthCheckResponse)
 async def health_check(request: Request) -> HealthCheckResponse:
     """
@@ -30,7 +31,7 @@ async def health_check(request: Request) -> HealthCheckResponse:
     return HealthCheckResponse(status="OK")
 
 
-@rate_limit()
+@limiter.limit("5/minute")
 @router.get("/info", response_model=InfoResponse)
 async def info(request: Request) -> InfoResponse:
     """

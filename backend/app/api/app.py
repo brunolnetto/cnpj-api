@@ -1,4 +1,7 @@
-# Description: This file initializes the FastAPI application and sets up
+# Description: This file initializes the FastAPI application and sets up various configurations,
+# including middleware, CORS, static file serving, exception handlers, and rate limiting.
+# It also defines the application's lifespan, which includes startup and shutdown tasks,
+# and initializes the main application instance.
 # configurations.
 from contextlib import asynccontextmanager
 from time import perf_counter
@@ -8,25 +11,24 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from backend.app.setup.config import settings
 from backend.app.api.routes.router_bundler import api_router
 from backend.app.api.exceptions import (
-    not_found_handler,
-    general_exception_handler,
-    custom_rate_limit_handler,
+    not_found_handler, general_exception_handler, custom_rate_limit_handler,
 )
-from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware
+from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware as ARLMiddleware
 from backend.app.api.utils.misc import print_execution_time
 from backend.app.api.middlewares.misc import TimingMiddleware
 from backend.app.api.dependencies.logs import log_app_start
 from backend.app.api.dependencies.cnpj import initialize_CNPJRepository_on_startup
 from backend.app.database.base import init_database, multi_database
 from backend.app.api.utils.ml import init_nltk
-from backend.app.scheduler.bundler import task_orchestrator, add_tasks
 from backend.app.api.rate_limiter import rate_limit, limiter
+from backend.app.scheduler.bundler import task_orchestrator, add_tasks
 from backend.app.setup.logging import setup_logger
 
 
@@ -97,8 +99,10 @@ def create_app():
 def setup_cors(app: FastAPI) -> None:
     """Sets up CORS middleware for the application."""
     if settings.BACKEND_CORS_ORIGINS:
-        urls = [str(origin).strip("/")
-                for origin in settings.BACKEND_CORS_ORIGINS]
+        urls = [
+            str(origin).strip("/") 
+            for origin in settings.BACKEND_CORS_ORIGINS
+        ]
         app.add_middleware(
             CORSMiddleware,
             allow_origins=urls,
@@ -110,7 +114,7 @@ def setup_cors(app: FastAPI) -> None:
 
 def setup_middlewares(app: FastAPI) -> None:
     """Adds middleware to the FastAPI application."""
-    app.add_middleware(AsyncRequestLoggingMiddleware)
+    app.add_middleware(ARLMiddleware)
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.add_middleware(TimingMiddleware)
     app.add_middleware(SlowAPIMiddleware)
@@ -132,28 +136,32 @@ def setup_favicon(app: FastAPI) -> None:
 
 def setup_exception_handlers(app: FastAPI) -> None:
     """Sets up exception handlers for the FastAPI application."""
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
     app.add_exception_handler(Exception, general_exception_handler)
 
 
 def setup_app(app_: FastAPI):
+    setup_favicon(app_)
     setup_cors(app_)
     setup_middlewares(app_)
-    setup_static_files(app_)
-    setup_favicon(app_)
     setup_exception_handlers(app_)
+    setup_static_files(app_)
 
+    # Set the rate limit handler
+    app_.state.limiter = limiter
+
+    # Include routers
     app_.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 def init_app() -> FastAPI:
     """Initializes and configures the FastAPI application."""
+    # Create the application
     app = create_app()
 
+    # Configure the application
     setup_app(app)
-    
-    # Set the rate limit handler
-    app.state.limiter = limiter
     
     return app
 

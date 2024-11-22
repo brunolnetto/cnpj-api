@@ -6,7 +6,9 @@ from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.api.rate_limiter import rate_limit
 from backend.app.setup.config import settings
 
-router = APIRouter(tags=["Authentication"], dependencies=[JWTDependency])
+router = APIRouter(
+    tags=["Authentication"], dependencies=[JWTDependency]
+)
 
 
 class TokenResponse(BaseModel):
@@ -15,7 +17,8 @@ class TokenResponse(BaseModel):
     access_token: str
 
 
-@rate_limit()  # Consider configuring the rate limiter if necessary
+# Consider configuring the rate limiter if necessary
+@rate_limit()  
 @router.get("/token", response_model=TokenResponse)
 async def generate_token(request: Request) -> TokenResponse:
     """
