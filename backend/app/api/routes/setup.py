@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 
 from backend.app.api.dependencies.auth import JWTDependency
-from backend.app.rate_limiter import rate_limit
+from backend.app.api.rate_limiter import rate_limit
 
 router = APIRouter(tags=["Setup"], dependencies=[JWTDependency])
 

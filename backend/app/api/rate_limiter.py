@@ -31,9 +31,10 @@ def rate_limit(
         if DISABLE_RATE_LIMITING:
             return func
 
-        logger.info(
-            f"Applying rate limit: {rate_limit_config} to {func.__name__}")
+        decorated_func = limiter.limit(rate_limit_config)(func)
+        logger.info(f"Applying rate limit: {rate_limit_config} to {func.__name__}")
 
-        return limiter.limit(rate_limit_config)(func)
+        return decorated_func
 
+    logger.info(f"Rate limit decorator created with limit: {rate_limit_config}")
     return decorator

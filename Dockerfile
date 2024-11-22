@@ -31,6 +31,7 @@ COPY .env .
 # Command to run the FastAPI application
 CMD [\
     "uvicorn", "backend.app.main:app", \
+    " --proxy-headers", \
     "--host", "0.0.0.0", \
     "--port", "8000"\
 ]

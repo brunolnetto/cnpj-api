@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
-
+from slowapi.middleware import SlowAPIMiddleware
 
 from backend.app.setup.config import settings
 from backend.app.api.routes.router_bundler import api_router
@@ -26,7 +26,7 @@ from backend.app.api.dependencies.cnpj import initialize_CNPJRepository_on_start
 from backend.app.database.base import init_database, multi_database
 from backend.app.api.utils.ml import init_nltk
 from backend.app.scheduler.bundler import task_orchestrator, add_tasks
-from backend.app.rate_limiter import rate_limit
+from backend.app.api.rate_limiter import rate_limit, limiter
 from backend.app.setup.logging import setup_logger
 
 
@@ -45,7 +45,7 @@ async def lifespan(app_: FastAPI):
 
     # Data related entities
     print_execution_time(init_database)()
-
+    
     # Logging
     await print_execution_time(setup_logger)()
 
@@ -113,6 +113,7 @@ def setup_middlewares(app: FastAPI) -> None:
     app.add_middleware(AsyncRequestLoggingMiddleware)
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.add_middleware(TimingMiddleware)
+    app.add_middleware(SlowAPIMiddleware)
 
 
 def setup_static_files(app: FastAPI) -> None:
@@ -131,7 +132,6 @@ def setup_favicon(app: FastAPI) -> None:
 
 def setup_exception_handlers(app: FastAPI) -> None:
     """Sets up exception handlers for the FastAPI application."""
-    app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
     app.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
     app.add_exception_handler(Exception, general_exception_handler)
 
@@ -151,7 +151,10 @@ def init_app() -> FastAPI:
     app = create_app()
 
     setup_app(app)
-
+    
+    # Set the rate limit handler
+    app.state.limiter = limiter
+    
     return app
 
 
