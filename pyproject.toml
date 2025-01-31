@@ -38,7 +38,7 @@ pytest-cov = "^6.0.0"
 virtualenv = "^20.26.2"
 pytest-mock = "^3.14.0"
 pytest-watch = "^4.2.0"
-black = "^24.4.2"
+black = "^25.0.0"
 
 [build-system]
 requires = ["poetry-core"]
