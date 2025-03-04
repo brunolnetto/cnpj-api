@@ -1,4 +1,4 @@
-alembic==1.14.0
+alembic==1.15.1
 asyncpg==0.30.0
 APScheduler==4.0.0a5
 bs4==0.0.2
