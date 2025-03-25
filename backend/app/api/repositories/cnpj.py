@@ -111,7 +111,6 @@ class CNPJRepository:
             if query_params.state_abbrev else "1=1"
 
         activity_start_date = query_params.activity_start_date
-
         activity_start_date_condition = f"data_inicio_atividade>='{activity_start_date.strftime('%Y%m%d')}'" \
             if activity_start_date else "1=1"
 

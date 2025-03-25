@@ -8,6 +8,30 @@ from backend.app.utils.misc import is_positive, is_non_negative
 from backend.app.api.constants import UNIT_MULTIPLIER, MAX_LIMIT
 
 
+def build_condition(column: str, value, condition_type="eq", array_condition=False):
+    """
+    Helper function to build SQL conditions.
+    """
+    if not value:
+        return "1=1"
+
+    if condition_type == "eq":
+        return f"{column}='{value}'"
+    elif condition_type == "gt":
+        return f"{column}>'{value}'"
+    elif condition_type == "ge":
+        return f"{column}>='{value}'"
+    elif condition_type == "lt":
+        return f"{column}<'{value}'"
+    elif condition_type == "le":
+        return f"{column}<='{value}'"
+    elif condition_type == "contains" and array_condition:
+        return f"{column} @> Array[{value}]"
+    
+    return "1=1"  # Default fallback, though rarely used with the above checks.
+
+
+
 def print_execution_time(func):
     @wraps(func)
     def sync_wrapper(*args, **kwargs):

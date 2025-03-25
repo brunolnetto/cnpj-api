@@ -24,12 +24,13 @@ class CNPJQueryParams(LimitOffsetParams):
     )
     activity_start_date: Optional[date] = Field(
         None, description="The date when the activity started.")
+    only_headquarters: Optional[bool] = Field(
+        False, description="Flag to return only headquarters records")
     cnae_code: Optional[str] = Field(
         None, description="CNAE code to filter the data")
     has_secondary_cnae: bool = Field(
         True, description="Flag to return all records")
-    only_headquarters: Optional[bool] = Field(
-        False, description="Flag to return only headquarters records")
+
 
     @field_validator('zipcode')
     def validate_zipcode(cls, value: str):
