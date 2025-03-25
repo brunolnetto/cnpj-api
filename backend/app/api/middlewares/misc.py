@@ -1,11 +1,12 @@
 from time import perf_counter
 
-from fastapi import Request, BackgroundTasks
+from fastapi import BackgroundTasks
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from backend.app.setup.config import settings
-from backend.app.database.models.logs import RequestTimingLog
 from backend.app.database.base import get_session
+from backend.app.database.models.logs import RequestTimingLog
+from backend.app.setup.config import settings
 
 
 class TimingMiddleware(BaseHTTPMiddleware):
@@ -32,7 +33,8 @@ class TimingMiddleware(BaseHTTPMiddleware):
 
         # Trigger a background task to save the execution time
         background_tasks = BackgroundTasks()
-        background_tasks.add_task(self.save_request_timing, request, process_time)
+        background_tasks.add_task(
+            self.save_request_timing, request, process_time)
 
         # Add background tasks to the response
         response.background = background_tasks

@@ -1,9 +1,12 @@
-from typing import Optional
-from datetime import date, datetime
-from pydantic import BaseModel, Field, model_validator, field_validator
-from fastapi import HTTPException
+from datetime import date
+
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import field_validator
+from pydantic import model_validator
 
 from backend.app.api.utils.cnpj import is_cnpj_str_valid
+
 from .base import BatchModel
 from .misc import LimitOffsetParams
 
@@ -15,21 +18,24 @@ class CNPJBatch(BatchModel):
 class CNPJQueryParams(LimitOffsetParams):
     """Query parameters for filtering CNPJ data."""
 
-    zipcode: Optional[str] = Field(
+    zipcode: str | None = Field(
         None, description="8-digit ZIP code to filter the data"
     )
-    city_name: Optional[str] = Field(None, description="City name to filter the data")
-    state_abbrev: Optional[str] = Field(
+    city_name: str | None = Field(
+        None, description="City name to filter the data")
+    state_abbrev: str | None = Field(
         None, description="State abbreviation (e.g., 'SP' for São Paulo)"
     )
-    activity_start_date: Optional[date] = Field(
+    activity_start_date: date | None = Field(
         None, description="The date when the activity started."
     )
-    only_headquarters: Optional[bool] = Field(
+    only_headquarters: bool | None = Field(
         False, description="Flag to return only headquarters records"
     )
-    cnae_code: Optional[str] = Field(None, description="CNAE code to filter the data")
-    has_secondary_cnae: bool = Field(True, description="Flag to return all records")
+    cnae_code: str | None = Field(
+        None, description="CNAE code to filter the data")
+    has_secondary_cnae: bool = Field(
+        True, description="Flag to return all records")
 
     @field_validator("zipcode")
     def validate_zipcode(cls, value: str):
@@ -42,14 +48,16 @@ class CNPJQueryParams(LimitOffsetParams):
     def validate_state_abbrev(cls, value: str):
         """Validate that the state abbreviation is valid (optional but must be 2 letters if provided)."""
         if value and len(value) != 2:
-            raise ValueError("State abbreviation must be exactly 2 characters.")
+            raise ValueError(
+                "State abbreviation must be exactly 2 characters.")
 
     @model_validator(mode="before")
     def clean_inputs(cls, values: dict):
         """Sanitize and validate inputs."""
         values["city_name"] = cls._remove_quotes(values.get("city_name", ""))
         values["cnae_code"] = cls._remove_quotes(values.get("cnae_code", ""))
-        values["state_abbrev"] = cls._remove_quotes(values.get("state_abbrev", ""))
+        values["state_abbrev"] = cls._remove_quotes(
+            values.get("state_abbrev", ""))
         values["zipcode"] = cls._remove_quotes(values.get("zipcode", ""))
 
         if values.get("only_mei") and values.get("unable_mei"):
@@ -67,8 +75,8 @@ class CNPJQueryParams(LimitOffsetParams):
 
 class ModeloSimplesSimei(BaseModel):
     optante: bool = False
-    data_opcao: Optional[str]
-    data_exclusao: Optional[str]
+    data_opcao: str | None
+    data_exclusao: str | None
 
 
 class InvalidCNPJError(ValueError):
@@ -87,7 +95,8 @@ class CNPJ:
         try:
             self.ordem_int = int(ordem)
         except ValueError as exc:
-            raise ValueError("Digits 'ordem' contains non-numeric characters.") from exc
+            raise ValueError(
+                "Digits 'ordem' contains non-numeric characters.") from exc
 
         try:
             self.digitos_verificadores_int = int(digitos_verificadores)
@@ -102,7 +111,11 @@ class CNPJ:
             digitos_verificadores, 2, "digitos_verificadores"
         )
 
-    def _validate_digits(self, value: str, length: int, field_name: str) -> str:
+    def _validate_digits(
+            self,
+            value: str,
+            length: int,
+            field_name: str) -> str:
         """Validate if the string contains numeric characters and has the expected length."""
         if not str(value).isdigit():
             raise InvalidCNPJError(

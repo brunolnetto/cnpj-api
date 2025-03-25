@@ -1,12 +1,10 @@
 import pytest
 
-from backend.app.api.utils.cnpj import (
-    is_cnpj_str_valid,
-    parse_cnpj_str,
-    format_cnpj,
-    calculate_cnpj_verification_digits,
-    are_cnpj_str_valid,
-)
+from backend.app.api.utils.cnpj import are_cnpj_str_valid
+from backend.app.api.utils.cnpj import calculate_cnpj_verification_digits
+from backend.app.api.utils.cnpj import format_cnpj
+from backend.app.api.utils.cnpj import is_cnpj_str_valid
+from backend.app.api.utils.cnpj import parse_cnpj_str
 
 
 def test_calculate_cnpj_verification_digits_valid_cnpj():
@@ -53,7 +51,8 @@ def test_are_cnpj_str_valid_valid_cnpj():
     cnpjs = ["12345678901230", "123456789012345"]
     validation_result = are_cnpj_str_valid(cnpjs)
 
-    assert [result["is_valid"] for result in validation_result] == [True, False]
+    assert [result["is_valid"]
+            for result in validation_result] == [True, False]
 
 
 def test_is_cnpj_str_valid_invalid_length():

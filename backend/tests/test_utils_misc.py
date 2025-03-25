@@ -3,29 +3,27 @@ from unittest.mock import patch
 
 import pytest
 
-from backend.app.utils.misc import (
-    is_field_valid,
-    replace_spaces_on_list_tuple,
-    replace_invalid_fields_on_list_tuple,
-    replace_invalid_fields_on_list_dict,
-    replace_spaces,
-    remove_leading_zeros,
-    is_number,
-    are_numbers,
-    format_decimal,
-    string_to_json,
-    humanize_string,
-    date_str,
-    time_str,
-    are_positive,
-    are_non_negative,
-    are_negative,
-    are_non_positive,
-    number_string_to_number,
-    format_database_date,
-    format_cep,
-    format_phone,
-)
+from backend.app.utils.misc import are_negative
+from backend.app.utils.misc import are_non_negative
+from backend.app.utils.misc import are_non_positive
+from backend.app.utils.misc import are_numbers
+from backend.app.utils.misc import are_positive
+from backend.app.utils.misc import date_str
+from backend.app.utils.misc import format_cep
+from backend.app.utils.misc import format_database_date
+from backend.app.utils.misc import format_decimal
+from backend.app.utils.misc import format_phone
+from backend.app.utils.misc import humanize_string
+from backend.app.utils.misc import is_field_valid
+from backend.app.utils.misc import is_number
+from backend.app.utils.misc import number_string_to_number
+from backend.app.utils.misc import remove_leading_zeros
+from backend.app.utils.misc import replace_invalid_fields_on_list_dict
+from backend.app.utils.misc import replace_invalid_fields_on_list_tuple
+from backend.app.utils.misc import replace_spaces
+from backend.app.utils.misc import replace_spaces_on_list_tuple
+from backend.app.utils.misc import string_to_json
+from backend.app.utils.misc import time_str
 
 
 def test_are_positive():
@@ -376,13 +374,15 @@ def test_invalid_characters():
     assert (
         format_database_date("abcdefgh", delimiter) is None
     )  # Completely invalid input
-    assert format_database_date("1234567a", delimiter) is None  # Contains a letter
+    assert format_database_date("1234567a",
+                                delimiter) is None  # Contains a letter
 
 
 def test_non_string_inputs():
     # Should work if cast to str
     assert format_database_date(20230101, delimiter) == "01-01-2023"
-    assert format_database_date(None, delimiter) is None  # None should return None
+    assert format_database_date(
+        None, delimiter) is None  # None should return None
     # Incorrect length as an integer
     assert format_database_date(1234567, delimiter) is None
 
@@ -419,7 +419,7 @@ def test_empty_and_none():
 
 
 @pytest.mark.parametrize(
-    "ddd, phone, expected",
+    ("ddd", "phone", "expected"),
     [
         ("11", "987654321", "(11) 9876-54321"),  # Valid 9-digit phone
         ("21", "12345678", "(21) 1234-5678"),  # Valid 8-digit phone

@@ -1,7 +1,7 @@
 from unittest import mock
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
 from backend.app.api.app import app
 

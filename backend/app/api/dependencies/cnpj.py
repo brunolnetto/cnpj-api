@@ -1,9 +1,9 @@
 from fastapi import Depends
 
-from backend.app.database.base import get_session
 from backend.app.api.repositories.cnpj import CNPJRepository
-from backend.app.setup.logging import logger
+from backend.app.database.base import get_session
 from backend.app.setup.config import settings
+from backend.app.setup.logging import logger
 
 # Define a dependency to create a CNPJRepository instance
 

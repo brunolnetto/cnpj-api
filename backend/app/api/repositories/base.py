@@ -1,5 +1,7 @@
 from abc import ABC
-from typing import List, Optional, Dict, Any
+from typing import Any
+from typing import Dict
+from typing import List
 
 
 class BaseRepository(ABC):
@@ -9,10 +11,10 @@ class BaseRepository(ABC):
     def create(self, data: Dict[str, Any]) -> Any:
         raise NotImplementedError()
 
-    def update(self, item_id: Any, data: Dict[str, Any]) -> Optional[Any]:
+    def update(self, item_id: Any, data: Dict[str, Any]) -> Any | None:
         raise NotImplementedError()
 
-    def get_by_id(self, item_id: Any) -> Optional[Any]:
+    def get_by_id(self, item_id: Any) -> Any | None:
         raise NotImplementedError()
 
     def delete_by_id(self, item_id: Any) -> bool:

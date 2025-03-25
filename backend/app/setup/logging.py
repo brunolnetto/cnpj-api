@@ -4,8 +4,8 @@ import sys
 from dotenv import load_dotenv
 from pythonjsonlogger import jsonlogger
 
-from backend.app.setup.config import settings
 from backend.app.api.dependencies.logs import get_debug_logs_handler
+from backend.app.setup.config import settings
 
 # Advanced logger
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ fields = [
     "levelname",
     "message",
 ]
-logging_format = " ".join(map(lambda field_name: f"%({field_name})s", fields))
+logging_format = " ".join(f"%({field_name})s" for field_name in fields)
 fmt = jsonlogger.JsonFormatter(logging_format)
 
 
@@ -59,8 +59,12 @@ async def setup_logger():
         stderr_stream_handler.setFormatter(fmt)
 
         # Apply basic configuration with these handlers
-        logging.basicConfig(level=logging.INFO, handlers=[stdout_stream_handler])
-        logging.basicConfig(level=logging.WARN, handlers=[stderr_stream_handler])
+        logging.basicConfig(
+            level=logging.INFO,
+            handlers=[stdout_stream_handler])
+        logging.basicConfig(
+            level=logging.WARN,
+            handlers=[stderr_stream_handler])
 
 
 logger.info("Logging started.")

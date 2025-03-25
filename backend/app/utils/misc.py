@@ -1,10 +1,14 @@
-from typing import Union, List, Tuple, Dict, Any, Callable
-from datetime import datetime
 import json
 import re
+from datetime import datetime
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Tuple, Union
 
 NumberList = List[Union[int, float]]
-
+AnyList = List[Union[str, int, float]]
 
 def are(args: List[Any], validation_map: callable) -> bool:
     """
@@ -44,7 +48,7 @@ def are_non_negative(lst: NumberList) -> bool:
     return are(lst, is_non_negative)
 
 
-def are_negative(lst: List[Union[int, float]]) -> bool:
+def are_negative(lst: NumberList) -> bool:
     return are(lst, is_negative)
 
 
@@ -154,7 +158,8 @@ def is_number(text: str) -> bool:
     return bool(re.match(pattern, text))
 
 
-def are_numbers(lst: List[Union[str, int, float]], is_strict: bool = False) -> bool:
+def are_numbers(lst: AnyList,
+                is_strict: bool = False) -> bool:
     """
     Checks if all elements in a list are numbers.
 
@@ -166,9 +171,9 @@ def are_numbers(lst: List[Union[str, int, float]], is_strict: bool = False) -> b
         bool: Whether all elements in the list are numbers.
     """
     if is_strict:
-        return all(map(lambda x: is_number(str(x)), lst))
+        return all(is_number(str(x)) for x in lst)
 
-    return all(map(lambda x: is_number(str(x).replace(".", "")), lst))
+    return all(is_number(str(x).replace(".", "")) for x in lst)
 
 
 def format_decimal(float_string: str, num_decimal_places: int = 2) -> str:
@@ -255,7 +260,8 @@ def format_database_date(date_str_: str, delimiter: str = DELIMITER) -> str:
         str: The formatted date string.
     """
     date_str_ = str(date_str_)
-    if not is_field_valid(date_str) or not is_number(date_str_) or len(date_str_) != 8:
+    if not is_field_valid(date_str) or not is_number(
+            date_str_) or len(date_str_) != 8:
         return None
 
     return f"{date_str_[6:]}{delimiter}{date_str_[4:6]}{delimiter}{date_str_[:4]}"
@@ -272,7 +278,8 @@ def format_cep(cep_str: str):
         str: The formatted CEP string
     """
     cep_str = str(cep_str)
-    is_valid_cep = is_field_valid(cep_str) and is_number(cep_str) and len(cep_str) <= 8
+    is_valid_cep = is_field_valid(cep_str) and is_number(
+        cep_str) and len(cep_str) <= 8
 
     if not is_valid_cep:
         return ""
@@ -291,7 +298,8 @@ def format_phone(
     phone_delimiter: str = "-",
 ):
     def is_phone_valid(phone_):
-        return is_number(phone_) and is_field_valid(phone_) and len(phone_) in (8, 9)
+        return is_number(phone_) and is_field_valid(
+            phone_) and len(phone_) in (8, 9)
 
     def is_ddd_valid(ddd_):
         return is_number(ddd_) and is_field_valid(ddd_) and len(ddd_) in (1, 2)

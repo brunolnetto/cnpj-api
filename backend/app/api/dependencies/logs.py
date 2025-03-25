@@ -2,15 +2,13 @@ from datetime import datetime
 
 from fastapi import Depends
 
-from backend.app.setup.config import settings
-from backend.app.database.base import get_session
-from backend.app.api.repositories.logs import (
-    RequestLogRepository,
-    TaskLogRepository,
-    AppStartLogRepository,
-)
+from backend.app.api.repositories.logs import AppStartLogRepository
 from backend.app.api.repositories.logs import DebuggingDatabaseHandler
+from backend.app.api.repositories.logs import RequestLogRepository
+from backend.app.api.repositories.logs import TaskLogRepository
+from backend.app.database.base import get_session
 from backend.app.database.base import multi_database
+from backend.app.setup.config import settings
 
 
 def get_debug_logs_handler():

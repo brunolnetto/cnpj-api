@@ -1,12 +1,16 @@
-from typing import Dict, Optional, ContextManager
 from contextlib import contextmanager
-from sqlalchemy.orm import Session
+from typing import ContextManager
+from typing import Dict
 
 from psycopg2 import OperationalError
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import text, inspect, create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy import inspect
+from sqlalchemy import text
 from sqlalchemy.engine.url import make_url
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 from backend.app.setup.config import settings
 
@@ -64,22 +68,31 @@ class Database(BaseDatabase):
 
     def mask_sensitive_data(self) -> str:
         """Masks sensitive data in the database URI."""
-        masked_uri = self.url.set(password="******") if self.url.password else self.url
+        masked_uri = self.url.set(
+            password="******") if self.url.password else self.url
         return str(masked_uri)
 
     def create_database(self):
+        """Ensures the database exists, creating it if necessary."""
         masked_uri = self.mask_sensitive_data()
+
+        # Criando uma engine conectada ao banco padrão 'postgres'
+        admin_uri = str(self.url.set(database="postgres", password="postgres"))
+        admin_engine = create_engine(admin_uri, isolation_level="AUTOCOMMIT")
+
         try:
-            with self.engine.begin() as conn:
+            print('2.')
+            with admin_engine.begin() as conn:
+                print('3.')
                 query = text("SELECT 1 FROM pg_database WHERE datname = :dbname")
-                db_data = {"dbname": self.url.database}
-                result = conn.execute(query, db_data)
+                result = conn.execute(query, {"dbname": self.url.database})
 
                 if not result.scalar():
                     conn.execute(text(f"CREATE DATABASE {self.url.database}"))
                     print(f"Database {masked_uri} created!")
                 else:
                     print(f"Database {masked_uri} already exists!")
+
         except OperationalError as e:
             print(f"Error creating database {masked_uri}: {e}")
 
@@ -195,11 +208,13 @@ class MultiDatabase(BaseDatabase):
 
 
 # Load environment variables from the .env file
-multi_database: Optional[MultiDatabase] = MultiDatabase(settings.postgres_uris_dict)
+multi_database: MultiDatabase | None = MultiDatabase(
+    settings.postgres_uris_dict)
 
 
 def init_database():
     """Initialize the multi-database setup."""
+    print(':)')
     multi_database.init()
 
 

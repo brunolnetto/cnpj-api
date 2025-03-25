@@ -1,14 +1,17 @@
-from typing import Dict, List, Any, Annotated, Optional
+from typing import Annotated
+from typing import Any
+from typing import Dict
+from typing import List
 
 from fastapi import Depends
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
-from sqlalchemy.dialects.postgresql import UUID
 
-from backend.app.setup.config import settings
+from backend.app.api.repositories.base import BaseRepository
 from backend.app.database.base import get_session
 from backend.app.database.models.logs import Task
-from backend.app.api.repositories.base import BaseRepository
+from backend.app.setup.config import settings
 
 
 class TaskRepository(BaseRepository):
@@ -43,7 +46,7 @@ class TaskRepository(BaseRepository):
             self.session.rollback()  # Rollback in case of error
             raise Exception(f"Error creating task: {e}") from e
 
-    def update(self, item_id: UUID, data: Dict[str, Any]) -> Optional[Task]:
+    def update(self, item_id: UUID, data: Dict[str, Any]) -> Task | None:
         try:
             task = self.get_by_id(item_id)
             if not task:
@@ -60,7 +63,7 @@ class TaskRepository(BaseRepository):
             self.session.rollback()  # Rollback in case of error
             raise Exception(f"Error updating task: {e}") from e
 
-    def get_by_id(self, item_id: UUID) -> Optional[Task]:
+    def get_by_id(self, item_id: UUID) -> Task | None:
         try:
             return self.session.get(Task, item_id)
         except Exception as e:
@@ -68,7 +71,8 @@ class TaskRepository(BaseRepository):
 
     def get_all(self, limit: int = 100, offset: int = 0) -> List[Task]:
         try:
-            result = self.session.execute(select(Task).offset(offset).limit(limit))
+            result = self.session.execute(
+                select(Task).offset(offset).limit(limit))
             return result.scalars().all()
 
         except Exception as e:
@@ -93,4 +97,5 @@ def get_task_repository():
         return TaskRepository(session)
 
 
-TaskRepositoryDependency = Annotated[TaskRepository, Depends(get_task_repository)]
+TaskRepositoryDependency = Annotated[TaskRepository, Depends(
+    get_task_repository)]

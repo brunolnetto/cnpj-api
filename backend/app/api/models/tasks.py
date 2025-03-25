@@ -1,7 +1,12 @@
-from typing import List, Dict, Callable, Optional, Any
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, UUID4
+from pydantic import UUID4
+from pydantic import BaseModel
+from pydantic import Field
 
 
 class TaskBase(BaseModel):
@@ -12,30 +17,31 @@ class TaskBase(BaseModel):
         title="Task ID",
         description="The unique identifier of the task",
     )
-    task_schedule_type: str = Field(
-        ..., title="Task Schedule Type", description="The type of the task schedule"
-    )
+    task_schedule_type: str = Field(...,
+                                    title="Task Schedule Type",
+                                    description="The type of the task schedule")
     task_schedule_params: Dict[str, Any] = Field(
         ...,
         title="Task Schedule Params",
         description="The parameters for the task schedule",
     )
-    task_name: str = Field(..., title="Task Name", description="The name of the task")
+    task_name: str = Field(..., title="Task Name",
+                           description="The name of the task")
     task_callable: str = Field(
         ...,
         title="Task Callable",
         description="The function or method that executes the task logic",
     )
-    task_type: str = Field(..., title="Task Type", description="The type of the task")
-    task_is_active: Optional[bool] = Field(
-        True, title="Task Active", description="Indicates if the task is active"
-    )
+    task_type: str = Field(..., title="Task Type",
+                           description="The type of the task")
+    task_is_active: bool | None = Field(
+        True,
+        title="Task Active",
+        description="Indicates if the task is active")
 
 
 class TaskCreate(TaskBase):
     """Model for creating a new task."""
-
-    pass
 
 
 class TaskRead(TaskBase):
@@ -62,7 +68,8 @@ class TaskConfig(BaseModel):
     )
     task_name: str = Field(..., description="Name of the task")
     task_type: str = Field(..., description="Type of the task")
-    task_callable: Callable = Field(..., description="Callable for the task logic")
+    task_callable: Callable = Field(...,
+                                    description="Callable for the task logic")
     task_args: List[Any] = Field(
         default_factory=list, description="Arguments for the task callable"
     )

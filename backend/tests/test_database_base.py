@@ -1,11 +1,7 @@
 import pytest
-from sqlalchemy.exc import (
-    ArgumentError,
-)
+from sqlalchemy.exc import ArgumentError
 
-from backend.app.database.base import (
-    Database,
-)
+from backend.app.database.base import Database
 
 
 @pytest.fixture

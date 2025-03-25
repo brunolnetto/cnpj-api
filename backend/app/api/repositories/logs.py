@@ -1,22 +1,26 @@
 # app/repositories/request_log_repository.py
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional
-import logging
 import asyncio
-
-
+import logging
+from datetime import datetime
+from datetime import timedelta
+from typing import Any
+from typing import Dict
+from typing import List
 from uuid import UUID
+
 from ipwhois import IPWhois
 from sqlalchemy import delete
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 
-from backend.app.setup.config import settings
-from backend.app.database.models.logs import DebugLog
-from backend.app.database.models.logs import TaskLog, RequestLog, AppStartLog
 from backend.app.api.models.logs import RequestLogCreate
-from backend.app.api.repositories.base import BaseRepository
 from backend.app.api.models.logs import TaskLogCreate
+from backend.app.api.repositories.base import BaseRepository
+from backend.app.database.models.logs import AppStartLog
+from backend.app.database.models.logs import DebugLog
+from backend.app.database.models.logs import RequestLog
+from backend.app.database.models.logs import TaskLog
+from backend.app.setup.config import settings
 
 
 class RequestLogRepository(BaseRepository):
@@ -27,11 +31,14 @@ class RequestLogRepository(BaseRepository):
         self.session.refresh(db_log)
         return db_log
 
-    def update(self, item_id: UUID, data: Dict[str, Any]) -> Optional[RequestLog]:
+    def update(self,
+               item_id: UUID,
+               data: Dict[str,
+                          Any]) -> RequestLog | None:
         # Not typically used for RequestLog, but implemented for completeness
         return None
 
-    def get_by_id(self, item_id: UUID) -> Optional[RequestLog]:
+    def get_by_id(self, item_id: UUID) -> RequestLog | None:
         return self.session.get(RequestLog, item_id)
 
     def delete_by_id(self, item_id: UUID) -> bool:
@@ -43,7 +50,8 @@ class RequestLogRepository(BaseRepository):
         return True
 
     def get_all(self, limit: int = 100, offset: int = 0) -> List[RequestLog]:
-        result = self.session.execute(select(RequestLog).offset(offset).limit(limit))
+        result = self.session.execute(
+            select(RequestLog).offset(offset).limit(limit))
         return result.scalars().all()
 
     def delete_old_logs(self, time_delta: timedelta):
@@ -55,7 +63,8 @@ class RequestLogRepository(BaseRepository):
         self.session.commit()
 
     def delete_excess_logs(self, max_rows: int):
-        query = self.session.query(RequestLog).order_by(RequestLog.relo_inserted_at)
+        query = self.session.query(RequestLog).order_by(
+            RequestLog.relo_inserted_at)
         total_rows = query.count()
         if total_rows > max_rows:
             delete_query = query.delete(synchronize_session="fetch")
@@ -65,8 +74,8 @@ class RequestLogRepository(BaseRepository):
     def lookup_and_update_ip_info(self):
         # Get all logs with missing IP info
         logs_without_ip_info = (
-            self.session.query(RequestLog).filter(RequestLog.relo_ip_info == {}).all()
-        )
+            self.session.query(RequestLog).filter(
+                RequestLog.relo_ip_info == {}).all())
 
         for log in logs_without_ip_info:
             ip_address_ = log.relo_ip_address
@@ -79,8 +88,7 @@ class RequestLogRepository(BaseRepository):
 
                     # Check if the IP is public
                     if not (
-                        ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved
-                    ):
+                            ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved):
                         # Perform IP lookup only for public IPs
                         obj = IPWhois(ip_address_)
                         results = obj.lookup_rdap(depth=1)
@@ -104,7 +112,7 @@ class TaskLogRepository(BaseRepository):
         self.session.refresh(task_log)
         return task_log
 
-    def update(self, item_id: UUID, data: TaskLogCreate) -> Optional[TaskLog]:
+    def update(self, item_id: UUID, data: TaskLogCreate) -> TaskLog | None:
         task_log = self.get_by_id(item_id)
         if not task_log:
             return None
@@ -116,7 +124,7 @@ class TaskLogRepository(BaseRepository):
         self.session.refresh(task_log)
         return task_log
 
-    def get_by_id(self, item_id: UUID) -> Optional[TaskLog]:
+    def get_by_id(self, item_id: UUID) -> TaskLog | None:
         return self.session.get(TaskLog, item_id)
 
     def delete_by_id(self, item_id: UUID) -> bool:
@@ -162,7 +170,7 @@ class AppStartLogRepository(BaseRepository):
         self.session.refresh(app_start_log)
         return app_start_log
 
-    def get_by_id(self, item_id: UUID) -> Optional[AppStartLog]:
+    def get_by_id(self, item_id: UUID) -> AppStartLog | None:
         """
         Retrieves an AppStartLog entry by its ID.
         """
@@ -172,7 +180,8 @@ class AppStartLogRepository(BaseRepository):
         """
         Retrieves all AppStartLog entries with pagination support.
         """
-        result = self.session.execute(select(AppStartLog).offset(offset).limit(limit))
+        result = self.session.execute(
+            select(AppStartLog).offset(offset).limit(limit))
         return result.scalars().all()
 
     def delete_by_id(self, item_id: UUID) -> bool:
@@ -200,7 +209,8 @@ class AppStartLogRepository(BaseRepository):
         """
         Deletes excess AppStartLog entries, keeping only a specified number of rows.
         """
-        query = self.session.query(AppStartLog).order_by(AppStartLog.stlo_start_time)
+        query = self.session.query(AppStartLog).order_by(
+            AppStartLog.stlo_start_time)
         total_rows = query.count()
         if total_rows > max_rows:
             delete_query = query.delete(synchronize_session="fetch")

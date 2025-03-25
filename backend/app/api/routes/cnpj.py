@@ -1,13 +1,19 @@
-from typing import Union, Dict
+from typing import Dict
+from typing import Union
 
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import Request
 
-from backend.app.api.services.cnpj import CNPJService, CNPJServiceDependency
-from backend.app.api.rate_limiter import rate_limit
 from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.api.models.base import BatchModel
-from backend.app.api.models.cnpj import CNPJBatch, CNPJQueryParams
-from backend.app.api.models.misc import LimitOffsetParams, PaginatedLimitOffsetParams
+from backend.app.api.models.cnpj import CNPJBatch
+from backend.app.api.models.cnpj import CNPJQueryParams
+from backend.app.api.models.misc import LimitOffsetParams
+from backend.app.api.models.misc import PaginatedLimitOffsetParams
+from backend.app.api.rate_limiter import rate_limit
+from backend.app.api.services.cnpj import CNPJService
+from backend.app.api.services.cnpj import CNPJServiceDependency
 
 # Types
 CodeType = Union[str, int]

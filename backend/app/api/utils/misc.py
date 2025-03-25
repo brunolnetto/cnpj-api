@@ -1,34 +1,40 @@
-import time
 import re
+import time
 from functools import wraps
 from inspect import iscoroutinefunction
-from typing import Dict, List, Any
+from typing import Any
+from typing import Dict
+from typing import List
 
-from backend.app.utils.misc import is_positive, is_non_negative
-from backend.app.api.constants import UNIT_MULTIPLIER, MAX_LIMIT
+from backend.app.api.constants import MAX_LIMIT
+from backend.app.api.constants import UNIT_MULTIPLIER
+from backend.app.utils.misc import is_non_negative
+from backend.app.utils.misc import is_positive
 
 
-def build_condition(column: str, value, condition_type="eq", array_condition=False):
+def build_condition(
+        column: str,
+        value,
+        condition_type="eq",
+        array_condition=False):
     """
     Helper function to build SQL conditions.
     """
     if not value:
         return "1=1"
 
-    if condition_type == "eq":
-        return f"{column}='{value}'"
-    elif condition_type == "gt":
-        return f"{column}>'{value}'"
-    elif condition_type == "ge":
-        return f"{column}>='{value}'"
-    elif condition_type == "lt":
-        return f"{column}<'{value}'"
-    elif condition_type == "le":
-        return f"{column}<='{value}'"
-    elif condition_type == "contains" and array_condition:
+    conditions = {
+        "eq": f"{column}='{value}'",
+        "gt": f"{column}>'{value}'",
+        "ge": f"{column}>='{value}'",
+        "lt": f"{column}<'{value}'",
+        "le": f"{column}<='{value}'",
+    }
+
+    if condition_type == "contains" and array_condition:
         return f"{column} @> Array[{value}]"
 
-    return "1=1"  # Default fallback, though rarely used with the above checks.
+    return conditions.get(condition_type, "1=1")
 
 
 def print_execution_time(func):
@@ -38,7 +44,8 @@ def print_execution_time(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
+        print(
+            f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
         return result
 
     @wraps(func)
@@ -47,7 +54,8 @@ def print_execution_time(func):
         result = await func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
+        print(
+            f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
         return result
 
     return async_wrapper if iscoroutinefunction(func) else sync_wrapper
@@ -84,7 +92,8 @@ def check_limit_and_offset(limit: int, offset: int) -> tuple[int, int]:
             f"Offset must be non-negative. Provided offset value: {offset}"
         )
     if not is_positive(limit):
-        raise ValueError(f"Limit must be positive. Provided limit value: {limit}")
+        raise ValueError(
+            f"Limit must be positive. Provided limit value: {limit}")
 
     return min(limit, MAX_LIMIT), offset
 
@@ -143,7 +152,7 @@ def paginate_dict(
         sorted_items = list(data_dict.items())
 
     # Flatten the sorted items back to a dictionary after sorting
-    sorted_dict = dict(sorted_items)
+    dict(sorted_items)
 
     # Calculate start and end indices for pagination
     start_index = page_number * page_size  # Adjusted for 0-based index

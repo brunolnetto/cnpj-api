@@ -1,18 +1,23 @@
 from typing import Union
 
-from fastapi import HTTPException, Depends
+from fastapi import Depends
+from fastapi import HTTPException
 
+from backend.app.api.constants import STATES_BRAZIL
+from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
+from backend.app.api.models.base import BatchModel
+from backend.app.api.models.cnpj import CNPJ
+from backend.app.api.models.cnpj import CNPJBatch
+from backend.app.api.models.cnpj import CNPJQueryParams
+from backend.app.api.models.misc import PaginatedLimitOffsetParams
+from backend.app.api.repositories.cnpj import CNPJRepository
+from backend.app.api.utils.cnpj import are_cnpj_str_valid
+from backend.app.api.utils.cnpj import format_cnpj
+from backend.app.api.utils.cnpj import parse_cnpj_str
 from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
-from backend.app.api.dependencies.cnpj import CNPJRepositoryDependency
-from backend.app.api.repositories.cnpj import CNPJRepository
-from backend.app.utils.misc import is_number, are_numbers
-from backend.app.api.utils.cnpj import are_cnpj_str_valid
-from backend.app.api.utils.cnpj import parse_cnpj_str, format_cnpj
-from backend.app.api.models.cnpj import CNPJ, CNPJQueryParams, CNPJBatch
-from backend.app.api.models.base import BatchModel
-from backend.app.api.models.misc import PaginatedLimitOffsetParams
-from backend.app.api.constants import STATES_BRAZIL
+from backend.app.utils.misc import are_numbers
+from backend.app.utils.misc import is_number
 
 # Types
 CodeType = Union[str, int]
@@ -71,7 +76,7 @@ class CNPJService:
         - A list with the CNAE objects.
         """
         try:
-            cnae_code_list = set(list(cnae_code_batch.batch))
+            cnae_code_list = set(cnae_code_batch.batch)
 
             if not are_numbers(cnae_code_list):
 
@@ -159,7 +164,8 @@ class CNPJService:
                 raise ValueError(f"There isn't CNAE code {cnae_code}.")
 
             cnae_code_list = [cnae_code]
-            cnpjs = self.repository.get_cnpjs_by_cnaes(cnae_code_list, query_params)
+            cnpjs = self.repository.get_cnpjs_by_cnaes(
+                cnae_code_list, query_params)
 
         except Exception as e:
             logger.error(f"Error getting CNPJs with CNAE: {e}")
@@ -167,8 +173,7 @@ class CNPJService:
 
         if len(cnpjs) == 0:
             return {
-                "message": f"There are no establishents with CNAE code {cnae_code}."
-            }
+                "message": f"There are no establishents with CNAE code {cnae_code}."}
 
         return cnpjs
 
@@ -198,7 +203,8 @@ class CNPJService:
                 not_numbers = list(filter(not_number_map, cnae_list))
                 raise ValueError(f"CNAE codes {not_numbers} are not numbers.")
 
-            establishments = self.repository.get_cnpjs_by_cnaes(cnae_list, query_params)
+            establishments = self.repository.get_cnpjs_by_cnaes(
+                cnae_list, query_params)
 
         except Exception as e:
             logger.error(f"Error getting CNPJs by CNAEs: {e}")
@@ -206,8 +212,7 @@ class CNPJService:
 
         if len(establishments) == 0:
             return {
-                "message": f"There are no establishments with CNAE codes {cnae_list}."
-            }
+                "message": f"There are no establishments with CNAE codes {cnae_list}."}
 
         return establishments
 
@@ -224,7 +229,8 @@ class CNPJService:
         """
         try:
             city_names_list = list(set(city_names.batch))
-            city_candidates = self.repository.get_city_candidates(city_names_list)
+            city_candidates = self.repository.get_city_candidates(
+                city_names_list)
 
             return city_candidates
 
@@ -233,8 +239,10 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
     def get_cnpjs_by_states(
-        self, state_batch: BatchModel, limit: int = settings.PAGE_SIZE, offset: int = 0
-    ):
+            self,
+            state_batch: BatchModel,
+            limit: int = settings.PAGE_SIZE,
+            offset: int = 0):
         """
         Get a list of establishments in the specified states.
 
@@ -301,7 +309,8 @@ class CNPJService:
         - A list of cities as dictionaries.
         """
         try:
-            return self.repository.get_paginated_cities(limit=limit, offset=offset)
+            return self.repository.get_paginated_cities(
+                limit=limit, offset=offset)
 
         except Exception as e:
             logger.error(f"Error getting cities: {e}")
@@ -318,7 +327,8 @@ class CNPJService:
                     return not is_number(candidate)
 
                 not_numbers = list(filter(not_number_map, cities_code_list))
-                raise ValueError(f"Cities codes {not_numbers} are not numbers.")
+                raise ValueError(
+                    f"Cities codes {not_numbers} are not numbers.")
 
             cities_objs = self.repository.get_cities_list(cities_code_list)
         except Exception as e:
@@ -382,7 +392,8 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(legal_nature_obj_list) != 1:
-            return {"message": f"Legal nature code {legal_nature_code} not found."}
+            return {
+                "message": f"Legal nature code {legal_nature_code} not found."}
 
         return legal_nature_obj_list[0]
 
@@ -422,8 +433,12 @@ class CNPJService:
                 def not_number_map(candidate):
                     return not is_number(candidate)
 
-                not_numbers = list(filter(not_number_map, legal_natures_code_list))
-                raise ValueError(f"Cities codes {not_numbers} are not numbers.")
+                not_numbers = list(
+                    filter(
+                        not_number_map,
+                        legal_natures_code_list))
+                raise ValueError(
+                    f"Cities codes {not_numbers} are not numbers.")
 
             legal_natures_objs = self.repository.get_legal_natures_list(
                 legal_natures_code_list
@@ -434,8 +449,7 @@ class CNPJService:
 
         if len(legal_natures_objs) == 0:
             return {
-                "message": f"Legal nature codes {legal_natures_code_list} not found."
-            }
+                "message": f"Legal nature codes {legal_natures_code_list} not found."}
 
         return legal_natures_objs
 
@@ -467,12 +481,12 @@ class CNPJService:
 
         if len(registration_status) == 0:
             return {
-                "message": f"Registration status code {registration_status_code} not found."
-            }
+                "message": f"Registration status code {registration_status_code} not found."}
 
         return registration_status[0]
 
-    def get_registration_statuses_list(self, registration_code_batch: BatchModel):
+    def get_registration_statuses_list(
+            self, registration_code_batch: BatchModel):
         """
         Get a list of registration statuses from the database.
 
@@ -490,7 +504,10 @@ class CNPJService:
                 def not_number_map(candidate):
                     return not is_number(candidate)
 
-                not_numbers = list(filter(not_number_map, registration_code_list))
+                not_numbers = list(
+                    filter(
+                        not_number_map,
+                        registration_code_list))
                 raise ValueError(
                     f"Registration status codes {not_numbers} are not numbers."
                 )
@@ -504,12 +521,12 @@ class CNPJService:
 
         if len(registration_status) == 0:
             return {
-                "message": f"Registration status codes {registration_code_list} not found."
-            }
+                "message": f"Registration status codes {registration_code_list} not found."}
 
         return registration_status
 
-    def get_registration_statuses(self, query_params: PaginatedLimitOffsetParams):
+    def get_registration_statuses(
+            self, query_params: PaginatedLimitOffsetParams):
         """
         Get a list of registration statuses from the database.
 
@@ -522,7 +539,8 @@ class CNPJService:
         - A list of registration statuses as dictionaries.
         """
         try:
-            return self.repository.get_paginated_registration_statuses(query_params)
+            return self.repository.get_paginated_registration_statuses(
+                query_params)
         except Exception as e:
             logger.error(f"Error getting registration statuses: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -551,7 +569,8 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not activities:
-            return {"message": f"There are no activities associated with CNPJ {cnpj}."}
+            return {
+                "message": f"There are no activities associated with CNPJ {cnpj}."}
 
         return activities
 
@@ -645,7 +664,8 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not company_info:
-            return {"message": f"There is no company associated with CNPJ {cnpj}."}
+            return {
+                "message": f"There is no company associated with CNPJ {cnpj}."}
 
         return company_info[cnpj_obj.to_raw()]
 
@@ -713,8 +733,7 @@ class CNPJService:
 
         if not est_info:
             return {
-                "message": f"There are no establishments associated with CNPJ base {cnpj_base}."
-            }
+                "message": f"There are no establishments associated with CNPJ base {cnpj_base}."}
 
         return est_info
 
@@ -755,7 +774,8 @@ class CNPJService:
 
                 return str(int(legal_nature_code))
             except ValueError:
-                raise ValueError(f"Invalid Legal nature code {legal_nature_code}.")
+                raise ValueError(
+                    f"Invalid Legal nature code {legal_nature_code}.")
 
     def _validate_zipcode(self, zipcode: str) -> str:
         """Validate the zipcode."""
@@ -926,7 +946,8 @@ class CNPJService:
             cnpj_list = list(set(cnpj_batch.batch))
             cnpj_validity_list = are_cnpj_str_valid(cnpj_list)
 
-            cnpj_validity_dict = dict(zip(cnpj_list, cnpj_validity_list))
+            cnpj_validity_dict = dict(
+                zip(cnpj_list, cnpj_validity_list, strict=False))
 
             valid_cnpjs = [
                 cnpj_str

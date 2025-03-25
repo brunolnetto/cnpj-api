@@ -1,27 +1,22 @@
-from datetime import timedelta
-from warnings import warn
 import platform
+from datetime import timedelta
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Literal
+from warnings import warn
 
-from typing import Optional, Dict, Literal, List, Any, Union
-
-from pydantic_settings import (
-    BaseSettings,
-    SettingsConfigDict,
-)
-
-from pydantic import (
-    Field,
-    AnyUrl,
-    BeforeValidator,
-    computed_field,
-    model_validator,
-    field_validator,
-    ValidationInfo,
-)
-
-
-from typing_extensions import Self, Annotated
 import toml
+from pydantic import AnyUrl
+from pydantic import BeforeValidator
+from pydantic import ValidationInfo
+from pydantic import computed_field
+from pydantic import field_validator
+from pydantic import model_validator
+from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
+from typing_extensions import Annotated
+from typing_extensions import Self
 
 DEFAULT_PASSWORD = "postgres"
 POSTGRES_DSN_SCHEME = "postgresql"
@@ -52,7 +47,7 @@ def generate_db_uri(dsn_scheme, user, password, host, port, database):
     )
 
 
-def parse_comma_separated(v: Any) -> Union[List[str], str]:
+def parse_comma_separated(v: Any) -> List[str] | str:
     if isinstance(v, str) and not v.startswith("["):
         return [i.strip() for i in v.split(",")]
 
@@ -63,7 +58,7 @@ def parse_comma_separated(v: Any) -> Union[List[str], str]:
 
 
 # Project settings
-with open("pyproject.toml", "r", encoding="utf8") as f:
+with open("pyproject.toml", encoding="utf8") as f:
     config = toml.load(f)
 
 
@@ -88,7 +83,7 @@ class Settings(BaseSettings):
 
     # CORS
     BACKEND_CORS_ORIGINS: Annotated[
-        Union[List[AnyUrl], str], BeforeValidator(parse_comma_separated)
+        List[AnyUrl] | str, BeforeValidator(parse_comma_separated)
     ] = []
 
     # 1 day
@@ -147,7 +142,10 @@ class Settings(BaseSettings):
 
     @field_validator("DEFAULT_RATE_LIMITS", mode="before")
     @classmethod
-    def default_rate_limits(cls, v: Optional[str], values: ValidationInfo) -> List[str]:
+    def default_rate_limits(
+            cls,
+            v: str | None,
+            values: ValidationInfo) -> List[str]:
         rate_limit = values.data.get("DEFAULT_RATE_LIMIT")
         burst_rate_limit = values.data.get("DEFAULT_BURST_RATE_LIMIT")
         return [rate_limit, burst_rate_limit]
@@ -156,17 +154,20 @@ class Settings(BaseSettings):
     @classmethod
     def validate_jwt_secret_key(cls, v: str) -> str:
         if not v or len(v) < 16:
-            raise ValueError("JWT_SECRET_KEY must be at least 16 characters long.")
+            raise ValueError(
+                "JWT_SECRET_KEY must be at least 16 characters long.")
         return v
 
     @field_validator("DEFAULT_RATE_LIMIT", mode="before")
     @classmethod
     def validate_default_rate_limit(cls, v: str) -> str:
         if not v:
-            raise ValueError("DEFAULT_RATE_LIMIT must be provided and cannot be empty.")
+            raise ValueError(
+                "DEFAULT_RATE_LIMIT must be provided and cannot be empty.")
         return v
 
-    def _check_default_secret(self, var_name: str, value: Union[str, None]) -> None:
+    def _check_default_secret(
+            self, var_name: str, value: str | None) -> None:
         if value == DEFAULT_PASSWORD:
             message = (
                 f'The value of {var_name} is "{DEFAULT_PASSWORD}", '

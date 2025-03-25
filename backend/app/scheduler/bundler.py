@@ -1,7 +1,8 @@
 import asyncio
 
-from backend.app.scheduler.base import TaskOrchestrator, TaskRegister
 from backend.app.api.repositories.tasks import get_task_repository
+from backend.app.scheduler.base import TaskOrchestrator
+from backend.app.scheduler.base import TaskRegister
 from backend.app.scheduler.tasks.bundler import task_configs
 from backend.app.setup.logging import logger
 
@@ -40,6 +41,7 @@ async def add_tasks():
             # Register as a list if the method requires it
             task_register.register([task_config])
         except Exception as e:
-            logger.error(f"Error registering task {task_config.task_name}: {e}")
+            logger.error(
+                f"Error registering task {task_config.task_name}: {e}")
 
     await asyncio.sleep(1)

@@ -1,8 +1,6 @@
-from backend.app.utils.repositories import (
-    format_database_date,
-    format_phone,
-    format_cep,
-)
+from backend.app.utils.repositories import format_cep
+from backend.app.utils.repositories import format_database_date
+from backend.app.utils.repositories import format_phone
 
 
 def test_format_database_date():
@@ -19,13 +17,17 @@ def test_format_phone():
     assert format_phone("12", "34567890") == "(12) 3456-7890"
     assert format_phone("12", "34567890", ddd_ldelimiter="") == "12) 3456-7890"
     assert format_phone("12", "34567890", ddd_rdelimiter="") == "(12 3456-7890"
-    assert format_phone("12", "34567890", phone_delimiter="") == "(12) 34567890"
+    assert format_phone(
+        "12",
+        "34567890",
+        phone_delimiter="") == "(12) 34567890"
     assert (
         format_phone(
-            "12", "34567890", ddd_rdelimiter="", ddd_ldelimiter="", phone_delimiter=""
-        )
-        == "12 34567890"
-    )
+            "12",
+            "34567890",
+            ddd_rdelimiter="",
+            ddd_ldelimiter="",
+            phone_delimiter="") == "12 34567890")
 
     assert format_phone("nan", "invalid_phone") == ""
 

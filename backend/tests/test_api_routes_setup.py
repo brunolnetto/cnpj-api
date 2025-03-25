@@ -1,6 +1,6 @@
 import pytest
-
 from fastapi.testclient import TestClient
+
 from backend.app.api.routes.setup import router
 from backend.app.setup.config import settings
 from backend.app.utils.security import create_token

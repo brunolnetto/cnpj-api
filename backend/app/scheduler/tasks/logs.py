@@ -1,12 +1,10 @@
 from datetime import timedelta
 
-from backend.app.database.base import get_session
-from backend.app.api.repositories.logs import (
-    RequestLogRepository,
-    TaskLogRepository,
-    DebuggingDatabaseHandler,
-)
 from backend.app.api.models.tasks import TaskConfig
+from backend.app.api.repositories.logs import DebuggingDatabaseHandler
+from backend.app.api.repositories.logs import RequestLogRepository
+from backend.app.api.repositories.logs import TaskLogRepository
+from backend.app.database.base import get_session
 from backend.app.setup.config import settings
 
 

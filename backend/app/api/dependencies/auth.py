@@ -1,15 +1,12 @@
-from jose import jwt
 from fastapi import Depends
 from fastapi.requests import Request
 from fastapi.security import OAuth2PasswordBearer
+from jose import jwt
 
-
+from backend.app.exceptions import CustomHTTPException
+from backend.app.exceptions import ExpiredTokenException
+from backend.app.exceptions import MissingTokenException
 from backend.app.setup.config import settings
-from backend.app.exceptions import (
-    ExpiredTokenException,
-    MissingTokenException,
-    CustomHTTPException,
-)
 
 JWT_SECRET_KEY = settings.JWT_SECRET_KEY
 JWT_ALGORITHM = settings.JWT_ALGORITHM
@@ -31,7 +28,8 @@ class JWTBearer(OAuth2PasswordBearer):
             raise MissingTokenException()
 
         try:
-            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+            payload = jwt.decode(
+                token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
             # jwt.decode will raise ExpiredSignatureError if the token is
             # expired
         except ExpiredTokenException:

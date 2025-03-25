@@ -1,8 +1,11 @@
-from typing import Dict, List, Union, Tuple
+from typing import Dict
+from typing import List
+from typing import Tuple
+from typing import Union
 
+import pandas as pd
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-import pandas as pd
 
 from backend.app.utils.misc import is_number
 
@@ -65,7 +68,9 @@ def is_cnpj_str_valid(cnpj: str) -> Dict[str, Union[bool, str]]:
         digit1, digit2 = calculate_cnpj_verification_digits(cnpj)
 
     except ValueError:
-        return {"is_valid": False, "reason": "CNPJ contains non-numeric characters."}
+        return {
+            "is_valid": False,
+            "reason": "CNPJ contains non-numeric characters."}
 
     # Check verification digits
     if cnpj[12] != str(digit1) or cnpj[13] != str(digit2):

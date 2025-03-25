@@ -1,4 +1,6 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
@@ -11,7 +13,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(days=7)
 
 
-def create_token(data: dict, expires_delta: timedelta = ACCESS_TOKEN_EXPIRE_MINUTES):
+def create_token(
+        data: dict,
+        expires_delta: timedelta = ACCESS_TOKEN_EXPIRE_MINUTES):
     """
     Create a JSON Web Token (JWT) with the provided data and expiration time.
 

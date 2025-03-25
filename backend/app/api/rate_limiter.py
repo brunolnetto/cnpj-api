@@ -2,7 +2,6 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from backend.app.setup.config import settings
-from backend.app.setup.logging import logger
 
 # Initialize the Limiter with a global rate limit
 limiter = Limiter(

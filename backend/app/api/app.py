@@ -6,33 +6,32 @@
 from contextlib import asynccontextmanager
 from time import perf_counter
 
-from fastapi import FastAPI, status, Request
-from fastapi.responses import FileResponse
+from fastapi import FastAPI
+from fastapi import status
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.gzip import GZipMiddleware
-from starlette.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
-from backend.app.setup.config import settings
-from backend.app.api.routes.router_bundler import api_router
-from backend.app.api.exceptions import (
-    not_found_handler,
-    general_exception_handler,
-    custom_rate_limit_handler,
-)
+from backend.app.api.dependencies.cnpj import initialize_CNPJRepository
+from backend.app.api.dependencies.logs import log_app_start
+from backend.app.api.exceptions import general_exception_handler
+from backend.app.api.exceptions import not_found_handler
 from backend.app.api.middlewares.logs import (
     AsyncRequestLoggingMiddleware as ARLMiddleware,
 )
-from backend.app.api.utils.misc import print_execution_time
 from backend.app.api.middlewares.misc import TimingMiddleware
-from backend.app.api.dependencies.logs import log_app_start
-from backend.app.api.dependencies.cnpj import initialize_CNPJRepository
-from backend.app.database.base import init_database, multi_database
+from backend.app.api.rate_limiter import limiter
+from backend.app.api.routes.router_bundler import api_router
+from backend.app.api.utils.misc import print_execution_time
 from backend.app.api.utils.ml import init_nltk
-from backend.app.api.rate_limiter import rate_limit, limiter
-from backend.app.scheduler.bundler import task_orchestrator, add_tasks
+from backend.app.database.base import init_database
+from backend.app.database.base import multi_database
+from backend.app.scheduler.bundler import add_tasks
+from backend.app.scheduler.bundler import task_orchestrator
+from backend.app.setup.config import settings
 from backend.app.setup.logging import setup_logger
 
 
@@ -100,11 +99,12 @@ def create_app():
     return app_
 
 
-def setup_cors(app: FastAPI) -> None:
+def setup_cors(app_: FastAPI) -> None:
     """Sets up CORS middleware for the application."""
     if settings.BACKEND_CORS_ORIGINS:
-        urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]
-        app.add_middleware(
+        urls = [str(origin).strip("/")
+                for origin in settings.BACKEND_CORS_ORIGINS]
+        app_.add_middleware(
             CORSMiddleware,
             allow_origins=urls,
             allow_credentials=True,
@@ -113,26 +113,26 @@ def setup_cors(app: FastAPI) -> None:
         )
 
 
-def setup_middlewares(app: FastAPI) -> None:
+def setup_middlewares(app_: FastAPI) -> None:
     """Adds middleware to the FastAPI application."""
-    app.add_middleware(ARLMiddleware)
-    app.add_middleware(GZipMiddleware, minimum_size=1000)
-    app.add_middleware(TimingMiddleware)
-    app.add_middleware(SlowAPIMiddleware)
+    app_.add_middleware(ARLMiddleware)
+    app_.add_middleware(GZipMiddleware, minimum_size=1000)
+    app_.add_middleware(TimingMiddleware)
+    app_.add_middleware(SlowAPIMiddleware)
 
 
-def setup_static_files(app: FastAPI) -> None:
+def setup_static_files(app_: FastAPI) -> None:
     """Sets up static file serving for the FastAPI application."""
     directory_str = "static"
     statis_files = StaticFiles(directory=directory_str)
-    app.mount("/static", statis_files, name=directory_str)
+    app_.mount("/static", statis_files, name=directory_str)
 
 
-def setup_exception_handlers(app: FastAPI) -> None:
+def setup_exception_handlers(app_: FastAPI) -> None:
     """Sets up exception handlers for the FastAPI application."""
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-    app.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
-    app.add_exception_handler(Exception, general_exception_handler)
+    app_.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app_.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
+    app_.add_exception_handler(Exception, general_exception_handler)
 
 
 def setup_app(app_: FastAPI):
@@ -151,12 +151,12 @@ def setup_app(app_: FastAPI):
 def init_app() -> FastAPI:
     """Initializes and configures the FastAPI application."""
     # Create the application
-    app = create_app()
+    app_ = create_app()
 
     # Configure the application
-    setup_app(app)
+    setup_app(app_)
 
-    return app
+    return app_
 
 
 # Initialize the application

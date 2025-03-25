@@ -1,19 +1,16 @@
+
 import pytest
 
-import re
-
-from backend.app.api.utils.misc import (
-    check_limit_and_offset,
-    convert_to_bytes,
-    build_condition,
-    zfill_factory,
-    paginate_dict,
-    remove_quotes,
-    normalize_json,
-    comma_stringify_list,
-    commify_list,
-    MAX_LIMIT,
-)
+from backend.app.api.utils.misc import MAX_LIMIT
+from backend.app.api.utils.misc import build_condition
+from backend.app.api.utils.misc import check_limit_and_offset
+from backend.app.api.utils.misc import comma_stringify_list
+from backend.app.api.utils.misc import commify_list
+from backend.app.api.utils.misc import convert_to_bytes
+from backend.app.api.utils.misc import normalize_json
+from backend.app.api.utils.misc import paginate_dict
+from backend.app.api.utils.misc import remove_quotes
+from backend.app.api.utils.misc import zfill_factory
 
 
 def test_check_limit_and_offset_valid():
@@ -62,7 +59,7 @@ def test_convert_to_bytes_empty_string():
 
 
 @pytest.mark.parametrize(
-    "column, value, condition_type, array_condition, expected",
+    ("column", "value", "condition_type", "array_condition", "expected"),
     [
         ("age", "30", "eq", False, "age='30'"),
         ("price", "100", "gt", False, "price>'100'"),
@@ -77,8 +74,17 @@ def test_convert_to_bytes_empty_string():
         ("status", "active", "unknown", False, "1=1"),
     ],
 )
-def test_build_condition(column, value, condition_type, array_condition, expected):
-    assert build_condition(column, value, condition_type, array_condition) == expected
+def test_build_condition(
+        column,
+        value,
+        condition_type,
+        array_condition,
+        expected):
+    assert build_condition(
+        column,
+        value,
+        condition_type,
+        array_condition) == expected
 
 
 def test_zfill_factory():
@@ -114,7 +120,7 @@ def test_zfill_factory():
 
 
 @pytest.mark.parametrize(
-    "n, value, expected",
+    ("n", "value", "expected"),
     [
         (5, "123", "00123"),
         (5, "98765", "98765"),
@@ -183,7 +189,8 @@ def test_comma_stringify_list():
     )
 
     # Test with mixed types
-    assert comma_stringify_list([1, "apple", 3.14, True]) == "'1','apple','3.14','True'"
+    assert comma_stringify_list(
+        [1, "apple", 3.14, True]) == "'1','apple','3.14','True'"
 
     # Test with an empty list
     assert comma_stringify_list([]) == ""
@@ -209,7 +216,8 @@ def test_comma_stringify_list():
     )
 
     # Test with mixed types
-    assert comma_stringify_list([1, "apple", 3.14, True]) == "'1','apple','3.14','True'"
+    assert comma_stringify_list(
+        [1, "apple", 3.14, True]) == "'1','apple','3.14','True'"
 
     # Test with an empty list
     assert comma_stringify_list([]) == ""

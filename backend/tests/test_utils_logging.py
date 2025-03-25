@@ -1,4 +1,6 @@
-from os import makedirs, listdir, path
+from os import listdir
+from os import makedirs
+from os import path
 from shutil import rmtree
 
 from backend.app.utils.logging import clear_folder_items
@@ -58,7 +60,7 @@ def test_clear_folder_items_not_found():
     except FileNotFoundError as e:
         assert str(e) == f"Path not found: {tmp_path}"
     else:
-        assert False, "Expected FileNotFoundError."
+        raise AssertionError("Expected FileNotFoundError.")
 
     rmtree(tmp_path, ignore_errors=True)
 

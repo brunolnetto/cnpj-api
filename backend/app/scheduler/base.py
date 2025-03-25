@@ -1,22 +1,26 @@
-from typing import Dict, List, Any
-from datetime import datetime
-import traceback
 import asyncio
 import inspect
+import traceback
+from datetime import datetime
+from typing import Any
+from typing import Dict
+from typing import List
 
-from apscheduler import Scheduler, ScheduleLookupError
-from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler import ScheduleLookupError
+from apscheduler import Scheduler
+from apscheduler.datastores.memory import MemoryDataStore
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
-from apscheduler.datastores.memory import MemoryDataStore
+from apscheduler.triggers.interval import IntervalTrigger
 
-from backend.app.database.base import multi_database
-from backend.app.database.base import get_session
-from backend.app.setup.logging import logger
-from backend.app.database.models.logs import TaskLog
-from backend.app.api.models.tasks import TaskConfig, TaskCreate
+from backend.app.api.models.tasks import TaskConfig
+from backend.app.api.models.tasks import TaskCreate
 from backend.app.api.repositories.tasks import TaskRepository
+from backend.app.database.base import get_session
+from backend.app.database.base import multi_database
+from backend.app.database.models.logs import TaskLog
 from backend.app.setup.config import settings
+from backend.app.setup.logging import logger
 
 # Custom exception for invalid scheduling parameters
 
@@ -119,13 +123,11 @@ class ScheduledTask:
                 if inspect.iscoroutinefunction(self.task_config.task_callable):
                     result = asyncio.run(
                         self.task_config.task_callable(
-                            *self.task_config.task_args, **self.task_config.task_details
-                        )
-                    )
+                            *self.task_config.task_args,
+                            **self.task_config.task_details))
                 else:
                     result = self.task_config.task_callable(
-                        *self.task_config.task_args, **self.task_config.task_details
-                    )
+                        *self.task_config.task_args, **self.task_config.task_details)
 
                 task_log.talo_success = True
                 task_log.talo_status = "success"
