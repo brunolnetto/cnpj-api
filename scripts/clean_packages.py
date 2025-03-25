@@ -1,8 +1,8 @@
-import re
-from re import escape
 import argparse
-import subprocess
 import os
+import re
+import subprocess
+from re import escape
 
 
 def run_pip_compile(input_file: str, output_file: str) -> int:
@@ -33,7 +33,7 @@ def run_pip_compile(input_file: str, output_file: str) -> int:
         raise
 
     # Get package count after operation
-    with open(output_file, "r") as file:
+    with open(output_file) as file:
         lines = file.readlines()
         package_count = len(lines)
 
@@ -41,8 +41,9 @@ def run_pip_compile(input_file: str, output_file: str) -> int:
 
 
 def find_packages_with_comment(
-    requirements_file: str, pip_compile_output_file: str, requirements_output_file: str
-) -> int:
+        requirements_file: str,
+        pip_compile_output_file: str,
+        requirements_output_file: str) -> int:
     """
     Finds packages with a specific comment in a requirements file and writes them to a new file.
 
@@ -61,7 +62,7 @@ def find_packages_with_comment(
         rf"^([^\s#][\w\-]+)==([\d\.]+)\n\s+# via -r {escape(name)}.{escape(extension)}$"
     )
 
-    with open(pip_compile_output_file, "r") as file:
+    with open(pip_compile_output_file) as file:
         with open(requirements_output_file, "w") as out_file:
             text = file.read()
 
@@ -76,7 +77,7 @@ def find_packages_with_comment(
                 out_file.write(package_name + "==" + version + "\n")
 
     # Get package count after operation
-    with open(requirements_output_file, "r") as file:
+    with open(requirements_output_file) as file:
         lines = file.readlines()
         package_count = len(lines)
 
@@ -90,12 +91,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "requirements_file", type=str, help="Path to the requirements file."
     )
-    parser.add_argument("output_file", type=str, help="Path to the output file.")
+    parser.add_argument(
+        "output_file",
+        type=str,
+        help="Path to the output file.")
 
     args = parser.parse_args()
 
     # Get package count before operation
-    with open(args.requirements_file, "r", encoding="latin-1") as file:
+    with open(args.requirements_file, encoding="latin-1") as file:
         lines = file.readlines()
         package_count_before = len(lines)
 
