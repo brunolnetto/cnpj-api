@@ -49,16 +49,15 @@ run: ## Run the application. Usage: make run
 	uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 
 search: ## Searchs for a token in the code. Usage: make search token=your_token
-	grep -rnw . --exclude-dir=venv --exclude-dir=.git --exclude=poetry.lock -e "$(token)"
+	grep -rnw . --exclude-dir=venv --exclude-dir=.git -e "$(token)"
 
 replace: ## Replaces a token in the code. Usage: make replace token=your_token
 	sed -i 's/$(token)/$(new_token)/g' $$(grep -rl "$(token)" . \
 		--exclude-dir=venv \
-		--exclude-dir=.git \
-		--exclude=poetry.lock)
+		--exclude-dir=.git)
 
 test: ## Test the application. Usage: make test
-	poetry run coverage run --rcfile=.coveragerc -m pytest
+	uv run coverage run --rcfile=.coveragerc -m pytest
 
 test-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
 	ptw --quiet --spool 200 --clear --nobeep --config pytest.ini --ext=.py --onfail="echo Tests failed, fix the issues"

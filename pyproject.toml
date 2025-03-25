@@ -1,0 +1,132 @@
+[project]
+name = "cnpj-api"
+version = "0.0.1"
+description = "API para consulta de CNPJ"
+authors = [{name = "Bruno Peixoto", email = "brunolnetto@gmail.com" }]
+maintainers = [{name = "Bruno Peixoto", email = "brunolnetto@gmail.com" }]
+license = { text = "MIT License" }
+readme = "README.md"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi == 0.115.11",
+    "uvicorn >= 0.34.0",
+    "starlette >= 0.46.0",
+    "pydantic-settings == 2.8.1",
+    "slowapi >= 0.1.9",
+    "APScheduler == 4.0.0a5",
+    "bs4 >= 0.0.2",
+    "ipwhois == 1.3.0",
+    "lxml >= 5.2.2",
+    "toml == 0.10.2",
+    "python-jose == 3.3.0",
+    "nltk >= 3.8.1",
+    "pandas >= 2.2.2",
+    "pyarrow >= 18.0.0",
+    "SQLAlchemy >= 2.0.30",
+    "SQLAlchemy-Utils >= 0.41.2",
+    "psycopg2-binary >= 2.9.9",
+    "typing-extensions >= 4.12.2",
+    "python-dotenv >= 1.0.1",
+    "python-json-logger >= 3.0.0",
+    "urllib3 >= 2.2.2",
+    "httpx>=0.28.1",
+]
+
+[project.urls]
+homepage = "https://github.com/brunolnetto/cnpj-api"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--ignore=docs/conf.py",
+    "--ignore=docs/auto_examples/",
+    "--ignore=docs/_build/",
+    "--ignore=tests/examples/",
+    "--cov",
+    "--cov-config",
+    ".coveragerc",
+    "--doctest-glob=*.md",
+    "--doctest-modules",
+    "--doctest-continue-on-failure",
+    "--benchmark-autosave",
+    "--benchmark-group-by=name",
+    "--pdbcls=pdbr:RichPdb",
+]
+doctest_optionflags = "ELLIPSIS IGNORE_EXCEPTION_DETAIL NORMALIZE_WHITESPACE IGNORE_EXCEPTION_DETAIL"
+asyncio_mode = "auto"
+markers = ["""slow: marks tests as slow (deselect with '-m "not slow"')"""]
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+xfail_strict = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING",
+]
+
+[tool.coverage.html]
+directory = "tmp/htmlcov"
+show_contexts = true
+
+[tool.ruff.lint]
+
+# Enable Pyflakes and pycodestyle rules.
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "UP", # pyupgrade
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+    "PT", # flake8-pytest-style
+]
+ignore = [
+    "UP006", # `use-pep585-annotation` Requires Python3.9+
+    "UP035", # `use-pep585-annotation` Requires Python3.9+
+    "UP038", # `use-pep585-annotation` Requires Python3.9+
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[dependency-groups]
+dev = [
+    "pytest >= 8.2.2",
+    "autopep8 >= 2.3.2",
+    "pytest-cov >= 6.0.0",
+    "virtualenv >= 20.26.2",
+    "pytest-mock >= 3.14.0",
+    "pytest-watch >= 4.2.0",
+    "black >= 25.0.0",
+]
