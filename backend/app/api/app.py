@@ -122,16 +122,9 @@ def setup_middlewares(app: FastAPI) -> None:
 
 def setup_static_files(app: FastAPI) -> None:
     """Sets up static file serving for the FastAPI application."""
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
-def setup_favicon(app: FastAPI) -> None:
-    """Sets up the favicon endpoint for the FastAPI application."""
-
-    @rate_limit()
-    @app.get("/favicon.ico", include_in_schema=False)
-    async def get_favicon(request: Request):
-        return FileResponse("static/favicon.ico")
+    directory_str="static"
+    statis_files=StaticFiles(directory=directory_str)
+    app.mount("/static", statis_files, name=directory_str)
 
 
 def setup_exception_handlers(app: FastAPI) -> None:
@@ -142,7 +135,6 @@ def setup_exception_handlers(app: FastAPI) -> None:
 
 
 def setup_app(app_: FastAPI):
-    setup_favicon(app_)
     setup_cors(app_)
     setup_middlewares(app_)
     setup_exception_handlers(app_)
