@@ -75,9 +75,9 @@ class Settings(BaseSettings):
         env_file=".env", env_ignore_empty=True, extra="ignore"
     )
 
-    VERSION: str = config["tool"]["poetry"]["version"]
-    PROJECT_NAME: str = config["tool"]["poetry"]["name"]
-    DESCRIPTION: str = config["tool"]["poetry"]["description"]
+    VERSION: str = config["project"]["version"]
+    PROJECT_NAME: str = config["project"]["name"]
+    DESCRIPTION: str = config["project"]["description"]
     API_V1_STR: str = "/api"
 
     ENVIRONMENT: Literal["development", "production"] = "development"
@@ -92,8 +92,7 @@ class Settings(BaseSettings):
     ] = []
 
     # 1 day
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
-        1 * 24 * 60, env="ACCESS_TOKEN_EXPIRE_MINUTES")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1 * 24 * 60
 
     # Page size
     PAGE_SIZE: int = 10
@@ -105,20 +104,20 @@ class Settings(BaseSettings):
         protocol = "http" if self.ENVIRONMENT == "development" else "https"
         return f"{protocol}://{self.DOMAIN}"
 
-    JWT_SECRET_KEY: str
+    JWT_SECRET_KEY: str = "secret_key_shh_54321"
     JWT_ALGORITHM: str = "HS256"
 
-    POSTGRES_HOST: str
+    POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = DEFAULT_PASSWORD
 
     POSTGRES_DBNAME_RFB: str = ""
     POSTGRES_DBNAME_AUDIT: str = ""
 
-    DEFAULT_RATE_LIMIT: str
-    DEFAULT_BURST_RATE_LIMIT: str
-    DEFAULT_RATE_LIMITS: List[str] = Field(default_factory=list)
+    DEFAULT_RATE_LIMIT: str = "10/minute"
+    DEFAULT_BURST_RATE_LIMIT: str = "500/hour"
+    DEFAULT_RATE_LIMITS: List[str] = ["10/minute", "500/hour"]
 
     # Define cron parameters for task logs cleanup
     CLEANUP_CRON_KWARGS: Dict[str, str] = {

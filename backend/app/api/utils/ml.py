@@ -28,7 +28,7 @@ def compute_token_score(
 
     # Compute word frequency score
     word_score = sum(word_freq_municipality.get(word, 0)
-                     for word in nltk.word_tokenize(name.lower())) / 2
+                    for word in nltk.word_tokenize(name.lower())) / 2
 
     # Return combined score and token name
     return distance + word_score, name

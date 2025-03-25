@@ -243,7 +243,6 @@ def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
 # Define a function to format the date
 DELIMITER = "/"
 
-
 def format_database_date(date_str_: str, delimiter: str = DELIMITER) -> str:
     """
     Formats a date string to the database format.
@@ -274,43 +273,25 @@ def format_cep(cep_str: str):
         str: The formatted CEP string
     """
     cep_str = str(cep_str)
-    is_valid_cep = is_field_valid(cep_str) and is_number(cep_str)
+    is_valid_cep = is_field_valid(cep_str) and is_number(cep_str) and len(cep_str) <= 8
 
     if not is_valid_cep:
         return ""
 
-    # Remove decimal part if it exists
-    cep_str = str(int(float(cep_str)))
+    # Retain leading zeros and ensure exactly 8 digits
     cep_str = cep_str.zfill(8)
 
     return f"{cep_str[0:2]}.{cep_str[2:5]}-{cep_str[5:8]}"
 
-
-# Define a function to format the phone number
 def format_phone(
     ddd_num: str,
     phone_num: str,
-    ddd_ldelimiter: tuple = "(",
-    ddd_rdelimiter: tuple = ")",
-    phone_delimiter="-",
+    ddd_ldelimiter: str = "(",
+    ddd_rdelimiter: str = ")",
+    phone_delimiter: str = "-",
 ):
-    """
-    Formats a phone number.
-
-    Args:
-        ddd (str): The DDD part of the phone number.
-        phone_num (str): The phone number.
-        ddd_ldelimiter (tuple, optional): The left delimiter for the DDD. Defaults to '('.
-        ddd_rdelimiter (tuple, optional): The right delimiter for the DDD. Defaults to ')'.
-        phone_delimiter (str, optional): The delimiter for the phone number. Defaults to '-'.
-
-    Returns:
-        str: The formatted phone number.
-    """
-
     def is_phone_valid(phone_):
-        return is_number(phone_) and is_field_valid(
-            phone_) and len(phone_) in (8, 9)
+        return is_number(phone_) and is_field_valid(phone_) and len(phone_) in (8, 9)
 
     def is_ddd_valid(ddd_):
         return is_number(ddd_) and is_field_valid(ddd_) and len(ddd_) in (1, 2)
@@ -320,14 +301,13 @@ def format_phone(
     if not are_fields_valid:
         return ""
 
-    ddd_num = str(int(float(ddd_num)))
-    phone_num = str(int(float(phone_num)))
-    phone_num = phone_num.zfill(8)
+    phone_num = str(int(float(phone_num))).zfill(8)
 
-    formated_ddd = f"{ddd_ldelimiter}{ddd_num}{ddd_rdelimiter}"
+    # Preserve DDD exactly as inputted
+    formatted_ddd = f"{ddd_ldelimiter}{ddd_num}{ddd_rdelimiter}"
     formatted_phone = f"{phone_num[:4]}{phone_delimiter}{phone_num[4:]}"
 
-    return f"{formated_ddd} {formatted_phone}"
+    return f"{formatted_ddd} {formatted_phone}"
 
 
 def operate_on_list_tuple(lst: List[Tuple], operation: callable) -> List[Any]:

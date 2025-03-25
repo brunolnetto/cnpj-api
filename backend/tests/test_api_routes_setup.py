@@ -21,12 +21,7 @@ async def test_health_check():
 
         response = client.get("/health", headers=headers)
         assert response.status_code == 200
-        assert response.json() == {
-            "name": settings.PROJECT_NAME,
-            "version": settings.VERSION,
-            "status": "OK",
-            "message": f"Visit {settings.API_V1_STR}/docs for more information.",
-        }
+        assert response.json() == { "status": "OK" }
 
 
 @pytest.mark.asyncio

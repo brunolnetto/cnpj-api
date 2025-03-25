@@ -107,12 +107,13 @@ class CNPJ:
             self,
             value: str,
             length: int,
-            field_name: str) -> str:
+            field_name: str
+    ) -> str:
         """Validate if the string contains numeric characters and has the expected length."""
-        if not value.isdigit():
+        if not str(value).isdigit():
             raise InvalidCNPJError(
                 f"Digits '{field_name}' contains non-numeric characters.")
-        return value.zfill(length)
+        return str(value).zfill(length)
 
     def is_valid_dict(self):
         """
