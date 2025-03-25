@@ -120,8 +120,6 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         # Schedule the logging task using TaskOrchestrator and ScheduledTask
         scheduled_task = ScheduledTask(task_config)
 
-        perf_counter()
-
         scheduled_task.schedule(background_scheduler)
 
         # Return the response without waiting for logging

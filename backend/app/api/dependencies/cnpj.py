@@ -22,7 +22,7 @@ def get_cnpj_repository() -> CNPJRepository:
         return CNPJRepository(session)
 
 
-def initialize_CNPJRepository_on_startup():
+def initialize_CNPJRepository():
     try:
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
             CNPJRepository.initialize_on_startup(session)

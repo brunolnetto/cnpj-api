@@ -168,8 +168,7 @@ class Settings(BaseSettings):
     @classmethod
     def validate_default_rate_limit(cls, v: str) -> str:
         if not v:
-            raise ValueError(
-                "DEFAULT_RATE_LIMIT must be provided and cannot be empty.")
+            raise ValueError("DEFAULT_RATE_LIMIT must be provided and cannot be empty.")
         return v
 
     def _check_default_secret(

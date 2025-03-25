@@ -3,7 +3,7 @@ from typing import Union, Dict
 from fastapi import APIRouter, Request, Depends
 
 from backend.app.api.services.cnpj import CNPJService, CNPJServiceDependency
-from backend.app.rate_limiter import rate_limit
+from backend.app.api.rate_limiter import rate_limit
 from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.api.models.base import BatchModel
 from backend.app.api.models.cnpj import CNPJBatch, CNPJQueryParams

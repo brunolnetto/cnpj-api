@@ -12,9 +12,9 @@ from backend.app.setup.logging import logger
 def init_nltk() -> None:
     """Initializes NLTK by downloading necessary datasets."""
     try:
-        nltk.download("stopwords")
-        nltk.download("punkt")
-        nltk.download("punkt_tab")
+        nltk.download("stopwords", quiet=True)
+        nltk.download("punkt", quiet=True)
+        nltk.download("punkt_tab", quiet=True)
     except Exception as e:
         logger.error(f"Error downloading NLTK packages: {e}")
 
