@@ -41,6 +41,7 @@ dependencies = [
     "python-json-logger >= 3.0.0",
     "urllib3 >= 2.2.2",
     "httpx>=0.28.1",
+    "pytest-asyncio>=0.26.0",
 ]
 
 [project.urls]
