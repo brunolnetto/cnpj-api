@@ -36,20 +36,18 @@ sanitize: # Remove dangling images and volumes
 clean: clean-logs clean-test clean-cache sanitize ## Add a rule to remove unnecessary assets. Usage: make clean
 
 env: ## Creates a virtual environment. Usage: make env
-	pip install virtualenv
-	virtualenv .venv
+	uv venv
 
 install: ## Installs the python requirements. Usage: make install
 	pip install uv
-	uv pip install -r requirements.txt --no-cache-dir
-	uv pip install -r requirements_dev.txt --no-cache-dir
+	uv sync
 	apt install black pylint
 
 run: ## Run the application. Usage: make run
 	uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 
 search: ## Searchs for a token in the code. Usage: make search token=your_token
-	grep -rnw . --exclude-dir=venv --exclude-dir=.git -e "$(token)"
+	grep -rnw . --exclude-dir=venv --exclude-dir=.venv --exclude-dir=scripts --exclude-dir=.git --exclude-dir=__pycache__ -e "$(token)"
 
 replace: ## Replaces a token in the code. Usage: make replace token=your_token
 	sed -i 's/$(token)/$(new_token)/g' $$(grep -rl "$(token)" . \
@@ -70,7 +68,7 @@ minimal-requirements: ## Generates minimal requirements. Usage: make requirement
 	
 lint: ## Perform inplace lint fixes. Usage: make lint
 	@autopep8 --in-place --aggressive --aggressive $(shell git ls-files '*.py')
-	@ruff check --fix .
+	@ruff check --unsafe-fixes --fix .
 	@black $(shell git ls-files '*.py')
 
 cloc-install: ## Installs row-count tool
