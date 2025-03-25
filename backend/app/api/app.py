@@ -18,9 +18,13 @@ from slowapi.middleware import SlowAPIMiddleware
 from backend.app.setup.config import settings
 from backend.app.api.routes.router_bundler import api_router
 from backend.app.api.exceptions import (
-    not_found_handler, general_exception_handler, custom_rate_limit_handler,
+    not_found_handler,
+    general_exception_handler,
+    custom_rate_limit_handler,
 )
-from backend.app.api.middlewares.logs import AsyncRequestLoggingMiddleware as ARLMiddleware
+from backend.app.api.middlewares.logs import (
+    AsyncRequestLoggingMiddleware as ARLMiddleware,
+)
 from backend.app.api.utils.misc import print_execution_time
 from backend.app.api.middlewares.misc import TimingMiddleware
 from backend.app.api.dependencies.logs import log_app_start
@@ -47,7 +51,7 @@ async def lifespan(app_: FastAPI):
 
     # Data related entities
     print_execution_time(init_database)()
-    
+
     # Logging
     await print_execution_time(setup_logger)()
 
@@ -99,10 +103,7 @@ def create_app():
 def setup_cors(app: FastAPI) -> None:
     """Sets up CORS middleware for the application."""
     if settings.BACKEND_CORS_ORIGINS:
-        urls = [
-            str(origin).strip("/") 
-            for origin in settings.BACKEND_CORS_ORIGINS
-        ]
+        urls = [str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS]
         app.add_middleware(
             CORSMiddleware,
             allow_origins=urls,
@@ -122,8 +123,8 @@ def setup_middlewares(app: FastAPI) -> None:
 
 def setup_static_files(app: FastAPI) -> None:
     """Sets up static file serving for the FastAPI application."""
-    directory_str="static"
-    statis_files=StaticFiles(directory=directory_str)
+    directory_str = "static"
+    statis_files = StaticFiles(directory=directory_str)
     app.mount("/static", statis_files, name=directory_str)
 
 
@@ -154,7 +155,7 @@ def init_app() -> FastAPI:
 
     # Configure the application
     setup_app(app)
-    
+
     return app
 
 

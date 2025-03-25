@@ -5,10 +5,13 @@ from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 
 # Initialize the Limiter with a global rate limit
-limiter = Limiter(key_func=get_remote_address, default_limits=settings.DEFAULT_RATE_LIMITS)
+limiter = Limiter(
+    key_func=get_remote_address, default_limits=settings.DEFAULT_RATE_LIMITS
+)
 
 # Disable rate limiting in development
 DISABLE_RATE_LIMITING = settings.ENVIRONMENT == "development"
+
 
 def rate_limit() -> callable:
     """

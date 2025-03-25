@@ -21,7 +21,7 @@ async def test_health_check():
 
         response = client.get("/health", headers=headers)
         assert response.status_code == 200
-        assert response.json() == { "status": "OK" }
+        assert response.json() == {"status": "OK"}
 
 
 @pytest.mark.asyncio

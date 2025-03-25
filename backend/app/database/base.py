@@ -64,16 +64,14 @@ class Database(BaseDatabase):
 
     def mask_sensitive_data(self) -> str:
         """Masks sensitive data in the database URI."""
-        masked_uri = self.url.set(
-            password="******") if self.url.password else self.url
+        masked_uri = self.url.set(password="******") if self.url.password else self.url
         return str(masked_uri)
 
     def create_database(self):
         masked_uri = self.mask_sensitive_data()
         try:
             with self.engine.begin() as conn:
-                query = text(
-                    "SELECT 1 FROM pg_database WHERE datname = :dbname")
+                query = text("SELECT 1 FROM pg_database WHERE datname = :dbname")
                 db_data = {"dbname": self.url.database}
                 result = conn.execute(query, db_data)
 
@@ -197,8 +195,7 @@ class MultiDatabase(BaseDatabase):
 
 
 # Load environment variables from the .env file
-multi_database: Optional[MultiDatabase] = MultiDatabase(
-    settings.postgres_uris_dict)
+multi_database: Optional[MultiDatabase] = MultiDatabase(settings.postgres_uris_dict)
 
 
 def init_database():

@@ -6,9 +6,7 @@ from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 
 
-async def not_found_handler(
-        request: Request,
-        exc: HTTPException) -> JSONResponse:
+async def not_found_handler(request: Request, exc: HTTPException) -> JSONResponse:
     """Handles 404 Not Found exceptions."""
     warning_msg = "The requested resource could not be found."
     endpoints = f"{settings.API_V1_STR}/docs or {settings.API_V1_STR}/redoc"
@@ -24,9 +22,7 @@ async def not_found_handler(
     )
 
 
-async def general_exception_handler(
-        request: Request,
-        exc: Exception) -> JSONResponse:
+async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handles all uncaught exceptions."""
     logger.error(
         f"Unhandled exception occurred at {request.method} {request.url}: {exc}"
@@ -49,6 +45,6 @@ async def custom_rate_limit_handler(
         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         content={
             "error_code": "RATE_LIMIT_EXCEEDED",
-            "detail": "Too many requests, please slow down!"
-        }
+            "detail": "Too many requests, please slow down!",
+        },
     )

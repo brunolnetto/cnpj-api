@@ -356,49 +356,67 @@ def test_list_with_booleans():
     assert not are_numbers([True, False, 1], is_strict=True)
     assert not are_numbers([True, False, 1], is_strict=False)
 
+
 delimiter = "-"  # Adjust this to match the default delimiter
+
 
 def test_valid_date():
     assert format_database_date("20230101", delimiter) == "01-01-2023"
     assert format_database_date("19991231", delimiter) == "31-12-1999"
 
+
 def test_invalid_date_length():
     assert format_database_date("202301", delimiter) is None  # Too short
     assert format_database_date("202301011", delimiter) is None  # Too long
 
+
 def test_invalid_characters():
-    assert format_database_date("2023-0101", delimiter) is None  # Contains a non-numeric character
-    assert format_database_date("abcdefgh", delimiter) is None  # Completely invalid input
+    # Contains a non-numeric character
+    assert format_database_date("2023-0101", delimiter) is None
+    assert (
+        format_database_date("abcdefgh", delimiter) is None
+    )  # Completely invalid input
     assert format_database_date("1234567a", delimiter) is None  # Contains a letter
 
+
 def test_non_string_inputs():
-    assert format_database_date(20230101, delimiter) == "01-01-2023"  # Should work if cast to str
+    # Should work if cast to str
+    assert format_database_date(20230101, delimiter) == "01-01-2023"
     assert format_database_date(None, delimiter) is None  # None should return None
-    assert format_database_date(1234567, delimiter) is None  # Incorrect length as an integer
+    # Incorrect length as an integer
+    assert format_database_date(1234567, delimiter) is None
+
 
 def test_custom_delimiter():
     assert format_database_date("20230101", "/") == "01/01/2023"
     assert format_database_date("19991231", "_") == "31_12_1999"
 
+
 def test_valid_cep():
     assert format_cep("12345678") == "12.345-678"
     assert format_cep("01001000") == "01.001-000"
 
+
 def test_invalid_cep():
     assert format_cep("123456789") == ""  # Too long
     assert format_cep("abcd5678") == ""  # Contains letters
-    assert format_cep("12.345-678") == ""  # Already formatted, should be invalid
+    # Already formatted, should be invalid
+    assert format_cep("12.345-678") == ""
     assert format_cep(1001000.0) == ""  # Float input
     assert format_cep(1234567.89) == ""  # Float with decimal
+
 
 def test_numeric_input():
     assert format_cep("1234567") == "01.234-567"
     assert format_cep(12345678) == "12.345-678"  # Integer input
-    assert format_cep(1001000) == "01.001-000"  # Integer input with leading zero handling    
+    # Integer input with leading zero handling
+    assert format_cep(1001000) == "01.001-000"
+
 
 def test_empty_and_none():
     assert format_cep("") == ""  # Empty string
     assert format_cep(None) == ""  # None input
+
 
 @pytest.mark.parametrize(
     "ddd, phone, expected",
@@ -413,7 +431,7 @@ def test_empty_and_none():
         ("xx", "987654321", ""),  # Non-numeric DDD
         ("11", "", ""),  # Empty phone
         ("", "987654321", ""),  # Empty DDD
-    ]
+    ],
 )
 def test_format_phone(ddd, phone, expected):
     assert format_phone(ddd, phone) == expected

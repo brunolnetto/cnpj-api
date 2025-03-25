@@ -50,9 +50,6 @@ async def info(request: Request) -> InfoResponse:
             description=config["tool"]["poetry"]["description"],
         )
     except FileNotFoundError:
-        raise HTTPException(
-            status_code=404,
-            detail="Configuration file not found")
+        raise HTTPException(status_code=404, detail="Configuration file not found")
     except toml.TomlDecodeError:
-        raise HTTPException(status_code=500,
-                            detail="Error decoding configuration file")
+        raise HTTPException(status_code=500, detail="Error decoding configuration file")

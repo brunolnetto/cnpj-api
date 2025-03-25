@@ -154,8 +154,7 @@ def is_number(text: str) -> bool:
     return bool(re.match(pattern, text))
 
 
-def are_numbers(lst: List[Union[str, int, float]],
-                is_strict: bool = False) -> bool:
+def are_numbers(lst: List[Union[str, int, float]], is_strict: bool = False) -> bool:
     """
     Checks if all elements in a list are numbers.
 
@@ -243,6 +242,7 @@ def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
 # Define a function to format the date
 DELIMITER = "/"
 
+
 def format_database_date(date_str_: str, delimiter: str = DELIMITER) -> str:
     """
     Formats a date string to the database format.
@@ -255,8 +255,7 @@ def format_database_date(date_str_: str, delimiter: str = DELIMITER) -> str:
         str: The formatted date string.
     """
     date_str_ = str(date_str_)
-    if not is_field_valid(date_str) or not is_number(
-            date_str_) or len(date_str_) != 8:
+    if not is_field_valid(date_str) or not is_number(date_str_) or len(date_str_) != 8:
         return None
 
     return f"{date_str_[6:]}{delimiter}{date_str_[4:6]}{delimiter}{date_str_[:4]}"
@@ -282,6 +281,7 @@ def format_cep(cep_str: str):
     cep_str = cep_str.zfill(8)
 
     return f"{cep_str[0:2]}.{cep_str[2:5]}-{cep_str[5:8]}"
+
 
 def format_phone(
     ddd_num: str,

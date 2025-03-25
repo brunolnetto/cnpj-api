@@ -27,8 +27,9 @@ def build_condition(column: str, value, condition_type="eq", array_condition=Fal
         return f"{column}<='{value}'"
     elif condition_type == "contains" and array_condition:
         return f"{column} @> Array[{value}]"
-    
+
     return "1=1"  # Default fallback, though rarely used with the above checks.
+
 
 def print_execution_time(func):
     @wraps(func)
@@ -37,8 +38,7 @@ def print_execution_time(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(
-            f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
+        print(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
         return result
 
     @wraps(func)
@@ -47,8 +47,7 @@ def print_execution_time(func):
         result = await func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(
-            f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
+        print(f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
         return result
 
     return async_wrapper if iscoroutinefunction(func) else sync_wrapper
@@ -57,9 +56,10 @@ def print_execution_time(func):
 def zfill_factory(n: int):
     # Normalize data
     def zfill_map(value: str, num: int):
-        # If the value contains a decimal point, split it and pad only the digits part
-        if '.' in value:
-            int_part, dec_part = value.split('.', 1)
+        # If the value contains a decimal point, split it and pad only the
+        # digits part
+        if "." in value:
+            int_part, dec_part = value.split(".", 1)
             return f"{int_part.zfill(num - len(dec_part) - 1)}.{dec_part}"
         return value.zfill(num)
 
@@ -68,11 +68,14 @@ def zfill_factory(n: int):
 
     return zfill_n
 
+
 def remove_quotes(text: str) -> str:
     return text.replace("'", "").replace('"', "")
 
+
 def normalize_json(json_str: str):
     return re.sub(r"(?<!\\)'", '"', json_str)
+
 
 def check_limit_and_offset(limit: int, offset: int) -> tuple[int, int]:
     """Checks if limit and offset are valid."""
@@ -81,8 +84,7 @@ def check_limit_and_offset(limit: int, offset: int) -> tuple[int, int]:
             f"Offset must be non-negative. Provided offset value: {offset}"
         )
     if not is_positive(limit):
-        raise ValueError(
-            f"Limit must be positive. Provided limit value: {limit}")
+        raise ValueError(f"Limit must be positive. Provided limit value: {limit}")
 
     return min(limit, MAX_LIMIT), offset
 
@@ -110,10 +112,12 @@ def commify_list(lst: List[Any]) -> str:
     return ",".join(str(item) for item in lst)
 
 
-def paginate_dict(data_dict: Dict, page_size: int, page_number: int, sort_by: str = None):
+def paginate_dict(
+    data_dict: Dict, page_size: int, page_number: int, sort_by: str = None
+):
     """
     Paginate a dictionary with an optional sorting key.
-    
+
     Args:
     - data_dict (dict): The dictionary to paginate.
     - page_size (int): The number of items per page.
@@ -123,17 +127,21 @@ def paginate_dict(data_dict: Dict, page_size: int, page_number: int, sort_by: st
     Returns:
     - dict: A dictionary containing the key-value pairs for the specified page.
     """
-    
-    # If sorting is required, sort by the specified key or by keys alphabetically
+
+    # If sorting is required, sort by the specified key or by keys
+    # alphabetically
     if sort_by:
-        # Use a default value (-float('inf')) for missing keys to avoid TypeError
+        # Use a default value (-float('inf')) for missing keys to avoid
+        # TypeError
         sorted_items = sorted(
-            data_dict.items(), 
-            key=lambda x: x[1].get(sort_by, float('-inf')) if isinstance(x[1], dict) else x[1]
+            data_dict.items(),
+            key=lambda x: (
+                x[1].get(sort_by, float("-inf")) if isinstance(x[1], dict) else x[1]
+            ),
         )
     else:
         sorted_items = list(data_dict.items())
-    
+
     # Flatten the sorted items back to a dictionary after sorting
     sorted_dict = dict(sorted_items)
 
