@@ -29,7 +29,7 @@ jobs:
     #       install dependencies if cache does not exist
     #----------------------------------------------
     - name: Install dependencies
-      run: uv sync --verbose
+      run: uv sync --verbose --no-interaction
 
     #----------------------------------------------
     #       run tests
@@ -44,3 +44,5 @@ jobs:
     #----------------------------------------------
     - name: Upload coverage reports to codecov.io
       uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
