@@ -61,7 +61,7 @@ test-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
 	ptw --quiet --spool 200 --clear --nobeep --config pytest.ini --ext=.py --onfail="echo Tests failed, fix the issues"
 
 test-report: test ## Generate coverage report. Usage: make report
-	coverage report --omit=$(OMIT_PATHS) --show-missing
+	uv run coverage report --omit=$(OMIT_PATHS) --show-missing
 
 minimal-requirements: ## Generates minimal requirements. Usage: make requirements
 	python3 scripts/clean_packages.py requirements.txt requirements.txt
