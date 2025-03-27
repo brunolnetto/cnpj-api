@@ -40,7 +40,12 @@ jobs:
         uv run coverage report --omit="*/__init__.py,backend/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py,backend/app/api/services/scrapper.py" --show-missing
 
     #----------------------------------------------
-    #       Upload coverage reports to codecov.io
+    #       Upload coverage reports to Codecov
     #----------------------------------------------
-    - name: Upload coverage reports to codecov.io
-      uses: codecov/codecov-action@v3
+    - name: Upload coverage reports to Codecov
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      run: |
+        curl -Os https://uploader.codecov.io/latest/linux/codecov
+        chmod +x codecov
+        ./codecov -t ${CODECOV_TOKEN}
