@@ -9,7 +9,7 @@ from fastapi import Request
 from pydantic import BaseModel
 
 from backend.app.api.dependencies.auth import JWTDependency
-from backend.app.api.rate_limiter import limiter
+from backend.app.api.rate_limiter import rate_limit
 
 router = APIRouter(tags=["Setup"], dependencies=[JWTDependency])
 
@@ -24,8 +24,8 @@ class InfoResponse(BaseModel):
     description: str
 
 
-@limiter.limit("5/minute")
 @router.get("/health", response_model=HealthCheckResponse)
+@rate_limit()
 async def health_check(request: Request) -> HealthCheckResponse:
     """
     Health check endpoint to verify if the service is running.
@@ -33,8 +33,8 @@ async def health_check(request: Request) -> HealthCheckResponse:
     return HealthCheckResponse(status="OK")
 
 
-@limiter.limit("5/minute")
 @router.get("/info", response_model=InfoResponse)
+@rate_limit()
 async def info(request: Request) -> InfoResponse:
     """
     Endpoint to retrieve application information from the pyproject.toml file.
@@ -47,9 +47,9 @@ async def info(request: Request) -> InfoResponse:
             config = toml.load(f)
 
         return InfoResponse(
-            name=config["tool"]["poetry"]["name"],
-            version=config["tool"]["poetry"]["version"],
-            description=config["tool"]["poetry"]["description"],
+            name=config["project"]["name"],
+            version=config["project"]["version"],
+            description=config["project"]["description"],
         )
     except FileNotFoundError:
         raise HTTPException(

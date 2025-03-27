@@ -81,9 +81,7 @@ class Database(BaseDatabase):
         admin_engine = create_engine(admin_uri, isolation_level="AUTOCOMMIT")
 
         try:
-            print('2.')
             with admin_engine.begin() as conn:
-                print('3.')
                 query = text("SELECT 1 FROM pg_database WHERE datname = :dbname")
                 result = conn.execute(query, {"dbname": self.url.database})
 
@@ -214,7 +212,6 @@ multi_database: MultiDatabase | None = MultiDatabase(
 
 def init_database():
     """Initialize the multi-database setup."""
-    print(':)')
     multi_database.init()
 
 

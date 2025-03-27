@@ -9,13 +9,9 @@ from backend.app.setup.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Set the expiration time for the JWT
-ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(days=7)
-
-
 def create_token(
         data: dict,
-        expires_delta: timedelta = ACCESS_TOKEN_EXPIRE_MINUTES):
+        expires_delta: timedelta = settings.ACCESS_TOKEN_EXPIRE_MINUTES):
     """
     Create a JSON Web Token (JWT) with the provided data and expiration time.
 

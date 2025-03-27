@@ -65,6 +65,14 @@ def date_str():
     """
     return datetime.now().strftime("%Y-%m-%d")
 
+def time_str():
+    """
+    Returns the current time as a string in the format 'HH_MM'.
+
+    Returns:
+        str: The current time as a string.
+    """
+    return datetime.now().strftime("%H_%M")
 
 def number_string_to_number(number_string: str) -> int:
     """
@@ -81,16 +89,6 @@ def number_string_to_number(number_string: str) -> int:
     remainder = float_value - int_value
 
     return int_value if remainder == 0 else float_value
-
-
-def time_str():
-    """
-    Returns the current time as a string in the format 'HH_MM'.
-
-    Returns:
-        str: The current time as a string.
-    """
-    return datetime.now().strftime("%H_%M")
 
 
 def humanize_string(s):

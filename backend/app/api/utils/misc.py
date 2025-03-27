@@ -5,6 +5,9 @@ from inspect import iscoroutinefunction
 from typing import Any
 from typing import Dict
 from typing import List
+import asyncio
+from functools import partial
+from time import perf_counter
 
 from backend.app.api.constants import MAX_LIMIT
 from backend.app.api.constants import UNIT_MULTIPLIER
@@ -60,6 +63,34 @@ def print_execution_time(func):
 
     return async_wrapper if iscoroutinefunction(func) else sync_wrapper
 
+async def execute_task_with_timing(task_func, *args, **kwargs):
+    """Helper to execute tasks with execution time logging."""
+    if task_func is None:
+        raise ValueError("Received a None function in execute_task_with_timing")
+
+    t0 = perf_counter()
+
+    if asyncio.iscoroutinefunction(task_func):
+        # If it's an async function, await it normally
+        result = await task_func(*args, **kwargs)
+    else:
+        # If it's a sync function, run it in an executor
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(None, partial(task_func, *args, **kwargs))
+
+    print(f"{task_func.__name__} took {perf_counter() - t0:.2f} seconds")
+    return result
+
+async def execute_tasks_with_timing(task_list, action: str):
+    """Executes a list of tasks with timing and logs the duration."""
+    t0 = perf_counter()
+    print(f"{action.capitalize()} application...")
+
+    # Execute tasks sequentially or concurrently if needed
+    for task in task_list:
+        await execute_task_with_timing(task)
+
+    print(f"{action.capitalize()} took {perf_counter() - t0:.2f} seconds")
 
 def zfill_factory(n: int):
     # Normalize data

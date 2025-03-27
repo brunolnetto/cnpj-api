@@ -5,11 +5,15 @@
 # configurations.
 from contextlib import asynccontextmanager
 from time import perf_counter
+import asyncio
+from functools import partial
 
 from fastapi import FastAPI
 from fastapi import status
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from slowapi import _rate_limit_exceeded_handler
+from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from starlette.middleware.cors import CORSMiddleware
@@ -26,6 +30,8 @@ from backend.app.api.middlewares.misc import TimingMiddleware
 from backend.app.api.rate_limiter import limiter
 from backend.app.api.routes.router_bundler import api_router
 from backend.app.api.utils.misc import print_execution_time
+from backend.app.api.utils.misc import execute_task_with_timing
+from backend.app.api.utils.misc import execute_tasks_with_timing
 from backend.app.api.utils.ml import init_nltk
 from backend.app.database.base import init_database
 from backend.app.database.base import multi_database
@@ -34,52 +40,27 @@ from backend.app.scheduler.bundler import task_orchestrator
 from backend.app.setup.config import settings
 from backend.app.setup.logging import setup_logger
 
-async def execute_task_with_timing(task_func, *args, **kwargs):
-    """Helper to execute tasks with execution time logging."""
-    t0 = perf_counter()
-    result = await task_func(*args, **kwargs)
-    print(f"{task_func.__name__} took {perf_counter() - t0:.2f} seconds")
-    return result
-
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
-    """
-    Async context manager that handles initialization and cleanup tasks for the FastAPI application.
+    """Async context manager that handles startup and shutdown tasks."""
+    
+    # Define startup and shutdown tasks
+    startup_tasks = [
+        init_database, setup_logger, initialize_CNPJRepository,
+        log_app_start, task_orchestrator.start, add_tasks, init_nltk
+    ]
+    shutdown_tasks = [
+        task_orchestrator.shutdown, multi_database.disconnect
+    ]
 
-    :param app_: The FastAPI application instance.
-    :type app_: FastAPI
-    """
-    t0 = perf_counter()
-
-    # Perform startup tasks
-    print("Starting application...")
-
-    # Run the initialization tasks with execution time logging
-    await execute_task_with_timing(init_database)
-    await execute_task_with_timing(setup_logger)
-    await execute_task_with_timing(initialize_CNPJRepository)
-    await execute_task_with_timing(log_app_start)
-    await execute_task_with_timing(task_orchestrator.start)
-    await execute_task_with_timing(add_tasks)
-    await execute_task_with_timing(init_nltk)
-
-    # Log the total startup time
-    print(f"Startup took {perf_counter() - t0:.2f} seconds")
+    # Run startup tasks
+    await execute_tasks_with_timing(startup_tasks, "starting")
 
     try:
-        # Yield to the FastAPI application runtime
-        yield
+        yield  # Hand control over to FastAPI runtime
     finally:
-        # Cleanup tasks
-        t0 = perf_counter()
-        print("Shutting down application...")
-
-        # Execute shutdown tasks
-        await execute_task_with_timing(task_orchestrator.shutdown)
-        await execute_task_with_timing(multi_database.disconnect)
-
-        # Log the total shutdown time
-        print(f"Shutdown took {perf_counter() - t0:.2f} seconds")
+        # Run shutdown tasks
+        await execute_tasks_with_timing(shutdown_tasks, "shutting down")
 
 def create_app():
     # Generates the FastAPI application
@@ -126,8 +107,14 @@ def setup_static_files(app_: FastAPI) -> None:
 
 
 def setup_exception_handlers(app_: FastAPI) -> None:
+    async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
+        return JSONResponse(
+            status_code=429,
+            content={"detail": "Too many requests, please slow down!!"},
+        )
+    
     """Sets up exception handlers for the FastAPI application."""
-    app_.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app_.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
     app_.add_exception_handler(status.HTTP_404_NOT_FOUND, not_found_handler)
     app_.add_exception_handler(Exception, general_exception_handler)
 

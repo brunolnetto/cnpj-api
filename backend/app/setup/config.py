@@ -110,8 +110,8 @@ class Settings(BaseSettings):
     POSTGRES_DBNAME_RFB: str = ""
     POSTGRES_DBNAME_AUDIT: str = ""
 
-    DEFAULT_RATE_LIMIT: str = "10/minute"
-    DEFAULT_BURST_RATE_LIMIT: str = "500/hour"
+    DEFAULT_RATE_LIMIT: str = "5/minute"
+    DEFAULT_BURST_RATE_LIMIT: str = "250/hour"
     DEFAULT_RATE_LIMITS: List[str] = ["10/minute", "500/hour"]
 
     # Define cron parameters for task logs cleanup
