@@ -29,7 +29,7 @@ jobs:
     #       install dependencies if cache does not exist
     #----------------------------------------------
     - name: Install dependencies
-      run: uv sync --verbose --no-interaction
+      run: uv sync --verbose
 
     #----------------------------------------------
     #       run tests
