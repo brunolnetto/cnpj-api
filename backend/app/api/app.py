@@ -34,55 +34,52 @@ from backend.app.scheduler.bundler import task_orchestrator
 from backend.app.setup.config import settings
 from backend.app.setup.logging import setup_logger
 
+async def execute_task_with_timing(task_func, *args, **kwargs):
+    """Helper to execute tasks with execution time logging."""
+    t0 = perf_counter()
+    result = await task_func(*args, **kwargs)
+    print(f"{task_func.__name__} took {perf_counter() - t0:.2f} seconds")
+    return result
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
     """
-    The `lifespan` async context manager in Python initializes and cleans up various
-    tasks for a FastAPI application.
+    Async context manager that handles initialization and cleanup tasks for the FastAPI application.
 
-    :param app: The `app` parameter in the `lifespan` async context manager function is of type
-    `FastAPI`. It is likely being used to pass in the FastAPI application instance to perform
-    initialization and cleanup tasks related to the application's lifespan
-    :type app: FastAPI
+    :param app_: The FastAPI application instance.
+    :type app_: FastAPI
     """
     t0 = perf_counter()
 
-    # Data related entities
-    print_execution_time(init_database)()
+    # Perform startup tasks
+    print("Starting application...")
 
-    # Logging
-    await print_execution_time(setup_logger)()
+    # Run the initialization tasks with execution time logging
+    await execute_task_with_timing(init_database)
+    await execute_task_with_timing(setup_logger)
+    await execute_task_with_timing(initialize_CNPJRepository)
+    await execute_task_with_timing(log_app_start)
+    await execute_task_with_timing(task_orchestrator.start)
+    await execute_task_with_timing(add_tasks)
+    await execute_task_with_timing(init_nltk)
 
-    # Initialize CNPJ repository
-    print_execution_time(initialize_CNPJRepository)()
+    # Log the total startup time
+    print(f"Startup took {perf_counter() - t0:.2f} seconds")
 
-    # Log app startup
-    print_execution_time(log_app_start)()
+    try:
+        # Yield to the FastAPI application runtime
+        yield
+    finally:
+        # Cleanup tasks
+        t0 = perf_counter()
+        print("Shutting down application...")
 
-    # Start task orchestrator
-    await print_execution_time(task_orchestrator.start)()
+        # Execute shutdown tasks
+        await execute_task_with_timing(task_orchestrator.shutdown)
+        await execute_task_with_timing(multi_database.disconnect)
 
-    # Add tasks to orchestrator
-    await print_execution_time(add_tasks)()
-
-    # Initialize NLTK
-    print_execution_time(init_nltk)()
-
-    print(f"Start up took {perf_counter()-t0} seconds")
-
-    yield
-
-    t0 = perf_counter()
-
-    # Cleanup tasks
-    await print_execution_time(task_orchestrator.shutdown)()
-
-    # Disconnect from databases
-    print_execution_time(multi_database.disconnect)()
-
-    print(f"Shutdown took {perf_counter()-t0} seconds")
-
+        # Log the total shutdown time
+        print(f"Shutdown took {perf_counter() - t0:.2f} seconds")
 
 def create_app():
     # Generates the FastAPI application

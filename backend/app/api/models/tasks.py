@@ -47,15 +47,9 @@ class TaskCreate(TaskBase):
 class TaskRead(TaskBase):
     """Model for reading task information."""
 
-    class Config:
-        from_attributes = True
-
 
 class TaskResponse(TaskBase):
     """Model for the task response."""
-
-    class Config:
-        from_attributes = True
 
 
 class TaskConfig(BaseModel):

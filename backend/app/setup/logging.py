@@ -2,7 +2,7 @@ import logging
 import sys
 
 from dotenv import load_dotenv
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger import json
 
 from backend.app.api.dependencies.logs import get_debug_logs_handler
 from backend.app.setup.config import settings
@@ -34,7 +34,7 @@ fields = [
     "message",
 ]
 logging_format = " ".join(f"%({field_name})s" for field_name in fields)
-fmt = jsonlogger.JsonFormatter(logging_format)
+fmt = json.JsonFormatter(logging_format)
 
 
 async def setup_logger():

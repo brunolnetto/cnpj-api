@@ -260,14 +260,14 @@ class DebuggingDatabaseHandler(logging.Handler):
     def write_to_db(self, log_data):
         # Create a new DebugLog entry and add it to the session
         debug_log = DebugLog(
-            delo_created_at=log_data["created_at"],
-            delo_level=log_data["level"],
-            delo_message=log_data["message"],
-            delo_pathname=log_data["pathname"],
-            delo_func_name=log_data["func_name"],
-            delo_lineno=log_data["lineno"],
-            delo_environment=log_data["environment"],
-            delo_machine=log_data["machine_name"],
+            delo_created_at=log_data.get("created_at", datetime.now().isoformat()),
+            delo_level=log_data.get("level", "INFO"),
+            delo_message=log_data.get("message", ""),
+            delo_pathname=log_data.get("pathname", ""),
+            delo_func_name=log_data.get("func_name", ""),
+            delo_lineno=log_data.get("lineno", 0),
+            delo_environment=log_data.get("environment", "production"),
+            delo_machine=log_data.get("machine_name", "unknown"),
         )
 
         # Add the log to the database and commit the session
@@ -276,7 +276,7 @@ class DebuggingDatabaseHandler(logging.Handler):
 
     async def close(self):
         self.stop_event.set()
-        await self.queue.join()  # Awaiting the queue join
+        await self.queue.join()
         await super().close()
 
     async def delete_old_logs(self, time_delta: timedelta):

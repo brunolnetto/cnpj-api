@@ -1,6 +1,6 @@
 .PHONY: build run stop ps host logs
 
-OMIT_PATHS := "*/__init__.py,backend/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py,backend/app/api/services/scrapper.py"
+OMIT_PATHS := "*/__init__.py,*/tests/*,backend/app/repositories/cnpj.py,backend/app/database/base.py,backend/app/api/services/scrapper.py"
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
