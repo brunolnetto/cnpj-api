@@ -1,27 +1,30 @@
 # Use the official Python image as the base image
 FROM python:3.10-slim-buster
 
+# Install uv.
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Copy the application into the container.
+COPY . /app
+
 # Set the working directory
 WORKDIR /app
+RUN uv lock
 
-# Set env variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH="/app"
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
+RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
 
-# Install uv
-RUN pip install uv
+# Then, add the rest of the project source code and install it
+# Installing separately from its dependencies allows optimal layer caching
+ADD . /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
-# Copy the rest of the application
-COPY . .
+# Place executables in the environment at the front of the path
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Install the dependencies
-RUN uv sync
-
-# Create directories for backend and static files
-RUN mkdir -p /app/backend /app/static
+# Reset the entrypoint, don't invoke `uv`
+ENTRYPOINT []
 
 # Command to run the FastAPI application
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
