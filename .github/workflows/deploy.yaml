@@ -1,0 +1,57 @@
+name: Deploy to Portainer
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: |
+          echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+
+      - name: Build and push Docker image
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+          TAG: "latest"
+        run: |
+          chmod +x scripts/push_image.sh
+          ./scripts/push_image.sh -u "${ DOCKERHUB_USERNAME }" -p "${ DOCKERHUB_PASSWORD }" -i "${IMAGE_NAME}" -t "${TAG}"
+
+      - name: Delete old stack from Portainer
+        env:
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_USERNAME: ${{ secrets.PORTAINER_USERNAME }}
+          PORTAINER_PASSWORD: ${{ secrets.PORTAINER_PASSWORD }}
+          STACK_NAME: ${{ secrets.STACK_NAME }}
+        run: |
+          chmod +x scripts/delete_stack.sh
+          ./scripts/delete_stack.sh -r "${PORTAINER_URL}" -u "${PORTAINER_USERNAME}" -p "${PORTAINER_PASSWORD}" -s "${STACK_NAME}"
+
+      - name: Deploy new stack to Portainer
+        env:
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_USERNAME: ${{ secrets.PORTAINER_USERNAME }}
+          PORTAINER_PASSWORD: ${{ secrets.PORTAINER_PASSWORD }}
+          STACK_NAME: ${{ secrets.STACK_NAME }}
+          STACK_FILE: "./docker-compose.yaml"
+        run: |
+          chmod +x scripts/push_stack.sh
+          ./scripts/push_stack.sh -r "${PORTAINER_URL}" -u "${PORTAINER_USERNAME}" -p "${PORTAINER_PASSWORD}" -s "${STACK_NAME}" -f "${STACK_FILE}"
+
+      - name: Logout from Docker Hub
+        run: |
+          docker logout
