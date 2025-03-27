@@ -3,28 +3,28 @@ version: '3.3'
 services:
   backend-app:
     ## In development: we use the build context to build the image 
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
-    # ports: 
-    #   - "8000:8000"
-    image: josezago/cnpj-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports: 
+      - "8000:8000"
+    # image: josezago/cnpj-api
     networks:
       - ConexxoHubNet
-    deploy:
-      mode: replicated
-      replicas: 10
-      placement:
-        constraints:
-          - node.role == manager
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.backend-app.entrypoints=websecure"
-        - "traefik.http.routers.backend-app.tls=true" 
-        - "traefik.http.routers.backend-app.tls.certresolver=letsencryptresolver"
-        - "traefik.http.routers.backend-app.rule=Host(`cnpjapi.conexxohub.com.br`)"
-        - "traefik.http.services.backend-app.loadbalancer.server.port=8000"
-        - "traefik.http.routers.backend-app.service=backend-app"
+    #deploy:
+    #  mode: replicated
+    #  replicas: 10
+    #  placement:
+    #    constraints:
+    #      - node.role == manager
+    #  labels:
+    #    - "traefik.enable=true"
+    #    - "traefik.http.routers.backend-app.entrypoints=websecure"
+    #    - "traefik.http.routers.backend-app.tls=true" 
+    #    - "traefik.http.routers.backend-app.tls.certresolver=letsencryptresolver"
+    #    - "traefik.http.routers.backend-app.rule=Host(`cnpjapi.conexxohub.com.br`)"
+    #    - "traefik.http.services.backend-app.loadbalancer.server.port=8000"
+    #    - "traefik.http.routers.backend-app.service=backend-app"
       
 
 networks:
