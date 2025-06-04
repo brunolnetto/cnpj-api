@@ -206,8 +206,6 @@ class CNPJRepository:
             """
         )
 
-        print(query)
-
         cnpjs_result: Result = replace_invalid_fields_on_list_tuple(
             self.session.execute(query).fetchall()
         )
@@ -612,7 +610,6 @@ class CNPJRepository:
             left join natju on natju.codigo::text = emp.natureza_juridica::text
             """
         )
-        print(query)
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
             company_result: Result = session.execute(query).fetchall()
