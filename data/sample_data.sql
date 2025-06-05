@@ -29,7 +29,6 @@ CREATE TABLE public.cnae (
     descricao text
 );
 
-
 ALTER TABLE public.cnae OWNER TO postgres;
 
 --
@@ -186,14 +185,6 @@ CREATE TABLE public.socios (
 
 
 ALTER TABLE public.socios OWNER TO postgres;
-
---
--- Data for Name: audit; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.audit (audi_id, audi_created_at, audi_table_name, audi_filenames, audi_file_size_bytes, audi_source_updated_at, audi_downloaded_at, audi_processed_at, audi_inserted_at) FROM stdin;
-\.
-
 
 --
 -- Data for Name: cnae; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -7605,14 +7596,6 @@ COPY public.socios (cnpj_basico, identificador_socio, nome_socio_razao_social, c
 
 
 --
--- Name: audit audit_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.audit
-    ADD CONSTRAINT audit_pkey PRIMARY KEY (audi_id);
-
-
---
 -- Name: natju natju_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7695,14 +7678,6 @@ CREATE INDEX pais_codigo_idx ON public.pais USING btree (codigo);
 --
 
 CREATE INDEX socios_cnpj_basico ON public.socios USING btree (cnpj_basico);
-
-
---
--- Name: TABLE audit; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT ON TABLE public.audit TO postgres;
-
 
 --
 -- Name: TABLE cnae; Type: ACL; Schema: public; Owner: postgres

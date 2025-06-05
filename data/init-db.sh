@@ -8,5 +8,9 @@ until pg_isready -h db -p 5432 -U "$POSTGRES_USER"; do
     sleep 2
 done
 
+echo "$POSTGRES_USER"
+echo "$POSTGRES_DB"
+
 echo "Database is up! Running SQL script..."
-psql -h db -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f /data/sample_data.sql
+PGPASSWORD="$POSTGRES_PASSWORD" psql -h db -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f /data/sample_data.sql
+
