@@ -36,13 +36,13 @@ sanitize: # Remove dangling images and volumes
 clean: clean-logs clean-test clean-cache sanitize ## Add a rule to remove unnecessary assets. Usage: make clean
 
 env: ## Creates a virtual environment. Usage: make env
-	pip install virtualenv
+	pipx install virtualenv
 	virtualenv .venv
 
 install: ## Installs the python requirements. Usage: make install
-	pip install uv
-	uv pip install -r requirements.txt --no-cache-dir
-	uv pip install -r requirements_dev.txt --no-cache-dir
+	pipx install uv
+	uv pipx install -r requirements.txt --no-cache-dir
+	uv pipx install -r requirements_dev.txt --no-cache-dir
 	apt install black pylint
 
 run: ## Run the application. Usage: make run
@@ -86,26 +86,22 @@ pylint: ## Run pylint. Usage: make pylint
 pylint-report: ## Report pylint issues. Usage: make pylint-report
 	./scripts/parse_pylint_report.sh
 
-build-test: ## Build the test container image. Usage: make build
+build-dev: ## Build the test container image. Usage: make build
 	docker compose -f docker-compose.test.yaml build
 
-ps-test: ## List all running test containers. Usage: make ps
+ps-dev: ## List all running test containers. Usage: make ps
 	docker compose -f docker-compose.test.yaml ps -a
 
-up-test: ## Start the test application. Usage: make up
-	docker compose -f docker-compose.test.yaml up -d
+up-dev: ## Start the test application. Usage: make up
+	docker compose --env-file .env.dev -f docker-compose.test.yaml up -d
 
-populate-test: ## Populate the test database. Usage: make populate-test
-	docker cp data/sample_data.sql db:/var/lib/postgresql/data/sample_data.sql
-	docker exec -it db psql -U postgres -d postgres -f /home/sample_data.sql
-
-down-test: ## Stop the application. Usage: make down
-	docker compose -f docker-compose.test.yaml down
+down-dev: ## Stop the application. Usage: make down
+	docker compose -f docker-compose.dev.yaml down
 
 logs-test: ## Logs the container. Usage: make logs
-	docker compose -f docker-compose.test.yaml logs -f
+	docker compose -f docker-compose.dev.yaml logs -f
 
-restart-test: down-test build-test up-test ## Restart the test application. Usage: make restart
+restart-dev: down-test build-test up-test ## Restart the test application. Usage: make restart
 
 build: ## Build the container image. Usage: make build
 	docker compose build
