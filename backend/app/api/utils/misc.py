@@ -1,59 +1,72 @@
-import time
+from time import perf_counter
 import re
 from functools import wraps
 from inspect import iscoroutinefunction
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Union
 
 from backend.app.utils.misc import is_positive, is_non_negative
 from backend.app.api.constants import UNIT_MULTIPLIER, MAX_LIMIT
 
 
-def build_condition(column: str, value, condition_type="eq", array_condition=False):
+def build_condition(
+    column: str,
+    value: Union[str, int, float, list, None],
+    condition_type: str = "eq",
+    array_condition: bool = False
+) -> str:
     """
-    Helper function to build SQL conditions.
+    Builds a SQL condition snippet based on column, value and condition type.
+
+    Args:
+        column: Column name in SQL.
+        value: Value to compare. Can be string, number or list.
+        condition_type: Type of condition ("eq", "gt", "ge", "lt", "le", "contains").
+        array_condition: Whether to treat the value as an array (for Postgres array operations).
+
+    Returns:
+        A string with the SQL condition (e.g., "column='value'").
     """
-    if not value:
+
+    if value in [None, "", [], {}]:
         return "1=1"
 
-    if condition_type == "eq":
-        return f"{column}='{value}'"
-    elif condition_type == "gt":
-        return f"{column}>'{value}'"
-    elif condition_type == "ge":
-        return f"{column}>='{value}'"
-    elif condition_type == "lt":
-        return f"{column}<'{value}'"
-    elif condition_type == "le":
-        return f"{column}<='{value}'"
-    elif condition_type == "contains" and array_condition:
-        return f"{column} @> Array[{value}]"
-    
-    return "1=1"  # Default fallback, though rarely used with the above checks.
+    def quote(v: Any) -> str:
+        return f"'{v}'" if isinstance(v, str) else str(v)
+
+    condition_map = {
+        "eq": lambda: f"{column} = {quote(value)}",
+        "gt": lambda: f"{column} > {quote(value)}",
+        "ge": lambda: f"{column} >= {quote(value)}",
+        "lt": lambda: f"{column} < {quote(value)}",
+        "le": lambda: f"{column} <= {quote(value)}",
+        "contains": lambda: (
+            f"{column} @> ARRAY[{', '.join(map(quote, value))}]"
+            if array_condition and isinstance(value, (list, tuple))
+            else f"{column} LIKE '%{value}%'"
+        )
+    }
+
+    return condition_map.get(condition_type, lambda: "1=1")()
 
 
+def print_execution_time(label: str):
+    def wrapper(func):
+        @wraps(func)
+        async def async_inner(*args, **kwargs):
+            t0 = perf_counter()
+            result = await func(*args, **kwargs)
+            print(f"[{label}] took {perf_counter() - t0:.2f}s")
+            return result
 
-def print_execution_time(func):
-    @wraps(func)
-    def sync_wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(
-            f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
-        return result
+        @wraps(func)
+        def sync_inner(*args, **kwargs):
+            t0 = perf_counter()
+            result = func(*args, **kwargs)
+            print(f"[{label}] took {perf_counter() - t0:.2f}s")
+            return result
 
-    @wraps(func)
-    async def async_wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = await func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(
-            f"Execution time of {func.__name__}: {execution_time:.4f} seconds")
-        return result
-
-    return async_wrapper if iscoroutinefunction(func) else sync_wrapper
+        return async_inner if iscoroutinefunction(func) else sync_inner
+    return wrapper
 
 
 def zfill_factory(n: int):
@@ -82,8 +95,7 @@ def check_limit_and_offset(limit: int, offset: int) -> tuple[int, int]:
             f"Offset must be non-negative. Provided offset value: {offset}"
         )
     if not is_positive(limit):
-        raise ValueError(
-            f"Limit must be positive. Provided limit value: {limit}")
+        raise ValueError(f"Limit must be positive. Provided limit value: {limit}")
 
     return min(limit, MAX_LIMIT), offset
 
