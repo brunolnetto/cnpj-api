@@ -1,242 +1,270 @@
 import os
-from typing import List, Optional, Tuple, Dict
+import logging
+from typing import List, Optional, Tuple, Dict, Any, Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from sqlalchemy.engine import Result
 
 from backend.app.database.base import multi_database
 from backend.app.setup.config import settings
+
+# Configure logging instead of print
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 # -------------------------------------------------------------------------------------------------
 # UTILITY FUNCTIONS
 # -------------------------------------------------------------------------------------------------
 
+def quote_identifier(identifier: str) -> str:
+    """
+    Safely quote SQL identifiers (table names, column names) using double quotes.
+    Assumes standard SQL identifiers without double quotes inside.
+    """
+    if not identifier.isidentifier():
+        raise ValueError(f"Unsafe SQL identifier: {identifier}")
+    return f'"{identifier}"'
+
 def get_columns(session: Session, table_name: str) -> List[str]:
     """
-    Return list of column names in `table_name`, in ordinal_position order.
+    Return list of column names in `table_name` in ordinal_position order.
     """
     query = text("""
         SELECT column_name
         FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = :tbl
+        WHERE table_schema = 'public' AND table_name = :tbl
         ORDER BY ordinal_position
     """)
-    result = session.execute(query, {"tbl": table_name})
-    return [row[0] for row in result.fetchall()]
+    result: Result = session.execute(query, {"tbl": table_name})
+    columns = [row[0] for row in result.fetchall()]
+    return columns
 
 def get_create_database(db_name: str) -> str:
     """
-    Return a CREATE DATABASE statement (no IF NOT EXISTS for simplicity).
+    Return a CREATE DATABASE statement.
     """
+    # No quoting to keep simple, but consider validating db_name before
+    if not db_name.isidentifier():
+        raise ValueError(f"Invalid database name: {db_name}")
     return f"CREATE DATABASE {db_name};\n"
 
 def get_create_table_query(session: Session, table_name: str) -> str:
     """
-    Build a `CREATE TABLE IF NOT EXISTS ... (col TEXT, ...)` statement 
-    by inspecting column names. All types are TEXT for the dump.
+    Build CREATE TABLE IF NOT EXISTS ... (col TEXT, ...) statement by inspecting column names.
+    All types are TEXT for the dump.
     """
     columns = get_columns(session, table_name)
     if not columns:
         return ""
-    col_defs = ", ".join(f"{col} TEXT" for col in columns)
-    return f"CREATE TABLE IF NOT EXISTS {table_name} ({col_defs});\n"
+    quoted_cols = ", ".join(f"{quote_identifier(col)} TEXT" for col in columns)
+    quoted_tbl = quote_identifier(table_name)
+    return f"CREATE TABLE IF NOT EXISTS {quoted_tbl} ({quoted_cols});\n"
 
 def get_index_definitions(session: Session, table_name: str) -> List[str]:
     """
-    Query pg_indexes to retrieve the index DDL for all indexes on `table_name`.
-    Returns a list of strings, each being a `CREATE INDEX ...;` statement.
+    Query pg_indexes to retrieve index DDL for all indexes on `table_name`.
+    Returns a list of CREATE INDEX statements.
     """
-    idx_query = text("""
+    query = text("""
         SELECT indexdef
         FROM pg_indexes
-        WHERE schemaname = 'public'
-          AND tablename = :tbl
+        WHERE schemaname = 'public' AND tablename = :tbl
     """)
-    result = session.execute(idx_query, {"tbl": table_name})
+    result: Result = session.execute(query, {"tbl": table_name})
     return [row[0].strip() + ";\n" for row in result.fetchall()]
 
 def fetch_table_data(
-    session_maker,
+    session_maker: Callable[[], Session],
     table_name: str,
-    key_list: Optional[List[str]],
-) -> Tuple[str, List[str], List[Dict[str, Optional[str]]]]:
+    key_list: Optional[List[Any]] = None,
+    key_column: str = "cnpj_basico",
+    chunk_size: int = 5000,
+) -> Tuple[str, List[str], List[Dict[str, Any]]]:
     """
-    In a new Session, run a SELECT on `table_name` (filtered by key_list if provided),
-    and return: (table_name, column_names, list_of_row_dicts).
-    Each row_dict maps column_name -> Python value (or None).
+    Run SELECT on `table_name` (filtered by key_list if provided),
+    return: (table_name, column_names, list_of_row_dicts).
+
+    Fetches data in chunks to avoid memory spikes.
     """
+    columns: List[str]
+    rows: List[Dict[str, Any]] = []
+
     with session_maker() as session:
-        # 1. Get column names once
         columns = get_columns(session, table_name)
         if not columns:
-            # No columns => empty table? return empty result set
             return table_name, [], []
 
-        cols_joined = ", ".join(columns)
-        if key_list is None:
-            select_sql = text(f"SELECT {cols_joined} FROM {table_name};")
-            params = {}
-        else:
-            select_sql = text(f"""
-                SELECT {cols_joined}
-                FROM {table_name}
-                WHERE cnpj_basico = ANY(:keys)
+        quoted_cols = ", ".join(quote_identifier(col) for col in columns)
+        quoted_tbl = quote_identifier(table_name)
+
+        if key_list:
+            # Parameterize keys for safer queries (Postgres ANY() works with lists)
+            query = text(f"""
+                SELECT {quoted_cols}
+                FROM {quoted_tbl}
+                WHERE {quote_identifier(key_column)} = ANY(:keys)
             """)
             params = {"keys": key_list}
+        else:
+            query = text(f"SELECT {quoted_cols} FROM {quoted_tbl};")
+            params = {}
 
-        result = session.execute(select_sql, params).fetchall()
+        # Fetch in chunks to avoid big memory usage
+        result = session.execute(query, params)
+        for chunk in iter(lambda: result.fetchmany(chunk_size), []):
+            for row in chunk:
+                rows.append(dict(row._mapping))
 
-        # Convert each row (RowMapping) into a simple dict {col: value}
-        rows = []
-        for row in result:
-            row_map = dict(row._mapping)
-            rows.append(row_map)
+    return table_name, columns, rows
 
-        return table_name, columns, rows
-
-def escape_sql_value(val) -> str:
+def escape_sql_value(val: Any) -> str:
     """
-    Escape a single Python value into a SQL literal.
+    Escape Python value to SQL literal:
     - None -> NULL
-    - Otherwise, convert to string, escape single quotes by doubling them.
+    - str -> quoted with doubled single quotes
+    - int/float -> as is
+    - bool -> TRUE/FALSE
+    - other -> str coerced and quoted
     """
     if val is None:
         return "NULL"
-    s = str(val).replace("'", "''")
-    return f"'{s}'"
+    if isinstance(val, bool):
+        return "TRUE" if val else "FALSE"
+    if isinstance(val, (int, float)):
+        return str(val)
+    if isinstance(val, str):
+        escaped = val.replace("'", "''")
+        return f"'{escaped}'"
+    # fallback: convert to string and quote
+    escaped = str(val).replace("'", "''")
+    return f"'{escaped}'"
 
 # -------------------------------------------------------------------------------------------------
 # MAIN DUMP FUNCTION
 # -------------------------------------------------------------------------------------------------
 
 def create_sample_sql_dump(
-    session_maker,            # now we pass the factory, not an active session
+    session_maker: Callable[[], Session],
     sample_db_name: str,
     sample_size: int,
     output_sql_file: str,
     max_workers: int = 4,
-    batch_size: int = 500
+    batch_size: int = 500,
 ):
     """
-    1. Delete any existing dump file.
-    2. Write a CREATE DATABASE statement.
-    3. Using a root Session, sample `empresa` once to get N distinct cnpj_basico keys.
-    4. Fetch (columns, rows) for each relevant table in parallel threads:
-       - "empresa"       (filtered by those keys)
-       - "estabelecimento", "socios", "simples" (all filtered by the same keys)
-       - "cnae", "natju", "moti", "munic", "pais", "quals" (no filter: full table)
-    5. Once all data is in memory, write out:
-       a) CREATE TABLE IF NOT EXISTS ...
-       b) CREATE INDEX ... for that table
-       c) Bulk multi‐row INSERT statements in batches.
-    6. Print progress feedback at each major step.
+    Create a SQL dump sampling data from specific tables.
     """
 
-    # 0. Remove old file if it exists
+    # Remove old file safely
     if os.path.exists(output_sql_file):
         os.remove(output_sql_file)
 
-    # 1. Write CREATE DATABASE
-    with open(output_sql_file, "a") as f:
-        f.write(get_create_database(sample_db_name))
-    print(f"[1/5] Wrote CREATE DATABASE to '{output_sql_file}'")
-
-    # 2. Sample `empresa` using a short-lived Session
     with session_maker() as root_session:
-        print(f"[2/5] Sampling {sample_size} keys from 'empresa'…")
+        # Write CREATE DATABASE at start (using root_session to be consistent)
+        with open(output_sql_file, "w") as f:
+            f.write(get_create_database(sample_db_name))
+        logger.info(f"Wrote CREATE DATABASE statement to '{output_sql_file}'")
+
+        # Sample keys from empresa table with fixed seed for reproducibility
+        logger.info(f"Sampling {sample_size} keys from 'empresa'...")
         root_session.execute(text("SELECT setseed(0.123456);"))
-        empresa_sample_q = text("""
+        sample_keys_q = text("""
             SELECT cnpj_basico
             FROM empresa
             ORDER BY RANDOM()
             LIMIT :limit_count
         """)
-        empresa_keys = [
-            row[0]
-            for row in root_session.execute(empresa_sample_q, {"limit_count": sample_size})
-        ]
-        print(f"      → Retrieved {len(empresa_keys)} keys from 'empresa'")
+        empresa_keys = [row[0] for row in root_session.execute(sample_keys_q, {"limit_count": sample_size})]
+        logger.info(f"Retrieved {len(empresa_keys)} keys from 'empresa'")
 
-    # 3. Prepare the list of tables and their key filters
+    # Define tables and filters
     filtered_tables = ["empresa", "estabelecimento", "socios", "simples"]
-    lookup_tables   = ["cnae", "natju", "moti", "munic", "pais", "quals"]
+    lookup_tables = ["cnae", "natju", "moti", "munic", "pais", "quals"]
 
-    # Build a map: table_name -> (key_list or None)
-    table_filters: Dict[str, Optional[List[str]]] = {
-        tbl: list(empresa_keys) for tbl in filtered_tables
-    }
+    table_filters: Dict[str, Optional[List[Any]]] = {tbl: empresa_keys.copy() for tbl in filtered_tables}
     for tbl in lookup_tables:
         table_filters[tbl] = None
 
-    # 4. Fetch all tables’ data concurrently with ThreadPoolExecutor
-    print(f"[3/5] Fetching data for {len(table_filters)} tables in parallel…")
-    fetched_data: Dict[str, Tuple[List[str], List[Dict[str, Optional[str]]]]] = {}
-    futures = []
+    # Fetch data concurrently
+    logger.info(f"Fetching data concurrently for {len(table_filters)} tables...")
+    fetched_data: Dict[str, Tuple[List[str], List[Dict[str, Any]]]] = {}
+
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        for tbl, keys in table_filters.items():
-            fut = executor.submit(fetch_table_data, session_maker, tbl, keys)
-            futures.append(fut)
+        futures = {
+            executor.submit(fetch_table_data, session_maker, tbl, keys): tbl
+            for tbl, keys in table_filters.items()
+        }
 
-        for fut in as_completed(futures):
-            tbl_name, columns, rows = fut.result()
-            fetched_data[tbl_name] = (columns, rows)
-            print(f"      → Fetched {len(rows)} rows from '{tbl_name}' (cols: {len(columns)})")
-
-    # 5. Write DDL + indexes + bulk INSERTs in a deterministic order
-    print(f"[4/5] Writing DDL, indexes, and bulk INSERTs to '{output_sql_file}'…")
+        for future in as_completed(futures):
+            tbl_name = futures[future]
+            try:
+                tbl, cols, rows = future.result()
+                fetched_data[tbl] = (cols, rows)
+                logger.info(f"Fetched {len(rows)} rows from '{tbl}' (columns: {len(cols)})")
+            except Exception as e:
+                logger.error(f"Failed to fetch data for table '{tbl_name}': {e}")
+                fetched_data[tbl_name] = ([], [])
 
     def write_table_to_file(
-        tbl: str,
+        table: str,
         columns: List[str],
-        rows: List[Dict[str, Optional[str]]],
+        rows: List[Dict[str, Any]],
         file_path: str,
+        session: Session,
+        batch_size: int = 500,
     ):
         """
-        Append to file:
-        a) CREATE TABLE IF NOT EXISTS ...
-        b) CREATE INDEX ... ; (one per index)
-        c) Bulk multi‐row INSERT in batches of `batch_size`
+        Write DDL + indexes + bulk INSERT statements for a single table to file.
         """
+
         with open(file_path, "a") as f:
-            # a) CREATE TABLE
-            create_sql = get_create_table_query(root_session, tbl)
-            f.write(create_sql)
-
-            # b) CREATE INDEX statements
-            idx_ddls = get_index_definitions(root_session, tbl)
-            for ddl in idx_ddls:
-                f.write(ddl)
-
-            # c) Bulk INSERT rows
-            if not columns or not rows:
+            # CREATE TABLE
+            create_stmt = get_create_table_query(session, table)
+            if create_stmt:
+                f.write(create_stmt)
+            else:
+                logger.warning(f"No columns found for table {table}, skipping DDL and inserts.")
                 return
 
-            col_list = ", ".join(columns)
-            total = len(rows)
-            for start in range(0, total, batch_size):
-                chunk = rows[start : start + batch_size]
-                values_list = []
-                for row_map in chunk:
-                    escaped = [escape_sql_value(row_map[c]) for c in columns]
-                    values_list.append("(" + ", ".join(escaped) + ")")
-                joined_values = ",\n  ".join(values_list)
-                insert_stmt = (
-                    f"INSERT INTO {tbl} ({col_list})\n"
-                    f"VALUES\n  {joined_values};\n"
+            # Indexes
+            indexes = get_index_definitions(session, table)
+            for idx_stmt in indexes:
+                f.write(idx_stmt)
+
+            # Bulk insert in batches
+            if not columns or not rows:
+                logger.info(f"No data to insert for table {table}")
+                return
+
+            quoted_cols = ", ".join(quote_identifier(c) for c in columns)
+            total_rows = len(rows)
+
+            for start in range(0, total_rows, batch_size):
+                batch_rows = rows[start : start + batch_size]
+                values_sql = ",\n  ".join(
+                    "(" + ", ".join(escape_sql_value(row[col]) for col in columns) + ")"
+                    for row in batch_rows
                 )
+                insert_stmt = f"INSERT INTO {quote_identifier(table)} ({quoted_cols})\nVALUES\n  {values_sql};\n"
                 f.write(insert_stmt)
 
-    # Ensure the same order: filtered_tables first, then lookup_tables
+    # Write out data in deterministic order
     write_order = filtered_tables + lookup_tables
-    total_tables = len(write_order)
-    for idx, tbl in enumerate(write_order, start=1):
-        cols, rows = fetched_data[tbl]
-        print(f"      [4/{total_tables}] Writing '{tbl}' → {len(rows)} rows…")
-        write_table_to_file(tbl, cols, rows, output_sql_file)
 
-    print(f"[5/5] Dump complete. '{output_sql_file}' is ready to be loaded.")
+    logger.info(f"Writing DDL and data for {len(write_order)} tables...")
+    with session_maker() as session:
+        for idx, tbl in enumerate(write_order, start=1):
+            cols, rows = fetched_data.get(tbl, ([], []))
+            logger.info(f"[{idx}/{len(write_order)}] Writing table '{tbl}' with {len(rows)} rows...")
+            try:
+                write_table_to_file(tbl, cols, rows, output_sql_file, session, batch_size=batch_size)
+            except Exception as e:
+                logger.error(f"Error writing table '{tbl}': {e}")
+
+    logger.info(f"SQL dump creation complete: '{output_sql_file}'")
+
 
 # -------------------------------------------------------------------------------------------------
 # USAGE EXAMPLE (if run as a script)
@@ -246,8 +274,8 @@ if __name__ == "__main__":
     from_database = multi_database.databases[settings.POSTGRES_DBNAME_RFB]
     session_maker = from_database.session_maker  # the factory for creating new Session
 
-    sample_db_name = "dadosrfb_sample"
-    output_file   = "sample_data.sql"
+    sample_db_name = "dadosrfb_def"
+    output_file   = "data/sample_data.sql"
     sample_size   = 100
 
     create_sample_sql_dump(
