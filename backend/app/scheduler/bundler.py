@@ -2,18 +2,18 @@ import asyncio
 
 from backend.app.scheduler.base import TaskOrchestrator, TaskRegister
 from backend.app.api.repositories.tasks import get_task_repository
-from backend.app.scheduler.tasks.bundler import task_configs
 from backend.app.setup.logging import logger
 
 task_orchestrator = TaskOrchestrator()
 
 
-async def add_tasks():
+async def add_tasks(task_configs):
     """
     Create a task orchestrator and add tasks to it.
 
     This function checks for existing tasks in the database to avoid duplication.
-    It uses the task configurations defined in `task_configs`, which contains instances of TaskConfig.
+    It uses the task configurations defined in `task_configs`, which contains 
+    instances of TaskConfig.
 
     Raises:
         Exception: If there are issues during task registration.
@@ -40,7 +40,6 @@ async def add_tasks():
             # Register as a list if the method requires it
             task_register.register([task_config])
         except Exception as e:
-            logger.error(
-                f"Error registering task {task_config.task_name}: {e}")
+            logger.error(f"Error registering task {task_config.task_name}: {e}")
 
     await asyncio.sleep(1)

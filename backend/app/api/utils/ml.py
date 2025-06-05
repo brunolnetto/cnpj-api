@@ -27,8 +27,13 @@ def compute_token_score(
     distance = edit_distance(name.lower(), processed_municipality)
 
     # Compute word frequency score
-    word_score = sum(word_freq_municipality.get(word, 0)
-                     for word in nltk.word_tokenize(name.lower())) / 2
+    word_score = (
+        sum(
+            word_freq_municipality.get(word, 0)
+            for word in nltk.word_tokenize(name.lower())
+        )
+        / 2
+    )
 
     # Return combined score and token name
     return distance + word_score, name
@@ -62,7 +67,10 @@ def find_most_possible_tokens(
     with ThreadPoolExecutor() as executor:
         futures = [
             executor.submit(
-                compute_token_score, name, processed_municipality, word_freq_municipality
+                compute_token_score,
+                name,
+                processed_municipality,
+                word_freq_municipality,
             )
             for name in eligible_tokens
         ]
