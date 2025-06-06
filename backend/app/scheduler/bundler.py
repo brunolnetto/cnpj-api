@@ -6,7 +6,6 @@ from backend.app.setup.logging import logger
 
 task_orchestrator = TaskOrchestrator()
 
-
 async def add_tasks(task_configs):
     """
     Create a task orchestrator and add tasks to it.

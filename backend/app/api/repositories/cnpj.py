@@ -687,12 +687,12 @@ class CNPJRepository:
         telefone_2 = establishment_dict["telefone_2"]
 
         # Format the phone number
-        is_1_invalid = is_field_valid(ddd_1)
-        is_2_invalid = is_field_valid(ddd_2)
+        is_1_valid = is_field_valid(ddd_1)
+        is_2_valid = is_field_valid(ddd_2)
 
-        telefone_1 = "" if is_1_invalid else format_phone(ddd_1, telefone_1)
-        telefone_2 = "" if is_2_invalid else format_phone(ddd_2, telefone_2)
-        delimiter = " / " if telefone_1 and telefone_1 else ""
+        telefone_1 = format_phone(ddd_1, telefone_1) if is_1_valid else ""
+        telefone_2 = format_phone(ddd_2, telefone_2) if is_2_valid else ""
+        delimiter = " / " if telefone_1 and telefone_2 else ""
 
         establishment_dict["telefone"] = telefone_1 + delimiter + telefone_2
 
@@ -850,6 +850,7 @@ class CNPJRepository:
             + cnpj_ordem_series.apply(zfill_factory(4))
             + cnpj_dv_series.apply(zfill_factory(2))
         )
+
         establishment_dict = dataframe_to_nested_dict(establishment_df, "cnpj_")
 
         def item_map(item):
@@ -923,8 +924,10 @@ class CNPJRepository:
 
         est_is_empty = len(establishment_df) == 0
         format_map = self.__format_establishment
+        
+        establishment_list = [] if est_is_empty else list(map(format_map, establishment_list))
 
-        return [] if est_is_empty else list(map(format_map, establishment_list))
+        return establishment_list
 
     def get_cnpjs_partners(self, cnpj_list: CNPJList) -> List:
         """
@@ -1164,7 +1167,7 @@ class CNPJRepository:
                         )
                         if simei_dict["optante"]
                         else not_selected_dict
-                    ),
+                    ),  
                 }
                 if cnpj_base_ in simples_simei_dict
                 else empty_dict
@@ -1291,7 +1294,8 @@ class CNPJRepository:
             "cnpj_raw",
             "abertura",
             "tipo",
-            "nome",
+            "razao_social",
+            "natureza_juridica",
             "fantasia",
             "capital_social",
             "porte",
@@ -1305,6 +1309,7 @@ class CNPJRepository:
             "email",
             "telefone",
             "situacao",
+            "ente_federativo_responsavel"
             "data_situacao",
             "motivo_situacao",
             "situacao_especial",
@@ -1331,7 +1336,8 @@ class CNPJRepository:
         with ThreadPoolExecutor() as executor:
             # Create a future for each task
             future_to_task = {
-                executor.submit(task, cnpj_list): name for name, task in tasks.items()
+                executor.submit(task, cnpj_list): name 
+                for name, task in tasks.items()
             }
 
             # Collect the results as they complete
@@ -1384,37 +1390,6 @@ class CNPJRepository:
         Returns:
         dict: The dictionary with the CNPJ information.
         """
-        columns = [
-            "cnpj_raw",
-            "cnpj",
-            "abertura",
-            "situacao",
-            "data_situacao",
-            "motivo_situacao",
-            "situacao_especial",
-            "data_situacao_especial",
-            "tipo",
-            "nome",
-            "fantasia",
-            "porte",
-            "natureza_juridica",
-            "capital_social",
-            "atividade_principal",
-            "atividades_secundarias",
-            "logradouro",
-            "numero",
-            "complemento",
-            "municipio",
-            "bairro",
-            "uf",
-            "cep",
-            "email",
-            "telefone",
-            "efr",
-            "qsa",
-        ]
-        pd.DataFrame(columns=columns)
-
         cnpj_info = (self.get_cnpjs_info([cnpj]))[0]
 
         return cnpj_info if len(cnpj_info) != 0 else []

@@ -80,6 +80,7 @@ def format_phone(
     phone_num = str(int(float(phone_num)))
     phone_num = phone_num.zfill(8)
 
+
     formated_ddd = f"{ddd_ldelimiter}{ddd_num}{ddd_rdelimiter}"
     formatted_phone = f"{phone_num[:4]}{phone_delimiter}{phone_num[4:]}"
 

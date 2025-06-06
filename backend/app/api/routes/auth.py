@@ -26,7 +26,6 @@ async def generate_token(request: Request) -> TokenResponse:
     """
     try:
         payload = {"message": settings.SIGNATURE}
-        print(payload)
         access_token = create_token(payload)
         return TokenResponse(access_token=access_token)
     except Exception:

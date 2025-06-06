@@ -134,7 +134,6 @@ class Database(BaseDatabase):
         """Clean up and close the database connection and session maker."""
         masked_uri = self.mask_sensitive_data()
         try:
-            self.session_maker.close()
             self.engine.dispose()
             print(f"Database {masked_uri} connections closed.")
         except Exception as e:
