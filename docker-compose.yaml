@@ -29,5 +29,4 @@ services:
 
 networks:
   ConexxoHubNet:
-    external: true
 

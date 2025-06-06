@@ -4,8 +4,8 @@ from typing import Dict, Any, List, Optional
 import logging
 import asyncio
 
-
 from uuid import UUID
+from ipaddress import ip_address
 from ipwhois import IPWhois
 from sqlalchemy import delete
 from sqlalchemy.future import select
@@ -27,10 +27,7 @@ class RequestLogRepository(BaseRepository):
         self.session.refresh(db_log)
         return db_log
 
-    def update(self,
-               item_id: UUID,
-               data: Dict[str,
-                          Any]) -> Optional[RequestLog]:
+    def update(self, item_id: UUID, data: Dict[str, Any]) -> Optional[RequestLog]:
         # Not typically used for RequestLog, but implemented for completeness
         return None
 
@@ -46,8 +43,7 @@ class RequestLogRepository(BaseRepository):
         return True
 
     def get_all(self, limit: int = 100, offset: int = 0) -> List[RequestLog]:
-        result = self.session.execute(
-            select(RequestLog).offset(offset).limit(limit))
+        result = self.session.execute(select(RequestLog).offset(offset).limit(limit))
         return result.scalars().all()
 
     def delete_old_logs(self, time_delta: timedelta):
@@ -59,8 +55,7 @@ class RequestLogRepository(BaseRepository):
         self.session.commit()
 
     def delete_excess_logs(self, max_rows: int):
-        query = self.session.query(RequestLog).order_by(
-            RequestLog.relo_inserted_at)
+        query = self.session.query(RequestLog).order_by(RequestLog.relo_inserted_at)
         total_rows = query.count()
         if total_rows > max_rows:
             delete_query = query.delete(synchronize_session="fetch")
@@ -70,21 +65,19 @@ class RequestLogRepository(BaseRepository):
     def lookup_and_update_ip_info(self):
         # Get all logs with missing IP info
         logs_without_ip_info = (
-            self.session.query(RequestLog).filter(
-                RequestLog.relo_ip_info == {}).all())
+            self.session.query(RequestLog).filter(RequestLog.relo_ip_info == {}).all()
+        )
 
         for log in logs_without_ip_info:
             ip_address_ = log.relo_ip_address
             if ip_address_:
                 try:
-                    # Correct the IP address handling
-                    from ipaddress import ip_address
-
                     ip_obj = ip_address(ip_address_)
 
                     # Check if the IP is public
                     if not (
-                            ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved):
+                        ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved
+                    ):
                         # Perform IP lookup only for public IPs
                         obj = IPWhois(ip_address_)
                         results = obj.lookup_rdap(depth=1)
@@ -176,8 +169,7 @@ class AppStartLogRepository(BaseRepository):
         """
         Retrieves all AppStartLog entries with pagination support.
         """
-        result = self.session.execute(
-            select(AppStartLog).offset(offset).limit(limit))
+        result = self.session.execute(select(AppStartLog).offset(offset).limit(limit))
         return result.scalars().all()
 
     def delete_by_id(self, item_id: UUID) -> bool:
@@ -205,14 +197,12 @@ class AppStartLogRepository(BaseRepository):
         """
         Deletes excess AppStartLog entries, keeping only a specified number of rows.
         """
-        query = self.session.query(AppStartLog).order_by(
-            AppStartLog.stlo_start_time)
+        query = self.session.query(AppStartLog).order_by(AppStartLog.stlo_start_time)
         total_rows = query.count()
         if total_rows > max_rows:
             delete_query = query.delete(synchronize_session="fetch")
             self.session.execute(delete_query)
             self.session.commit()
-
 
 class DebuggingDatabaseHandler(logging.Handler):
     def __init__(self, db_session: Session):
@@ -220,41 +210,41 @@ class DebuggingDatabaseHandler(logging.Handler):
         self.session = db_session
         self.queue = asyncio.Queue()
         self.stop_event = asyncio.Event()
-        
+
         # Create a new event loop and set it as the current loop
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        
+
         # Start the processing task
         self.loop.create_task(self.process_queue())
 
     def emit(self, record):
-        # This is where you format the log record
-        log_entry = self.format(record)
-
-        # Create a new DebugLog entry and add it to the session
-        log_data = {
-            "created_at": datetime.fromtimestamp(record.created),
-            "level": record.levelname,
-            "message": log_entry,
-            "pathname": record.pathname,
-            "func_name": record.funcName,
-            "lineno": record.lineno,
-            "environment": settings.ENVIRONMENT,
-            "machine_name": settings.MACHINE_NAME,
-        }
-
-        # Add the log to the database and commit the session
-        self.queue.put_nowait(log_data)
+        try:
+            log_entry = self.format(record)
+            log_data = {
+                "created_at": datetime.fromtimestamp(record.created),
+                "level": record.levelname,
+                "message": log_entry,
+                "pathname": record.pathname,
+                "func_name": record.funcName,
+                "lineno": record.lineno,
+                "environment": settings.ENVIRONMENT,
+                "machine_name": settings.MACHINE_NAME,
+            }
+            self.queue.put_nowait(log_data)
+        except Exception:
+            self.handleError(record)
 
     async def process_queue(self):
         while not self.stop_event.is_set() or not self.queue.empty():
             log_data = await self.queue.get()
-            self.write_to_db(log_data)
+            try:
+                self.write_to_db(log_data)
+            except Exception:
+                pass  # optionally handle DB write error
             self.queue.task_done()
 
     def write_to_db(self, log_data):
-        # Create a new DebugLog entry and add it to the session
         debug_log = DebugLog(
             delo_created_at=log_data["created_at"],
             delo_level=log_data["level"],
@@ -263,22 +253,22 @@ class DebuggingDatabaseHandler(logging.Handler):
             delo_func_name=log_data["func_name"],
             delo_lineno=log_data["lineno"],
             delo_environment=log_data["environment"],
-            delo_machine=log_data["machine_name"],
+            delo_machine_name=log_data["machine_name"],
         )
-
-        # Add the log to the database and commit the session
         self.session.add(debug_log)
         self.session.commit()
 
-    async def close(self):
+    def close(self):
         self.stop_event.set()
-        await self.queue.join()  # Awaiting the queue join
-        await super().close()
+
+        async def _shutdown():
+            await self.queue.join()
+
+        self.loop.run_until_complete(_shutdown())
+        self.loop.call_soon_threadsafe(self.loop.stop)
+        super().close()
 
     async def delete_old_logs(self, time_delta: timedelta):
-        """
-        Deletes DebugLog entries older than a specified time delta.
-        """
         cutoff_date = datetime.now() - time_delta
         self.session.query(DebugLog).filter(
             DebugLog.delo_created_at < cutoff_date
@@ -286,9 +276,6 @@ class DebuggingDatabaseHandler(logging.Handler):
         await self.session.commit()
 
     async def delete_excess_logs(self, max_rows: int):
-        """
-        Deletes excess AppStartLog entries, keeping only a specified number of rows.
-        """
         query = self.session.query(DebugLog).order_by(DebugLog.delo_created_at)
         total_rows = query.count()
         if total_rows > max_rows:

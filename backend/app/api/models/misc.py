@@ -18,5 +18,4 @@ class LimitOffsetParams(BaseModel):
 class PaginatedLimitOffsetParams(LimitOffsetParams):
     """Extended limit-offset parameters with optional pagination toggle."""
 
-    enable_pagination: bool = Field(
-        True, description="Enable or disable pagination")
+    enable_pagination: bool = Field(True, description="Enable or disable pagination")
