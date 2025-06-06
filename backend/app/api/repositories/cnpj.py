@@ -547,10 +547,19 @@ class CNPJRepository:
 
     def __format_company(self, company_dict: Dict[str, Any]):
         company_dict["capital_social"] = format_decimal(company_dict["capital_social"])
+        
         company_dict["porte"] = self.company_size_dict[
             str(number_string_to_number(company_dict["porte_empresa"]))
         ]
         del company_dict["porte_empresa"]
+        
+        nome = humanize_string(company_dict["razao_social"])
+        company_dict["nome"] = nome
+        del company_dict["razao_social"]
+        
+        efr = company_dict["ente_federativo_responsavel"]
+        company_dict["efr"] = efr
+        del company_dict["ente_federativo_responsavel"]
 
         return company_dict
 
@@ -674,7 +683,7 @@ class CNPJRepository:
         del establishment_dict["data_situacao_cadastral"]
 
         registration_reason = establishment_dict["motivo_situacao_cadastral"]
-        establishment_dict["motivo_situacao"] = registration_reason
+        establishment_dict["motivo_situacao"] = registration_reason.get("text", "")
 
         del establishment_dict["motivo_situacao_cadastral"]
 
@@ -1294,7 +1303,7 @@ class CNPJRepository:
             "cnpj_raw",
             "abertura",
             "tipo",
-            "razao_social",
+            "nome",
             "natureza_juridica",
             "fantasia",
             "capital_social",
@@ -1308,8 +1317,8 @@ class CNPJRepository:
             "cep",
             "email",
             "telefone",
+            "efr",
             "situacao",
-            "ente_federativo_responsavel"
             "data_situacao",
             "motivo_situacao",
             "situacao_especial",
@@ -1375,10 +1384,14 @@ class CNPJRepository:
             for cnpj_key, cnpj_info in cnpj_info_dict.items()
         }
 
-        return [
-            {key_: cnpj_infos[key][key_] for key_ in columns if key_ in cnpj_infos[key]}
-            for key in cnpj_infos
+        cnpj_infos=[
+            {
+                key_: cnpj_infos[key][key_] 
+                for key_ in columns if key_ in cnpj_infos[key]
+            } for key in cnpj_infos
         ]
+
+        return cnpj_infos
 
     def get_cnpj_info(self, cnpj: CNPJ) -> JSON:
         """
