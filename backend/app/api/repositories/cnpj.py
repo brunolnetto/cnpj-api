@@ -937,12 +937,13 @@ class CNPJRepository:
                 lambda establishment_dict: {
                     **establishment_dict,
                     "motivo_situacao_cadastral": \
-                        self.registration_statuses_dict.get(establishment_dict["motivo_situacao_cadastral"] , ''),
+                        self.registration_statuses_dict.get(
+                            establishment_dict["motivo_situacao_cadastral"] , ''
+                        ),
                 }, 
                 establishment_list
             )
         )
-        print(establishment_list)
 
         est_is_empty = len(establishment_df) == 0
         format_map = self.__format_establishment
