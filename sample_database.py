@@ -246,16 +246,19 @@ def create_sample_sql_dump(
                     # Write INSERT statements in batches
                     for i in range(0, len(rows), batch_size):
                         batch_rows = rows[i : i + batch_size]
-                        # Build values string incrementally, streaming to file (avoid large concatenation)
-                        f.write(f"INSERT INTO {tbl_qualified} ({quoted_cols}) VALUES\n")
-                        for idx, row in enumerate(batch_rows):
+                        values_list = []
+                        for row in batch_rows:
                             escaped_values = [escape_sql_value(row.get(col)) for col in columns]
-                            values_str = f"({', '.join(escaped_values)})"
-                            if idx < len(batch_rows) - 1:
-                                values_str += ",\n"
-                            else:
-                                values_str += ";\n"
-                            f.write(values_str)
+                            values_list.append(f"({', '.join(escaped_values)})")
+
+                        quoted_table = f"{quote_identifier(session, schema)}.{quote_identifier(session, table)}"
+                        quoted_columns = ", ".join(quote_identifier(session, col) for col in columns)
+
+                        insert_stmt = f"INSERT INTO {quoted_table} ({quoted_columns}) VALUES\n"
+                        insert_stmt += ",\n".join(values_list) + ";\n"
+                        f.write(insert_stmt)
+                        f.flush()
+
 
                 task_write.advance(task)
 
@@ -285,7 +288,7 @@ if __name__ == "__main__":
     sample_db_name = environ.get("POSTGRES_DBNAME_RFB")
     print(f"Sample database name: {sample_db_name}")
     output_file = "data/sample_data.sql"
-    sample_size = 100
+    sample_size = 1000
 
     create_sample_sql_dump(
         session_maker=session_maker,
