@@ -710,7 +710,7 @@ class CNPJService:
         except Exception as e:
             logger.error(f"Error getting CNPJ establishments: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
-        print(est_info)
+
         if not est_info:
             return {
                 "message": f"There are no establishments associated with CNPJ base {cnpj_base}."

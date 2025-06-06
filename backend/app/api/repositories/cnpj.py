@@ -683,6 +683,7 @@ class CNPJRepository:
         del establishment_dict["data_situacao_cadastral"]
 
         registration_reason = establishment_dict["motivo_situacao_cadastral"]
+        print(establishment_dict)
         establishment_dict["motivo_situacao"] = registration_reason.get("text", "")
 
         del establishment_dict["motivo_situacao_cadastral"]
@@ -930,6 +931,18 @@ class CNPJRepository:
         establishment_df["cnpj_ordem"] = establishment_df["cnpj_ordem"].apply(str)
 
         establishment_list = establishment_df.to_dict(orient="records")
+
+        establishment_list=list(
+            map(
+                lambda establishment_dict: {
+                    **establishment_dict,
+                    "motivo_situacao_cadastral": \
+                        self.registration_statuses_dict.get(establishment_dict["motivo_situacao_cadastral"] , ''),
+                }, 
+                establishment_list
+            )
+        )
+        print(establishment_list)
 
         est_is_empty = len(establishment_df) == 0
         format_map = self.__format_establishment
