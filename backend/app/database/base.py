@@ -1,11 +1,11 @@
 from typing import Dict, Optional, ContextManager
 from contextlib import contextmanager
-from sqlalchemy.orm import Session
+
 
 from psycopg2 import OperationalError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text, inspect, create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from sqlalchemy.engine.url import make_url
 
 from backend.app.setup.config import settings
@@ -64,26 +64,34 @@ class Database(BaseDatabase):
 
     def mask_sensitive_data(self) -> str:
         """Masks sensitive data in the database URI."""
-        masked_uri = self.url.set(
-            password="******") if self.url.password else self.url
+        masked_uri = self.url.set(password="******") if self.url.password else self.url
         return str(masked_uri)
 
     def create_database(self):
         masked_uri = self.mask_sensitive_data()
         try:
-            with self.engine.begin() as conn:
-                query = text(
-                    "SELECT 1 FROM pg_database WHERE datname = :dbname")
+            # Conecta no banco 'postgres', que sempre existe
+            url_without_db = self.url.set(database="postgres")
+            engine = create_engine(url_without_db, isolation_level="AUTOCOMMIT")
+
+            with engine.begin() as conn:
+                query = text("SELECT 1 FROM pg_database WHERE datname = :dbname")
                 db_data = {"dbname": self.url.database}
                 result = conn.execute(query, db_data)
 
                 if not result.scalar():
-                    conn.execute(text(f"CREATE DATABASE {self.url.database}"))
+                    # Evita SQL injection: escapa o nome do banco
+                    safe_dbname = self.url.database.replace('"', '').replace("'", '')
+                    conn.execute(text(f'CREATE DATABASE "{safe_dbname}"'))
                     print(f"Database {masked_uri} created!")
                 else:
                     print(f"Database {masked_uri} already exists!")
+
+            engine.dispose()
+
         except OperationalError as e:
             print(f"Error creating database {masked_uri}: {e}")
+
 
     def test_connection(self):
         masked_uri = self.mask_sensitive_data()
@@ -126,14 +134,14 @@ class Database(BaseDatabase):
         """Clean up and close the database connection and session maker."""
         masked_uri = self.mask_sensitive_data()
         try:
-            self.session_maker.close_all()
             self.engine.dispose()
             print(f"Database {masked_uri} connections closed.")
         except Exception as e:
             print(f"Error closing database connections: {e}")
 
     def __str__(self) -> str:
-        return f"Database(uri={self.mask_sensitive_data()}, engine={self.engine})"
+        args=f"uri={self.mask_sensitive_data()}, engine={self.engine}"
+        return f"Database({args})"
 
     def __repr__(self) -> str:
         masked_uri = self.mask_sensitive_data()
@@ -197,8 +205,7 @@ class MultiDatabase(BaseDatabase):
 
 
 # Load environment variables from the .env file
-multi_database: Optional[MultiDatabase] = MultiDatabase(
-    settings.postgres_uris_dict)
+multi_database: Optional[MultiDatabase] = MultiDatabase(settings.postgres_uris_dict)
 
 
 def init_database():

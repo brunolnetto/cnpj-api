@@ -25,7 +25,8 @@ async def test_health_check():
             "name": settings.PROJECT_NAME,
             "version": settings.VERSION,
             "status": "OK",
-            "message": f"Visit {settings.API_V1_STR}/docs for more information.",
+            "message": f"Visit {
+                settings.API_V1_STR}/docs for more information.",
         }
 
 

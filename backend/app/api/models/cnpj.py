@@ -1,7 +1,6 @@
 from typing import Optional
-from datetime import date, datetime
+from datetime import date
 from pydantic import BaseModel, Field, model_validator, field_validator
-from fastapi import HTTPException
 
 from backend.app.api.utils.cnpj import is_cnpj_str_valid
 from .base import BatchModel
@@ -16,44 +15,47 @@ class CNPJQueryParams(LimitOffsetParams):
     """Query parameters for filtering CNPJ data."""
 
     zipcode: Optional[str] = Field(
-        None, description="8-digit ZIP code to filter the data")
-    city_name: Optional[str] = Field(
-        None, description="City name to filter the data")
+        None, description="8-digit ZIP code to filter the data"
+    )
+    city_name: Optional[str] = Field(None, description="City name to filter the data")
     state_abbrev: Optional[str] = Field(
         None, description="State abbreviation (e.g., 'SP' for São Paulo)"
     )
     activity_start_date: Optional[date] = Field(
-        None, description="The date when the activity started.")
+        None, description="The date when the activity started."
+    )
     only_headquarters: Optional[bool] = Field(
-        False, description="Flag to return only headquarters records")
-    cnae_code: Optional[str] = Field(
-        None, description="CNAE code to filter the data")
-    has_secondary_cnae: bool = Field(
-        True, description="Flag to return all records")
+        False, description="Flag to return only headquarters records"
+    )
+    cnae_code: Optional[str] = Field(None, description="CNAE code to filter the data")
+    has_secondary_cnae: bool = Field(True, description="Flag to return all records")
 
-
-    @field_validator('zipcode')
+    @field_validator("zipcode")
+    @classmethod
     def validate_zipcode(cls, value: str):
         """Validate that the ZIP code is numeric and 8 digits."""
         if value and not value.isdigit():
             raise ValueError("ZIP code must contain only digits.")
         return value
 
-    @field_validator('state_abbrev')
+    @field_validator("state_abbrev")
+    @classmethod
     def validate_state_abbrev(cls, value: str):
-        """Validate that the state abbreviation is valid (optional but must be 2 letters if provided)."""
+        """Validate that the state abbreviation is valid (optional but must be 
+        2 letters if provided)."""
         if value and len(value) != 2:
             raise ValueError("State abbreviation must be exactly 2 characters.")
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
+    @classmethod
     def clean_inputs(cls, values: dict):
         """Sanitize and validate inputs."""
-        values['city_name'] = cls._remove_quotes(values.get('city_name', ''))
-        values['cnae_code'] = cls._remove_quotes(values.get('cnae_code', ''))
-        values['state_abbrev'] = cls._remove_quotes(values.get('state_abbrev', ''))
-        values['zipcode'] = cls._remove_quotes(values.get('zipcode', ''))
+        values["city_name"] = cls._remove_quotes(values.get("city_name", ""))
+        values["cnae_code"] = cls._remove_quotes(values.get("cnae_code", ""))
+        values["state_abbrev"] = cls._remove_quotes(values.get("state_abbrev", ""))
+        values["zipcode"] = cls._remove_quotes(values.get("zipcode", ""))
 
-        if values.get('only_mei') and values.get('unable_mei'):
+        if values.get("only_mei") and values.get("unable_mei"):
             raise ValueError("Cannot filter for both MEI and non-MEI records.")
 
         return values
@@ -62,7 +64,7 @@ class CNPJQueryParams(LimitOffsetParams):
     def _remove_quotes(value: str) -> str:
         """Utility to remove quotes from string."""
         if value:
-            return value.replace('"', '').replace("'", '')
+            return value.replace('"', "").replace("'", "")
         return value
 
 
@@ -88,8 +90,7 @@ class CNPJ:
         try:
             self.ordem_int = int(ordem)
         except ValueError as exc:
-            raise ValueError(
-                "Digits 'ordem' contains non-numeric characters.") from exc
+            raise ValueError("Digits 'ordem' contains non-numeric characters.") from exc
 
         try:
             self.digitos_verificadores_int = int(digitos_verificadores)
@@ -98,20 +99,18 @@ class CNPJ:
                 "Digits 'digitos_verificadores' contains non-numeric characters."
             ) from exc
 
-        self.basico_str = self._validate_digits(basico, 8, 'basico')
-        self.ordem_str = self._validate_digits(ordem, 4, 'ordem')
+        self.basico_str = self._validate_digits(basico, 8, "basico")
+        self.ordem_str = self._validate_digits(ordem, 4, "ordem")
         self.digitos_verificadores_str = self._validate_digits(
-            digitos_verificadores, 2, 'digitos_verificadores')
+            digitos_verificadores, 2, "digitos_verificadores"
+        )
 
-    def _validate_digits(
-            self,
-            value: str,
-            length: int,
-            field_name: str) -> str:
+    def _validate_digits(self, value: str, length: int, field_name: str) -> str:
         """Validate if the string contains numeric characters and has the expected length."""
         if not value.isdigit():
             raise InvalidCNPJError(
-                f"Digits '{field_name}' contains non-numeric characters.")
+                f"Digits '{field_name}' contains non-numeric characters."
+            )
         return value.zfill(length)
 
     def is_valid_dict(self):

@@ -5,17 +5,16 @@ import re
 
 NumberList = List[Union[int, float]]
 
-
 def are(args: List[Any], validation_map: callable) -> bool:
     """
     Checks if a field is equal to any of the given values.
 
     Args:
-        field (str): The field to check.
-        *args (str): The values to compare with.
-
+        args (list): list for validation.
+        validation_map (callable): validation map for list.
+        
     Returns:
-        bool: Whether the field is equal to any of the values.
+        bool: Whether the field fulfills the map validation_map.
     """
     return all(map(validation_map, args))
 
@@ -62,15 +61,15 @@ def date_str():
     return datetime.now().strftime("%Y-%m-%d")
 
 
-def number_string_to_number(number_string: str) -> int:
+def number_string_to_number(number_string: str) -> float:
     """
     Converts a float string to an integer.
 
     Args:
-        float_string (str): The float string to convert.
+        number_string (str): The float string to convert.
 
     Returns:
-        int: The integer value.
+        float: The float value.
     """
     int_value = int(float(number_string))
     float_value = float(number_string)
@@ -154,8 +153,7 @@ def is_number(text: str) -> bool:
     return bool(re.match(pattern, text))
 
 
-def are_numbers(lst: List[Union[str, int, float]],
-                is_strict: bool = False) -> bool:
+def are_numbers(lst: List[Union[str, int, float]], is_strict: bool = False) -> bool:
     """
     Checks if all elements in a list are numbers.
 
@@ -240,29 +238,6 @@ def replace_invalid_fields_on_list_dict(lst: List[Dict]) -> List[Dict]:
     return operate_on_list_dict(lst, clean_field_map)
 
 
-# Define a function to format the date
-DELIMITER = "/"
-
-
-def format_database_date(date_str_: str, delimiter: str = DELIMITER) -> str:
-    """
-    Formats a date string to the database format.
-
-    Args:
-        date_str (str): The date string to format.
-        delimiter (str): The delimiter to use.
-
-    Returns:
-        str: The formatted date string.
-    """
-    date_str_ = str(date_str_)
-    if not is_field_valid(date_str) or not is_number(
-            date_str_) or len(date_str_) != 8:
-        return None
-
-    return f"{date_str_[6:]}{delimiter}{date_str_[4:6]}{delimiter}{date_str_[:4]}"
-
-
 def format_cep(cep_str: str):
     """
     Formats a CEP string.
@@ -298,7 +273,7 @@ def format_phone(
     Formats a phone number.
 
     Args:
-        ddd (str): The DDD part of the phone number.
+        ddd_num (str): The DDD part of the phone number.
         phone_num (str): The phone number.
         ddd_ldelimiter (tuple, optional): The left delimiter for the DDD. Defaults to '('.
         ddd_rdelimiter (tuple, optional): The right delimiter for the DDD. Defaults to ')'.
@@ -309,8 +284,7 @@ def format_phone(
     """
 
     def is_phone_valid(phone_):
-        return is_number(phone_) and is_field_valid(
-            phone_) and len(phone_) in (8, 9)
+        return is_number(phone_) and is_field_valid(phone_) and len(phone_) in (8, 9)
 
     def is_ddd_valid(ddd_):
         return is_number(ddd_) and is_field_valid(ddd_) and len(ddd_) in (1, 2)
@@ -383,7 +357,7 @@ def replace_spaces(text):
     This function replaces multiple consecutive spaces with a single space.
 
     Args:
-        text: The string to process.
+        text (str): The string to process.
 
     Returns:
         The string with multiple spaces replaced by a single space.

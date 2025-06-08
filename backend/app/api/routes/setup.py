@@ -1,13 +1,12 @@
 # Description: This file contains the setup routes for the FastAPI application.
 
-import toml
 import os
+import toml
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 
 from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.api.rate_limiter import limiter
-from backend.app.setup.config import settings
 
 router = APIRouter(tags=["Setup"], dependencies=[JWTDependency])
 
@@ -50,9 +49,6 @@ async def info(request: Request) -> InfoResponse:
             description=config["tool"]["poetry"]["description"],
         )
     except FileNotFoundError:
-        raise HTTPException(
-            status_code=404,
-            detail="Configuration file not found")
+        raise HTTPException(status_code=404, detail="Configuration file not found")
     except toml.TomlDecodeError:
-        raise HTTPException(status_code=500,
-                            detail="Error decoding configuration file")
+        raise HTTPException(status_code=500, detail="Error decoding configuration file")

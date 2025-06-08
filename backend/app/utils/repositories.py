@@ -2,7 +2,7 @@ from backend.app.utils.misc import is_number, is_field_valid
 
 
 # Define a function to format the date
-def format_database_date(date_str_: str, delimiter: str = "/") -> str:
+def format_database_date(date_str: str, delimiter: str = "/") -> str:
     """
     Formats a date string to the database format.
 
@@ -13,12 +13,11 @@ def format_database_date(date_str_: str, delimiter: str = "/") -> str:
     Returns:
         str: The formatted date string.
     """
-    date_str_ = str(date_str_)
-    if not is_field_valid(date_str_) or not is_number(
-            date_str_) or len(date_str_) != 8:
+    date_str = str(date_str)
+    if not is_field_valid(date_str) or not is_number(date_str) or len(date_str) != 8:
         return None
 
-    return f"{date_str_[6:]}{delimiter}{date_str_[4:6]}{delimiter}{date_str_[:4]}"
+    return f"{date_str[6:]}{delimiter}{date_str[4:6]}{delimiter}{date_str[:4]}"
 
 
 def format_cep(cep_str: str):
@@ -56,7 +55,7 @@ def format_phone(
     Formats a phone number.
 
     Args:
-        ddd (str): The DDD part of the phone number.
+        ddd_num (str): The DDD part of the phone number.
         phone_num (str): The phone number.
         ddd_ldelimiter (tuple, optional): The left delimiter for the DDD. Defaults to '('.
         ddd_rdelimiter (tuple, optional): The right delimiter for the DDD. Defaults to ')'.
@@ -67,8 +66,7 @@ def format_phone(
     """
 
     def is_phone_valid(phone_):
-        return is_number(phone_) and is_field_valid(
-            phone_) and len(phone_) in (8, 9)
+        return is_number(phone_) and is_field_valid(phone_) and len(phone_) in (8, 9)
 
     def is_ddd_valid(ddd_):
         return is_number(ddd_) and is_field_valid(ddd_) and len(ddd_) in (1, 2)
@@ -81,6 +79,7 @@ def format_phone(
     ddd_num = str(int(float(ddd_num)))
     phone_num = str(int(float(phone_num)))
     phone_num = phone_num.zfill(8)
+
 
     formated_ddd = f"{ddd_ldelimiter}{ddd_num}{ddd_rdelimiter}"
     formatted_phone = f"{phone_num[:4]}{phone_delimiter}{phone_num[4:]}"

@@ -27,6 +27,7 @@ async def cleanup_request_logs(time_delta: timedelta, max_rows: int = None):
         else:
             await request_log_repository.delete_old_logs(time_delta)
 
+
 def lookup_and_update_ip_info_task():
     """
     Cleans up requests logs based on either time or table row count.
@@ -40,6 +41,7 @@ def lookup_and_update_ip_info_task():
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as db_session:
         request_log_repository = RequestLogRepository(db_session)
         request_log_repository.lookup_and_update_ip_info()
+
 
 async def cleanup_task_logs(time_delta: timedelta, max_rows: int = None):
     """
@@ -58,6 +60,7 @@ async def cleanup_task_logs(time_delta: timedelta, max_rows: int = None):
         else:
             await task_log_repository.delete_old_logs(time_delta)
 
+
 async def cleanup_debug_logs(time_delta: timedelta, max_rows: int = None):
     """
     Cleans up tasks logs based on either time or table row count.
@@ -74,6 +77,7 @@ async def cleanup_debug_logs(time_delta: timedelta, max_rows: int = None):
             await debug_log_repository.delete_excess_logs(max_rows)
         else:
             await debug_log_repository.delete_old_logs(time_delta)
+
 
 # Schedule the task to run at regular intervals
 cleanup_request_config = TaskConfig(

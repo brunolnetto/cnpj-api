@@ -23,16 +23,18 @@ class JWTBearer(OAuth2PasswordBearer):
 
     async def __call__(self, request: Request):
         authorization = request.headers.get("Authorization", "")
+        
         try:
             scheme, token = authorization.split()
         except ValueError:
             raise MissingTokenException()
+
         if scheme.lower() != "bearer":
             raise MissingTokenException()
 
         try:
-            payload = jwt.decode(
-                token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+            
             # jwt.decode will raise ExpiredSignatureError if the token is
             # expired
         except ExpiredTokenException:
