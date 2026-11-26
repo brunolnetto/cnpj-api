@@ -21,8 +21,8 @@ class InfoResponse(BaseModel):
     description: str
 
 
-@limiter.limit("5/minute")
 @router.get("/health", response_model=HealthCheckResponse)
+@limiter.limit("5/minute")
 async def health_check(request: Request) -> HealthCheckResponse:
     """
     Health check endpoint to verify if the service is running.
@@ -30,8 +30,8 @@ async def health_check(request: Request) -> HealthCheckResponse:
     return HealthCheckResponse(status="OK")
 
 
-@limiter.limit("5/minute")
 @router.get("/info", response_model=InfoResponse)
+@limiter.limit("5/minute")
 async def info(request: Request) -> InfoResponse:
     """
     Endpoint to retrieve application information from the pyproject.toml file.

@@ -129,8 +129,8 @@ def setup_static_files(app_: FastAPI) -> None:
 def setup_favicon(app_: FastAPI) -> None:
     """Sets up the favicon endpoint for the FastAPI application."""
 
-    @rate_limit()
     @app_.get("/favicon.ico", include_in_schema=False)
+    @rate_limit()
     async def get_favicon(request: Request):
         return FileResponse("static/favicon.ico")
 
