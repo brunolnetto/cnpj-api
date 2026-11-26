@@ -99,11 +99,11 @@ class CNPJRepository:
             "offset": int(query_params.offset),
         }
 
-        filled_zipcode = str(int(query_params.zipcode)) if query_params.zipcode else ""
         zipcode_condition = "1=1"
-        if filled_zipcode:
+        if query_params.zipcode:
+            # Stored as 8-digit text, leading zeros included
             zipcode_condition = "cep = :zipcode"
-            params["zipcode"] = filled_zipcode
+            params["zipcode"] = str(query_params.zipcode).zfill(8)
 
         city_condition = "1=1"
         if query_params.city_name:

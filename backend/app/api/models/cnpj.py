@@ -33,10 +33,23 @@ class CNPJQueryParams(LimitOffsetParams):
     @field_validator("zipcode")
     @classmethod
     def validate_zipcode(cls, value: str):
-        """Validate that the ZIP code is numeric and 8 digits."""
-        if value and not value.isdigit():
+        """
+        Normalize the ZIP code to the 8 digits stored in the database.
+
+        Accepts "01001000" and "01001-000", and 7 digits when the leading zero
+        was lost (e.g. the CEP went through a numeric type).
+        """
+        if not value:
+            return value
+
+        digits = value.replace("-", "").replace(".", "").strip()
+
+        if not digits.isdigit():
             raise ValueError("ZIP code must contain only digits.")
-        return value
+        if len(digits) not in (7, 8):
+            raise ValueError("ZIP code must have 8 digits.")
+
+        return digits.zfill(8)
 
     @field_validator("state_abbrev")
     @classmethod

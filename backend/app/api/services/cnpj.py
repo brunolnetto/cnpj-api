@@ -750,13 +750,13 @@ class CNPJService:
                 raise ValueError(f"Invalid Legal nature code {legal_nature_code}.")
 
     def _validate_zipcode(self, zipcode: str) -> str:
-        """Validate the zipcode."""
-        if zipcode:
-            try:
-                return str(int(zipcode))
-            except ValueError:
-                raise ValueError(f"Invalid Zipcode {zipcode}.")
-        return ""
+        """
+        Keep the zipcode as the 8-digit string CNPJQueryParams produced.
+
+        Converting it to int would drop leading zeros ("01001000" -> "1001000")
+        and never match the stored value.
+        """
+        return zipcode or ""
 
     def validate_cnpj_query_params(self, query_params: CNPJQueryParams):
         # Validate inputs
