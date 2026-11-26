@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from json import loads
 
 import pandas as pd
-from sqlalchemy import text, Result
+from sqlalchemy import bindparam, text, Result
 from sqlalchemy.orm import Session
 
 from backend.app.utils.misc import string_to_json
@@ -33,7 +33,6 @@ from backend.app.api.utils.misc import (
     zfill_factory,
     normalize_json,
     commify_list,
-    comma_stringify_list,
 )
 from backend.app.api.utils.ml import find_most_possible_tokens
 from backend.app.utils.dataframe import dataframe_to_nested_dict
@@ -93,53 +92,52 @@ class CNPJRepository:
         One may set filters has_secondary_cnae for checking all CNAE codes, limit for page size and
         offset for page start point.
         """
-        # Filters
+        # Filters: user values only ever travel as bound parameters, the SQL
+        # fragments below are constants
+        params: Dict[str, Any] = {
+            "limit": int(query_params.limit),
+            "offset": int(query_params.offset),
+        }
+
         filled_zipcode = str(int(query_params.zipcode)) if query_params.zipcode else ""
-        zipcode_condition = f"cep='{filled_zipcode}'" if filled_zipcode else "1=1"
+        zipcode_condition = "1=1"
+        if filled_zipcode:
+            zipcode_condition = "cep = :zipcode"
+            params["zipcode"] = filled_zipcode
 
-        city_name = query_params.city_name
-        city_condition = (
-            f"municipio='{city_name.upper()}'" if query_params.city_name else "1=1"
-        )
+        city_condition = "1=1"
+        if query_params.city_name:
+            city_condition = "municipio = :city"
+            params["city"] = str(query_params.city_name).upper()
 
-        state_abbrev = query_params.state_abbrev
-        state_condition = (
-            f"uf='{state_abbrev.upper()}'" if query_params.state_abbrev else "1=1"
-        )
+        state_condition = "1=1"
+        if query_params.state_abbrev:
+            state_condition = "uf = :state"
+            params["state"] = query_params.state_abbrev.upper()
 
-        activity_start_date = query_params.activity_start_date
-        activity_start_date_condition = (
-            f"data_inicio_atividade>='{activity_start_date.strftime('%Y%m%d')}'"
-            if activity_start_date
+        activity_start_date_condition = "1=1"
+        if query_params.activity_start_date:
+            activity_start_date_condition = "data_inicio_atividade >= :start_date"
+            params["start_date"] = query_params.activity_start_date.strftime("%Y%m%d")
+
+        only_headquarters_condition = (
+            "identificador_matriz_filial='1'"
+            if query_params.only_headquarters
             else "1=1"
         )
 
-        only_headquarters = query_params.only_headquarters
-        only_headquarters_condition = (
-            "identificador_matriz_filial='1'" if only_headquarters else "1=1"
-        )
-
+        cnae_condition = "1=1"
         if query_params.cnae_code:
-            cnae_condition = (
-                f"""
-                (
-                    (
-                        cnae_fiscal_principal = '{query_params.cnae_code}' or
-                        cnae_fiscal_secundaria @> Array[{query_params.cnae_code}]
-                    )
+            params["cnae_code"] = str(query_params.cnae_code)
+
+            if query_params.has_secondary_cnae:
+                cnae_condition = (
+                    "(cnae_fiscal_principal = :cnae_code or "
+                    "cnae_fiscal_secundaria @> Array[:cnae_code_int])"
                 )
-                """
-                if query_params.has_secondary_cnae
-                else f"""
-                (
-                    (
-                        cnae_fiscal_principal = '{query_params.cnae_code}'
-                    )
-                )
-                """
-            )
-        else:
-            cnae_condition = "1=1"
+                params["cnae_code_int"] = int(query_params.cnae_code)
+            else:
+                cnae_condition = "(cnae_fiscal_principal = :cnae_code)"
 
         query = text(
             f"""
@@ -200,15 +198,13 @@ class CNPJRepository:
 
                 select cnpj
                 from estabelecimento_matriz
-                limit
-                    {query_params.limit}
-                offset
-                    {query_params.offset}
+                limit :limit
+                offset :offset
             """
         )
 
         cnpjs_result: Result = replace_invalid_fields_on_list_tuple(
-            self.session.execute(query).fetchall()
+            self.session.execute(query, params).fetchall()
         )
 
         columns = ["cnpj"]
@@ -436,17 +432,19 @@ class CNPJRepository:
             return False, None
 
         query = text(
-            f"""
+            """
                 select
                     codigo, descricao
                 from
                     munic
                 where
-                    descricao ilike '{city_name}'
+                    descricao ilike :city_name
             """
         )
 
-        city_result: Result = self.session.execute(query).fetchall()
+        city_result: Result = self.session.execute(
+            query, {"city_name": city_name}
+        ).fetchall()
 
         columns = ["code", "text"]
         empty_df = pd.DataFrame(columns=columns)
@@ -573,7 +571,7 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the company.
         """
-        cnpj_basicos_str = comma_stringify_list([cnpj.basico_int for cnpj in cnpj_list])
+        cnpj_basicos = [str(cnpj.basico_int) for cnpj in cnpj_list]
 
         columns = [
             "cnpj_basico",
@@ -591,7 +589,7 @@ class CNPJRepository:
                 select
                     {columns_str}
                 from empresa emp
-                    where emp.cnpj_basico in ({cnpj_basicos_str})
+                    where emp.cnpj_basico in :cnpj_basicos
             )
             select
                 distinct on (cnpj_basico)
@@ -608,7 +606,9 @@ class CNPJRepository:
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            company_result: Result = session.execute(query).fetchall()
+            company_result: Result = session.execute(
+                query.bindparams(bindparam("cnpj_basicos", expanding=True)), {"cnpj_basicos": cnpj_basicos}
+            ).fetchall()
 
         company_result: Result = replace_invalid_fields_on_list_tuple(company_result)
         company_result: Result = replace_spaces_on_list_tuple(company_result)
@@ -807,13 +807,11 @@ class CNPJRepository:
         ]
         columns_str = commify_list(columns)
 
-        cnpjs_basicos_str = comma_stringify_list(
-            [cnpj.basico_int for cnpj in cnpj_list]
-        )
-        cnpjs_ordem_str = comma_stringify_list([cnpj.ordem_int for cnpj in cnpj_list])
-        cnpjs_dv_str = comma_stringify_list(
-            [cnpj.digitos_verificadores_int for cnpj in cnpj_list]
-        )
+        cnpj_params = {
+            "cnpj_basicos": [str(cnpj.basico_int) for cnpj in cnpj_list],
+            "cnpj_ordens": [str(cnpj.ordem_int) for cnpj in cnpj_list],
+            "cnpj_dvs": [str(cnpj.digitos_verificadores_int) for cnpj in cnpj_list],
+        }
 
         # Create the table if it does not exist
         query = text(
@@ -823,14 +821,21 @@ class CNPJRepository:
                 from
                     estabelecimento est
                 where
-                    est.cnpj_basico in ({cnpjs_basicos_str}) AND
-                    est.cnpj_ordem in ({cnpjs_ordem_str}) AND
-                    est.cnpj_dv in ({cnpjs_dv_str})
+                    est.cnpj_basico in :cnpj_basicos AND
+                    est.cnpj_ordem in :cnpj_ordens AND
+                    est.cnpj_dv in :cnpj_dvs
             """
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            establishment_result: Result = session.execute(query).fetchall()
+            establishment_result: Result = session.execute(
+                query.bindparams(
+                    bindparam("cnpj_basicos", expanding=True),
+                    bindparam("cnpj_ordens", expanding=True),
+                    bindparam("cnpj_dvs", expanding=True),
+                ),
+                cnpj_params,
+            ).fetchall()
 
         empty_df = pd.DataFrame(columns=columns)
         df_is_empty = len(establishment_result) == 0
@@ -906,13 +911,15 @@ class CNPJRepository:
             f"""
                 select distinct {establishment_colums_str}
                 from estabelecimento est
-                where est.cnpj_basico = '{cnpj.basico_int}'
+                where est.cnpj_basico = :cnpj_basico
                 order by 1, 2
             """
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            establishment_result = session.execute(query)
+            establishment_result = session.execute(
+                query, {"cnpj_basico": str(cnpj.basico_int)}
+            )
             establishment_result: Result = establishment_result.fetchall()
 
         establishment_result = replace_invalid_fields_on_list_tuple(
@@ -961,7 +968,7 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the partners.
         """
-        cnpj_basicos_str = comma_stringify_list([cnpj.basico_int for cnpj in cnpj_list])
+        cnpj_basicos = [str(cnpj.basico_int) for cnpj in cnpj_list]
 
         query = text(
             f"""
@@ -973,7 +980,7 @@ class CNPJRepository:
                     from
                         socios
                     where
-                        cnpj_basico IN ({cnpj_basicos_str})
+                        cnpj_basico IN :cnpj_basicos
                     group by
                         1, 2, 3
                 )
@@ -997,7 +1004,9 @@ class CNPJRepository:
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            partners_result = session.execute(query)
+            partners_result = session.execute(
+                query.bindparams(bindparam("cnpj_basicos", expanding=True)), {"cnpj_basicos": cnpj_basicos}
+            )
             partners_result: Result = partners_result.fetchall()
 
         partners_result: Result = replace_invalid_fields_on_list_tuple(partners_result)
@@ -1066,7 +1075,7 @@ class CNPJRepository:
         Returns:
         DataFrame: The DataFrame with the partners.
         """
-        cnpj_basicos_str = comma_stringify_list([cnpj.basico_int for cnpj in cnpj_list])
+        cnpj_basicos = [str(cnpj.basico_int) for cnpj in cnpj_list]
 
         query = text(
             f"""
@@ -1122,12 +1131,14 @@ class CNPJRepository:
             FROM
                 simples soc
                 where
-                    cnpj_basico IN ({cnpj_basicos_str})
+                    cnpj_basico IN :cnpj_basicos
             """
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            simples_simei_result: Result = session.execute(query)
+            simples_simei_result: Result = session.execute(
+                query.bindparams(bindparam("cnpj_basicos", expanding=True)), {"cnpj_basicos": cnpj_basicos}
+            )
 
         simples_simei_result: Result = simples_simei_result.fetchall()
         simples_simei_result = replace_invalid_fields_on_list_tuple(
@@ -1222,7 +1233,7 @@ class CNPJRepository:
                             )
                         )::integer AS codigo_cnae
                     FROM estabelecimento est
-                    where cnpj_basico::text = '{cnpj.basico_int}'
+                    where cnpj_basico::text = :cnpj_basico
                 ),
                 nosso_cnae as (
                     select
@@ -1247,7 +1258,7 @@ class CNPJRepository:
                     from estabelecimento est
                     inner join cnae
                         on est.cnae_fiscal_principal::text = cnae.codigo::text
-                    where cnpj_basico::text = '{cnpj.basico_int}'
+                    where cnpj_basico::text = :cnpj_basico
                 ),
                 atividades_secundarias as (
                     select
@@ -1275,7 +1286,9 @@ class CNPJRepository:
         )
 
         with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-            activities_result: Result = session.execute(query).fetchall()
+            activities_result: Result = session.execute(
+                query, {"cnpj_basico": str(cnpj.basico_int)}
+            ).fetchall()
 
         activities_result = replace_invalid_fields_on_list_tuple(activities_result)
         activities_result = replace_spaces_on_list_tuple(activities_result)
@@ -1441,20 +1454,26 @@ class CNPJRepository:
                     estabelecimento
                 where
                     (
-                        cnae_fiscal_principal = '{cnae_code}' or
-                        cnae_fiscal_secundaria like '%{cnae_code}%'
+                        cnae_fiscal_principal = :cnae_code or
+                        cnae_fiscal_secundaria like :cnae_pattern
                     ) and
                     situacao_cadastral = '2' -- ATIVA
                 order by
                     1, 2
-                limit
-                    {limit}
-                offset
-                    {offset}
+                limit :limit
+                offset :offset
             """
         )
 
-        result: Result = self.session.execute(query)
+        result: Result = self.session.execute(
+            query,
+            {
+                "cnae_code": str(cnae_code),
+                "cnae_pattern": f"%{cnae_code}%",
+                "limit": int(limit),
+                "offset": int(offset),
+            },
+        )
         cnpj_tuples = result.fetchall()
 
         cnpjs_str_list = [
@@ -1476,12 +1495,23 @@ class CNPJRepository:
         Returns:
         Dict: The dictionary with the CNPJs info.
         """
-        cnaes_str = comma_stringify_list(cnaes_list)
+        cnaes_list = [str(cnae) for cnae in cnaes_list]
+        cnae_params: Dict[str, Any] = {
+            "cnaes": cnaes_list,
+            "limit": int(query_params.limit),
+            "offset": int(query_params.offset),
+        }
 
-        main_cnae_str_condition = f"cnae_fiscal_principal in ({cnaes_str})"
-        side_cnae_str_condition = " or ".join(
-            [f"cnae_fiscal_secundaria like '%{cnae}%'" for cnae in cnaes_list]
-        )
+        # One generated placeholder per CNAE: the SQL text holds only names
+        side_cnae_conditions = []
+        for index, cnae in enumerate(cnaes_list):
+            cnae_params[f"cnae_pattern_{index}"] = f"%{cnae}%"
+            side_cnae_conditions.append(
+                f"cnae_fiscal_secundaria like :cnae_pattern_{index}"
+            )
+
+        main_cnae_str_condition = "cnae_fiscal_principal in :cnaes"
+        side_cnae_str_condition = " or ".join(side_cnae_conditions)
 
         query = text(
             f"""
@@ -1498,14 +1528,14 @@ class CNPJRepository:
                     situacao_cadastral::text = '2' -- ATIVA
                 order by
                     1, 2
-                limit
-                    {query_params.limit}
-                offset
-                    {query_params.offset}
+                limit :limit
+                offset :offset
             """
         )
 
-        result: Result = self.session.execute(query)
+        result: Result = self.session.execute(
+            query.bindparams(bindparam("cnaes", expanding=True)), cnae_params
+        )
         cnpj_tuples = result.fetchall()
 
         cnpjs_str_list = [
@@ -1530,7 +1560,7 @@ class CNPJRepository:
         Dict: The dictionary with the CNPJs info.
         """
 
-        states_str = comma_stringify_list(states_list)
+        states = [str(state) for state in states_list]
 
         query = text(
             f"""
@@ -1540,18 +1570,19 @@ class CNPJRepository:
                 from
                     estabelecimento
                 where
-                    uf in ({states_str}) and
+                    uf in :states and
                     situacao_cadastral::text = '2' -- ATIVA
                 order by
                     1, 2
-                limit
-                    {limit}
-                offset
-                    {offset}
+                limit :limit
+                offset :offset
             """
         )
 
-        result: Result = self.session.execute(query)
+        result: Result = self.session.execute(
+            query.bindparams(bindparam("states", expanding=True)),
+            {"states": states, "limit": int(limit), "offset": int(offset)},
+        )
         cnpj_tuples = result.fetchall()
 
         cnpjs_str_list = [
