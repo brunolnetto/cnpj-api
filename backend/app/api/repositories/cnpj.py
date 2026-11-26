@@ -1378,10 +1378,9 @@ class CNPJRepository:
             # Collect the results as they complete
             for future in as_completed(future_to_task):
                 task_name = future_to_task[future]
-                try:
-                    results[task_name] = future.result()
-                except Exception as e:
-                    results[task_name] = f"Error occurred: {e}"
+                # Let failures propagate: a partial result would be returned as
+                # if it were complete
+                results[task_name] = future.result()
 
         # Combine all the results into a single dictionary and return it
         establishment_dict: dict = results.get("establishment", {})

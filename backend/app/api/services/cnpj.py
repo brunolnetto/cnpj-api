@@ -56,7 +56,7 @@ class CNPJService:
         try:
             return self.repository.get_paginated_cnaes(query_params)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -82,7 +82,7 @@ class CNPJService:
                 raise ValueError(f"CNAE codes {not_numbers} are not numbers.")
 
             cnaes = self.repository.get_cnae_list(cnae_code_list)
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -107,7 +107,7 @@ class CNPJService:
 
             cnae_code_list = [cnae_code]
             cnaes = self.repository.get_cnae_list(cnae_code_list)
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -131,7 +131,7 @@ class CNPJService:
 
             return cnaes
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -161,7 +161,7 @@ class CNPJService:
             cnae_code_list = [cnae_code]
             cnpjs = self.repository.get_cnpjs_by_cnaes(cnae_code_list, query_params)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJs with CNAE: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -200,7 +200,7 @@ class CNPJService:
 
             establishments = self.repository.get_cnpjs_by_cnaes(cnae_list, query_params)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJs by CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -228,7 +228,7 @@ class CNPJService:
 
             return city_candidates
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting city candidates: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -255,7 +255,7 @@ class CNPJService:
                 states, limit=limit, offset=offset
             )
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJs in states: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -281,7 +281,7 @@ class CNPJService:
 
             city = self.repository.get_city(city_code)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting city: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -303,7 +303,7 @@ class CNPJService:
         try:
             return self.repository.get_paginated_cities(limit=limit, offset=offset)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting cities: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -321,7 +321,7 @@ class CNPJService:
                 raise ValueError(f"Cities codes {not_numbers} are not numbers.")
 
             cities_objs = self.repository.get_cities_list(cities_code_list)
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting cities list: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -377,7 +377,7 @@ class CNPJService:
                 [legal_nature_code]
             )
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting legal nature: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -400,7 +400,7 @@ class CNPJService:
         """
         try:
             return self.repository.get_paginated_legal_natures(query_params)
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting legal natures: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -428,7 +428,7 @@ class CNPJService:
             legal_natures_objs = self.repository.get_legal_natures_list(
                 legal_natures_code_list
             )
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting legal natures list: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -461,7 +461,7 @@ class CNPJService:
             registration_map = self.repository.get_registration_status_list
             registration_status = registration_map(registration_status_list)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting registration status: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -498,7 +498,7 @@ class CNPJService:
             registration_map = self.repository.get_registration_status_list
             registration_status = registration_map(registration_code_list)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting registration statuses list: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -523,7 +523,7 @@ class CNPJService:
         """
         try:
             return self.repository.get_paginated_registration_statuses(query_params)
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting registration statuses: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -546,7 +546,7 @@ class CNPJService:
             cnpj_obj = cnpj_str_to_obj(cnpj)
             activities = self.repository.get_cnpj_activities(cnpj_obj)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ activities: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -575,7 +575,7 @@ class CNPJService:
             cnpj_list = [cnpj_obj]
             cnpj_info = self.repository.get_cnpjs_partners(cnpj_list)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ partners: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -607,7 +607,7 @@ class CNPJService:
 
             cnpj_info = self.repository.get_cnpjs_simples_simei(cnpj_list)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ Simples and SIMEI: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -640,7 +640,7 @@ class CNPJService:
 
             company_info = self.repository.get_cnpjs_company(cnpj_list)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ company: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -671,7 +671,7 @@ class CNPJService:
 
             est_info = self.repository.get_cnpjs_establishment(cnpjs)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ establishment: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -707,7 +707,7 @@ class CNPJService:
 
             est_info = self.repository.get_cnpj_establishments(cnpj_obj)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ establishments: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -799,7 +799,7 @@ class CNPJService:
             cnpjs_raw_list = self.repository.get_cnpjs_raw(query_params)
             return self._process_cnpjs(cnpjs_raw_list)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -819,7 +819,7 @@ class CNPJService:
 
             return self.repository.get_cnpjs_partners(cnpj_objs)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ partners: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -839,7 +839,7 @@ class CNPJService:
 
             return self.repository.get_cnpjs_simples_simei(cnpj_objs)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ Simples and SIMEI: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -858,7 +858,7 @@ class CNPJService:
 
             return self.repository.get_cnpjs_company(cnpj_objs)
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ company: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -878,7 +878,7 @@ class CNPJService:
 
             return est_objs
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ establishment: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -903,7 +903,7 @@ class CNPJService:
             cnpj_objs = [cnpj_obj]
 
             cnpj_info = self.repository.get_cnpjs_info(cnpj_objs)
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ info: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -941,7 +941,7 @@ class CNPJService:
                 if not cnpj_validity_dict["is_valid"]
             }
 
-        except Exception as e:
+        except ValueError as e:
             logger.error(f"Error getting CNPJ info: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
