@@ -121,6 +121,11 @@ class Settings(BaseSettings):
     DEFAULT_BURST_RATE_LIMIT: str
     DEFAULT_RATE_LIMITS: List[str] = Field(default_factory=list)
 
+    # Where rate limit counters live. "memory://" counts per process, so with
+    # several replicas each one has its own quota; use a shared store such as
+    # "redis://host:6379" (requires the redis package) to enforce limits globally.
+    RATE_LIMIT_STORAGE_URI: str = "memory://"
+
     # Define cron parameters for task logs cleanup
     CLEANUP_CRON_KWARGS: Dict[str, str] = {
         "minute": "0",
