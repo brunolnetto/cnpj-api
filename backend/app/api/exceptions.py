@@ -6,8 +6,27 @@ from backend.app.setup.config import settings
 from backend.app.setup.logging import logger
 
 
+# Detail Starlette uses when no route matches the requested path
+ROUTE_NOT_FOUND_DETAIL = "Not Found"
+
+
 async def not_found_handler(request: Request, exc: HTTPException) -> JSONResponse:
-    """Handles 404 Not Found exceptions."""
+    """
+    Handles 404 Not Found exceptions.
+
+    A 404 raised by an endpoint keeps its own detail. Only unknown routes get
+    the generic message pointing to the API documentation.
+    """
+    detail = getattr(exc, "detail", None)
+    headers = getattr(exc, "headers", None)
+
+    if detail and detail != ROUTE_NOT_FOUND_DETAIL:
+        return JSONResponse(
+            content={"error_code": "RESOURCE_NOT_FOUND", "detail": detail},
+            status_code=status.HTTP_404_NOT_FOUND,
+            headers=headers,
+        )
+
     warning_msg = "The requested resource could not be found."
     endpoints = f"{settings.API_V1_STR}/docs or {settings.API_V1_STR}/redoc"
     suggestion_msg = f"Refer to the API documentation on endpoints {endpoints}."
@@ -19,6 +38,7 @@ async def not_found_handler(request: Request, exc: HTTPException) -> JSONRespons
             "suggestion": suggestion_msg,
         },
         status_code=status.HTTP_404_NOT_FOUND,
+        headers=headers,
     )
 
 
