@@ -27,7 +27,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
         with:
-          version: "0.13.5"
+          version: "0.13.10"
           enable-cache: true
 
       # Fails if pyproject.toml changed without updating uv.lock
