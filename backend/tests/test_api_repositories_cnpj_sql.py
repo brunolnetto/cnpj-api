@@ -111,3 +111,50 @@ def test_cnpjs_by_states_is_bound(repository, session):
     sql, params = _single_call(session)
     assert PAYLOAD not in sql
     assert params["states"] == ["SP", PAYLOAD]
+
+
+class RowsResult:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def fetchall(self):
+        return self.rows
+
+
+@pytest.fixture
+def activities_session(monkeypatch):
+    from contextlib import contextmanager
+
+    from backend.app.api.repositories import cnpj as cnpj_repository
+
+    rows = []
+
+    class Session:
+        def execute(self, query, params=None):
+            return RowsResult(rows)
+
+    @contextmanager
+    def fake_get_session(_db_name):
+        yield Session()
+
+    monkeypatch.setattr(cnpj_repository, "get_session", fake_get_session)
+    return rows
+
+
+def test_activities_without_secondary_activities(repository, activities_session):
+    from backend.app.api.models.cnpj import CNPJ
+
+    activities_session.append(
+        ("41286648", "{'code': 4930201, 'text': 'Transporte'}", None)
+    )
+
+    result = repository.get_cnpj_activities(CNPJ("41286648", "0001", "53"))
+
+    assert result["atividade_principal"] == {"code": 4930201, "text": "Transporte"}
+    assert result["atividades_secundarias"] == []
+
+
+def test_activities_of_unknown_cnpj_is_empty(repository, activities_session):
+    from backend.app.api.models.cnpj import CNPJ
+
+    assert repository.get_cnpj_activities(CNPJ("11222333", "0001", "81")) == {}
