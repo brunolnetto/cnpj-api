@@ -21,11 +21,8 @@ from backend.app.api.exceptions import (
     not_found_handler,
     general_exception_handler,
 )
-from backend.app.api.middlewares.logs import (
-    AsyncRequestLoggingMiddleware as ARLMiddleware,
-)
+from backend.app.api.middlewares.logs import RequestAuditMiddleware
 from backend.app.api.utils.misc import print_execution_time
-from backend.app.api.middlewares.misc import TimingMiddleware
 from backend.app.api.dependencies.logs import log_app_start
 from backend.app.api.dependencies.cnpj import initialize_CNPJRepository
 from backend.app.database.base import init_database, multi_database
@@ -115,9 +112,8 @@ def setup_cors(app_: FastAPI) -> None:
 
 def setup_middlewares(app_: FastAPI) -> None:
     """Adds middleware to the FastAPI application."""
-    app_.add_middleware(ARLMiddleware)
+    app_.add_middleware(RequestAuditMiddleware)
     app_.add_middleware(GZipMiddleware, minimum_size=1000)
-    app_.add_middleware(TimingMiddleware)
     app_.add_middleware(SlowAPIMiddleware)
 
 
