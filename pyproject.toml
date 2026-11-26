@@ -10,19 +10,14 @@ requires-python = ">=3.12,<3.13"
 # Exact pins: uv.lock also pins every transitive dependency, and Renovate
 # updates both together
 dependencies = [
-    "alembic==1.20.1",
     "APScheduler==4.0.0a6",
-    "asyncpg==0.30.0",
     "bs4==0.0.2",
     "fastapi==0.115.12",
-    "gunicorn==23.0.0",
     "ipwhois==1.3.0",
     "lxml==5.4.0",
     "nltk==3.10.4",
-    "numpy==2.2.4",
     "pandas==2.3.3",
     "psycopg2-binary==2.9.13",
-    "pyarrow==17.0.0",
     "pydantic-settings==2.8.1",
     "python-dotenv==1.0.1",
     "python-jose==3.4.0",
@@ -32,7 +27,6 @@ dependencies = [
     "starlette==0.46.1",
     "toml==0.10.2",
     "typing-extensions==4.14.0",
-    "urllib3==2.4.0",
     "uvicorn==0.34.3",
 ]
 
