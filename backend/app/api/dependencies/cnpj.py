@@ -1,3 +1,5 @@
+from typing import Iterator
+
 from fastapi import Depends
 
 from backend.app.database.base import get_session
@@ -8,18 +10,14 @@ from backend.app.setup.config import settings
 # Define a dependency to create a CNPJRepository instance
 
 
-def get_cnpj_repository() -> CNPJRepository:
+def get_cnpj_repository() -> Iterator[CNPJRepository]:
     """
-    Create a CNPJRepository instance.
+    Yield a CNPJRepository bound to a session that lives for the whole request.
 
-    Args:
-        db (Database): Database instance
-
-    Returns:
-        CNPJRepository: CNPJRepository instance
+    The session is rolled back on error and closed when the request finishes.
     """
     with get_session(settings.POSTGRES_DBNAME_RFB) as session:
-        return CNPJRepository(session)
+        yield CNPJRepository(session)
 
 
 def initialize_CNPJRepository():
