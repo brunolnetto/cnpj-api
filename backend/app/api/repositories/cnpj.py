@@ -683,7 +683,6 @@ class CNPJRepository:
         del establishment_dict["data_situacao_cadastral"]
 
         registration_reason = establishment_dict["motivo_situacao_cadastral"]
-        print(establishment_dict)
         establishment_dict["motivo_situacao"] = registration_reason.get("text", "")
 
         del establishment_dict["motivo_situacao_cadastral"]
@@ -949,7 +948,6 @@ class CNPJRepository:
                 establishment_list
             )
         )
-        print(establishment_list)
 
         est_is_empty = len(establishment_df) == 0
         format_map = self.__format_establishment
@@ -1324,6 +1322,11 @@ class CNPJRepository:
         Returns:
         dict: The dictionary with the CNPJ information.
         """
+        # A search without matches must not reach the queries below, which
+        # would render an invalid empty "IN ()" clause
+        if not cnpj_list:
+            return {}
+
         columns = [
             "cnpj",
             "cnpj_raw",

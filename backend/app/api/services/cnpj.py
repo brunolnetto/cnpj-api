@@ -86,10 +86,8 @@ class CNPJService:
             logger.error(f"Error getting CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-        if len(cnaes) == 0:
-            return {"message": f"CNAE codes {cnae_code_list} not found."}
-
-        return cnaes
+        # An empty result is an empty collection, not an error
+        return cnaes or []
 
     def get_cnae_description(self, cnae_code: CodeType):
         """
@@ -112,7 +110,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(cnaes) == 0:
-            return {"message": f"CNAE code {cnae_code} not found."}
+            raise HTTPException(
+                status_code=404, detail=f"CNAE code {cnae_code} not found."
+            )
 
         return cnaes[0]
 
@@ -165,12 +165,8 @@ class CNPJService:
             logger.error(f"Error getting CNPJs with CNAE: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-        if len(cnpjs) == 0:
-            return {
-                "message": f"There are no establishents with CNAE code {cnae_code}."
-            }
-
-        return cnpjs
+        # An empty result is an empty collection, not an error
+        return cnpjs or []
 
     def get_cnpjs_by_cnaes(
         self, cnae_batch: BatchModel, query_params: PaginatedLimitOffsetParams
@@ -186,7 +182,6 @@ class CNPJService:
         Returns:
         - A list of establishments as dictionaries.
         """
-        print(":)")
         try:
             cnae_list = list(set(cnae_batch.batch))
 
@@ -204,12 +199,8 @@ class CNPJService:
             logger.error(f"Error getting CNPJs by CNAEs: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-        if len(establishments) == 0:
-            return {
-                "message": f"There are no establishments with CNAE codes {cnae_list}."
-            }
-
-        return establishments
+        # An empty result is an empty collection, not an error
+        return establishments or []
 
     def get_city_candidates(self, city_names: BatchModel):
         """
@@ -259,10 +250,8 @@ class CNPJService:
             logger.error(f"Error getting CNPJs in states: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-        if len(cnpjs_info) == 0:
-            return {"message": f"There are no cnpjs in states {states}."}
-
-        return cnpjs_info
+        # An empty result is an empty collection, not an error
+        return cnpjs_info or []
 
     def get_city(self, city_code: CodeType):
         """
@@ -286,7 +275,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(city) == 0:
-            return {"message": f"City code {city_code} not found."}
+            raise HTTPException(
+                status_code=404, detail=f"City code {city_code} not found."
+            )
 
         return city
 
@@ -325,10 +316,8 @@ class CNPJService:
             logger.error(f"Error getting cities list: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-        if len(cities_objs) == 0:
-            return {"message": f"Cities codes {cities_code_list} not found."}
-
-        return cities_objs
+        # An empty result is an empty collection, not an error
+        return cities_objs or []
 
     def get_company_size_dict(self):
         """
@@ -382,7 +371,10 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(legal_nature_obj_list) != 1:
-            return {"message": f"Legal nature code {legal_nature_code} not found."}
+            raise HTTPException(
+                status_code=404,
+                detail=f"Legal nature code {legal_nature_code} not found.",
+            )
 
         return legal_nature_obj_list[0]
 
@@ -432,12 +424,8 @@ class CNPJService:
             logger.error(f"Error getting legal natures list: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-        if len(legal_natures_objs) == 0:
-            return {
-                "message": f"Legal nature codes {legal_natures_code_list} not found."
-            }
-
-        return legal_natures_objs
+        # An empty result is an empty collection, not an error
+        return legal_natures_objs or []
 
     def get_registration_status(self, registration_status_code: CodeType):
         """
@@ -466,9 +454,10 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if len(registration_status) == 0:
-            return {
-                "message": f"Registration status code {registration_status_code} not found."
-            }
+            raise HTTPException(
+                status_code=404,
+                detail=f"Registration status code {registration_status_code} not found.",
+            )
 
         return registration_status[0]
 
@@ -502,12 +491,8 @@ class CNPJService:
             logger.error(f"Error getting registration statuses list: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-        if len(registration_status) == 0:
-            return {
-                "message": f"Registration status codes {registration_code_list} not found."
-            }
-
-        return registration_status
+        # An empty result is an empty collection, not an error
+        return registration_status or []
 
     def get_registration_statuses(self, query_params: PaginatedLimitOffsetParams):
         """
@@ -551,7 +536,10 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not activities:
-            return {"message": f"There are no activities associated with CNPJ {cnpj}."}
+            raise HTTPException(
+                status_code=404,
+                detail=f"There are no activities associated with CNPJ {cnpj}.",
+            )
 
         return activities
 
@@ -582,7 +570,7 @@ class CNPJService:
         if not cnpj_info:
             error = f"There are no partners associated with CNPJ {cnpj}"
             explanation = "It is likely either a sole proprietorship or a legal entity."
-            return {"message": f"{error}. {explanation}"}
+            raise HTTPException(status_code=404, detail=f"{error}. {explanation}")
 
         return cnpj_info[cnpj_obj.to_raw()]
 
@@ -615,7 +603,7 @@ class CNPJService:
             error = (
                 f"There is no Simples and SIMEI information associated with CNPJ {cnpj}"
             )
-            return {"message": f"{error}"}
+            raise HTTPException(status_code=404, detail=f"{error}")
 
         return cnpj_info[cnpj_obj.to_raw()]
 
@@ -645,7 +633,10 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not company_info:
-            return {"message": f"There is no company associated with CNPJ {cnpj}."}
+            raise HTTPException(
+                status_code=404,
+                detail=f"There is no company associated with CNPJ {cnpj}.",
+            )
 
         return company_info[cnpj_obj.to_raw()]
 
@@ -681,7 +672,7 @@ class CNPJService:
             explanation = f"Try route {cnpj_route} to verify if the CNPJ exists."
             message = f"{base_msg}. {explanation}"
 
-            return {"message": message}
+            raise HTTPException(status_code=404, detail=message)
 
         return est_info[cnpj]
 
@@ -712,9 +703,10 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not est_info:
-            return {
-                "message": f"There are no establishments associated with CNPJ base {cnpj_base}."
-            }
+            raise HTTPException(
+                status_code=404,
+                detail=f"There are no establishments associated with CNPJ base {cnpj_base}.",
+            )
 
         return est_info
 
@@ -908,7 +900,9 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         if not cnpj_info:
-            return {"message": f"CNPJ {format_cnpj(cnpj)} not found."}
+            raise HTTPException(
+                status_code=404, detail=f"CNPJ {format_cnpj(cnpj)} not found."
+            )
 
         return cnpj_info[0]
 
