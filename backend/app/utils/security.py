@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
@@ -7,18 +8,14 @@ from backend.app.setup.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Set the expiration time for the JWT
-ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(days=7)
-
-
-def create_token(data: dict, expires_delta: timedelta = ACCESS_TOKEN_EXPIRE_MINUTES):
+def create_token(data: dict, expires_delta: Optional[timedelta] = None):
     """
     Create a JSON Web Token (JWT) with the provided data and expiration time.
 
     Args:
         data (dict): The data to be encoded in the JWT.
         expires_delta (timedelta | None, optional): The expiration time for the JWT.
-        Defaults to ACCESS_TOKEN_EXPIRE_MINUTES.
+        Defaults to settings.ACCESS_TOKEN_EXPIRE_MINUTES.
 
     Returns:
         str: The encoded JWT.
@@ -27,10 +24,12 @@ def create_token(data: dict, expires_delta: timedelta = ACCESS_TOKEN_EXPIRE_MINU
     to_encode = data.copy()
     current_time = datetime.now(timezone.utc)
 
-    # Set the expiration time
+    if expires_delta is None:
+        expires_delta = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+
     expire = current_time + expires_delta
 
-    time_data = {"exp": expire, "iat": datetime.now()}
+    time_data = {"exp": expire, "iat": current_time}
     to_encode.update(time_data)
 
     encoded_jwt = jwt.encode(
