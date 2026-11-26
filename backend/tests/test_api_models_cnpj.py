@@ -7,7 +7,7 @@ def test_valid_cnpj():
     """
     Tests if a valid CNPJ number is correctly identified.
     """
-    valid_cnpj = CNPJ(12345678, 9012, 30)
+    valid_cnpj = CNPJ("12345678", "9012", "30")
     validation_result = valid_cnpj.is_valid_dict()
     assert validation_result["is_valid"] is True
     assert validation_result["reason"] == ""
@@ -17,7 +17,7 @@ def test_cnpj_to_tuple():
     """
     Tests if a valid CNPJ number is correctly identified.
     """
-    valid_cnpj = CNPJ(12345678, 9012, 30)
+    valid_cnpj = CNPJ("12345678", "9012", "30")
     base, order, digits = valid_cnpj.to_tuple()
 
     assert base == "12345678"
@@ -29,7 +29,7 @@ def test_cnpj_to_raw():
     """
     Tests if a valid CNPJ number is correctly identified.
     """
-    valid_cnpj = CNPJ(12345678, 9012, 30)
+    valid_cnpj = CNPJ("12345678", "9012", "30")
     raw_cnpj = valid_cnpj.to_raw()
 
     assert raw_cnpj == "12345678901230"
