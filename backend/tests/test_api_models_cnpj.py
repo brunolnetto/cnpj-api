@@ -1,6 +1,6 @@
 import pytest
 
-from backend.app.api.models.cnpj import CNPJ
+from backend.app.api.models.cnpj import CNPJ, CNPJQueryParams
 
 
 def test_valid_cnpj():
@@ -104,3 +104,20 @@ def test_string_representation():
     valid_cnpj = CNPJ("14741321", "0001", "81")
     expected_string = "14.741.321/0001-81"
     assert str(valid_cnpj) == expected_string
+
+
+def test_query_params_keeps_state_abbrev():
+    params = CNPJQueryParams(state_abbrev="sp")
+
+    assert params.state_abbrev == "SP"
+
+
+def test_query_params_without_state_abbrev():
+    params = CNPJQueryParams()
+
+    assert not params.state_abbrev
+
+
+def test_query_params_rejects_invalid_state_abbrev():
+    with pytest.raises(ValueError, match="exactly 2 characters"):
+        CNPJQueryParams(state_abbrev="SPA")
