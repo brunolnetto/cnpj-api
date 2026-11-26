@@ -618,8 +618,9 @@ class CNPJRepository:
         company_df = empty_df if len(company_result) == 0 else company_df
         company_df["cnpj_basico"] = company_df["cnpj_basico"].apply(zfill_factory(8))
 
+        # Same type as the populated result: a dict keyed by CNPJ
         if len(company_df) == 0:
-            return []
+            return {}
 
         company_dict = dataframe_to_nested_dict(company_df, "cnpj_basico")
 
