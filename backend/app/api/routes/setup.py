@@ -5,10 +5,10 @@ import toml
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 
-from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.api.rate_limiter import limiter
 
-router = APIRouter(tags=["Setup"], dependencies=[JWTDependency])
+# Public on purpose: load balancers and uptime monitors call these without a token
+router = APIRouter(tags=["Setup"])
 
 
 class HealthCheckResponse(BaseModel):

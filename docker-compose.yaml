@@ -9,6 +9,13 @@ services:
     # ports: 
     #   - "8000:8000"
     image: josezago/cnpj-api
+    environment:
+      # Traefik reaches the API through the overlay network. uvicorn only reads
+      # the client IP from X-Forwarded-For when the request comes from these
+      # addresses; otherwise every client looks like Traefik and shares one
+      # rate limit quota. Narrow it to the network's subnet:
+      #   docker network inspect ConexxoHubNet --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}'
+      FORWARDED_ALLOW_IPS: "${FORWARDED_ALLOW_IPS:-10.0.0.0/8}"
     networks:
       - ConexxoHubNet
     deploy:

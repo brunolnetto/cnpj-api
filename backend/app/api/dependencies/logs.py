@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Iterator
 
 from fastapi import Depends
 
@@ -21,25 +22,26 @@ def get_debug_logs_handler():
     return DebuggingDatabaseHandler(db_session=session)
 
 
-def get_request_logs_repository():
+def get_request_logs_repository() -> Iterator[RequestLogRepository]:
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
-        return RequestLogRepository(session)
+        yield RequestLogRepository(session)
 
 
-def get_task_logs_repository():
+def get_task_logs_repository() -> Iterator[TaskLogRepository]:
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
-        return TaskLogRepository(session)
+        yield TaskLogRepository(session)
 
 
-def get_app_start_logs_repository():
+def get_app_start_logs_repository() -> Iterator[AppStartLogRepository]:
     with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
-        return AppStartLogRepository(session)
+        yield AppStartLogRepository(session)
 
 
 def log_app_start():
-    app_start_logs_repository: AppStartLogRepository = get_app_start_logs_repository()
     app_start_log = {"stlo_start_time": datetime.now()}
-    app_start_logs_repository.create(app_start_log)
+
+    with get_session(settings.POSTGRES_DBNAME_AUDIT) as session:
+        AppStartLogRepository(session).create(app_start_log)
 
 
 TaskLogsRepositoryDependency = Depends(get_task_logs_repository)
