@@ -24,6 +24,18 @@ from typing_extensions import Self, Annotated
 import toml
 
 DEFAULT_PASSWORD = "postgres"
+
+# JWT secrets that were committed to the repository and must never be used
+# outside local development
+INSECURE_JWT_SECRETS = frozenset(
+    {
+        "dev-only-insecure-secret-change-me",
+        "change-me-generate-with-openssl-rand-hex-32",
+        "aiuwefdhiaewfi23489213237lmasndlkad",
+        "Ssecret_shhh123",
+    }
+)
+
 POSTGRES_DSN_SCHEME = "postgresql"
 BASE_URI_TEMPLATE = "{dsn_scheme}://{user}:{password}@{host}:{port}/{database}"
 
@@ -205,6 +217,16 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
         self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
+
+        if self.JWT_SECRET_KEY in INSECURE_JWT_SECRETS:
+            message = (
+                "JWT_SECRET_KEY is a publicly known value from the repository. "
+                "Generate a new one with: openssl rand -hex 32"
+            )
+            if self.ENVIRONMENT == "development":
+                warn(message, stacklevel=1)
+            else:
+                raise ValueError(message)
 
         return self
 
