@@ -16,8 +16,8 @@ class TokenResponse(BaseModel):
 
 
 # Consider configuring the rate limiter if necessary
-@rate_limit()
 @router.get("/token", response_model=TokenResponse)
+@rate_limit()
 async def generate_token(request: Request) -> TokenResponse:
     """
     Generate a new access token.
