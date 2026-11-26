@@ -83,7 +83,6 @@ class Settings(BaseSettings):
 
     ENVIRONMENT: Literal["development", "production"] = "development"
     MACHINE_NAME: str = platform.node()
-    SIGNATURE: str = "Suas Vendas rocks!"
 
     DOMAIN: str = "localhost:8000"
 
