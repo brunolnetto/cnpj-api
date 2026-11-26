@@ -1,5 +1,5 @@
 alembic==1.20.1
-asyncpg==0.30.0
+asyncpg==0.32.0
 APScheduler==4.0.0a6
 bs4==0.0.2
 fastapi==0.115.12
