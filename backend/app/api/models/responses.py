@@ -112,7 +112,12 @@ class CNPJValidation(ResponseModel):
 class CNPJBatchResult(ResponseModel):
     success: List[CNPJRecord]
     fail: Dict[str, CNPJValidation] = Field(
-        ..., description="Invalid CNPJs of the batch and why"
+        ...,
+        description=(
+            "CNPJs of the batch that were not returned, and why: invalid "
+            '(is_valid=false) or not found in the database (is_valid=true, '
+            'reason "CNPJ not found.")'
+        ),
     )
 
 

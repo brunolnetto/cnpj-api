@@ -1410,6 +1410,9 @@ class CNPJRepository:
                 **simples_simei_dict.get(common_key.to_raw(), {}),
             }
             for common_key in cnpj_list
+            # A CNPJ exists only if its establishment does; the partners and
+            # Simples defaults alone would make a missing CNPJ look found
+            if common_key.to_raw() in establishment_dict
         }
 
         cnpj_infos = {

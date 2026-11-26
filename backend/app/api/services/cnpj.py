@@ -941,10 +941,21 @@ class CNPJService:
             logger.error(f"Error getting CNPJ info: {e}")
             raise HTTPException(status_code=400, detail=str(e)) from e
 
+        # The repository answers {} when it finds nothing: keep the list type
+        records = self.repository.get_cnpjs_info(valid_cnpj_objs) or []
+        found = {record["cnpj_raw"] for record in records}
+
+        # Well-formed CNPJs absent from the database also fail, keyed by the
+        # string the client sent, like the invalid ones
+        not_found = {
+            cnpj_str: {"is_valid": True, "reason": "CNPJ not found."}
+            for cnpj_str, cnpj_obj in zip(valid_cnpjs, valid_cnpj_objs)
+            if cnpj_obj.to_raw() not in found
+        }
+
         return {
-            # The repository answers {} when it finds nothing: keep the list type
-            "success": self.repository.get_cnpjs_info(valid_cnpj_objs) or [],
-            "fail": invalid_cnpjs,
+            "success": records,
+            "fail": {**invalid_cnpjs, **not_found},
         }
 
 

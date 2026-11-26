@@ -598,8 +598,9 @@ def get_cnpjs_info(
     cnpj_service: CNPJService = CNPJServiceDependency,
 ):
     """
-    Get the full records for a batch of CNPJs. Invalid CNPJs are reported
-    separately from the ones found.
+    Get the full records for a batch of CNPJs. `success` holds the records
+    found; `fail` lists, by the string sent, the invalid CNPJs and the valid
+    ones missing from the database (`"reason": "CNPJ not found."`).
     """
     return cnpj_service.get_cnpjs_info(cnpj_batch)
 
