@@ -9,6 +9,27 @@ from backend.app.api.repositories.logs import RequestLogRepository
 from backend.app.database.base import get_session
 from backend.app.setup.config import settings
 
+REDACTED = "[REDACTED]"
+
+# Headers that carry credentials and must never be persisted
+SENSITIVE_HEADERS = frozenset(
+    {
+        "authorization",
+        "proxy-authorization",
+        "cookie",
+        "set-cookie",
+        "x-api-key",
+    }
+)
+
+
+def redact_headers(headers) -> dict:
+    """Return a copy of the headers with credential-bearing values masked."""
+    return {
+        key: REDACTED if key.lower() in SENSITIVE_HEADERS else value
+        for key, value in headers.items()
+    }
+
 
 async def log_request(
     request_data: dict,
@@ -68,7 +89,7 @@ class AsyncRequestLoggingMiddleware(BaseHTTPMiddleware):
         request_data = {
             "method": request.method,
             "url": str(request.url),
-            "headers": dict(request.headers),
+            "headers": redact_headers(request.headers),
             "client_host": request.client.host,
             "user_agent": request.headers.get("user-agent", "Unknown"),
             "request_url": str(request.url),
