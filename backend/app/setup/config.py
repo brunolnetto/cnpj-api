@@ -88,9 +88,9 @@ class Settings(BaseSettings):
         env_file=".env", env_ignore_empty=True, extra="ignore"
     )
 
-    VERSION: str = config["tool"]["poetry"]["version"]
-    PROJECT_NAME: str = config["tool"]["poetry"]["name"]
-    DESCRIPTION: str = config["tool"]["poetry"]["description"]
+    VERSION: str = config["project"]["version"]
+    PROJECT_NAME: str = config["project"]["name"]
+    DESCRIPTION: str = config["project"]["description"]
     API_V1_STR: str = "/api"
 
     ENVIRONMENT: Literal["development", "production"] = "development"

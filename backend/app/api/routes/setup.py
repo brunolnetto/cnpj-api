@@ -44,9 +44,9 @@ async def info(request: Request) -> InfoResponse:
             config = toml.load(f)
 
         return InfoResponse(
-            name=config["tool"]["poetry"]["name"],
-            version=config["tool"]["poetry"]["version"],
-            description=config["tool"]["poetry"]["description"],
+            name=config["project"]["name"],
+            version=config["project"]["version"],
+            description=config["project"]["description"],
         )
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Configuration file not found")

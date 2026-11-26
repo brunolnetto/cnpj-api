@@ -36,39 +36,35 @@ sanitize: # Remove dangling images and volumes
 clean: clean-logs clean-test clean-cache sanitize ## Add a rule to remove unnecessary assets. Usage: make clean
 
 env: ## Creates a virtual environment. Usage: make env
-	pipx install virtualenv
-	virtualenv .venv
+	uv venv --python 3.12 .venv
 
-install: ## Installs the python requirements. Usage: make install
-	pipx install uv
-	uv pipx install -r requirements.txt --no-cache-dir
-	uv pipx install -r requirements_dev.txt --no-cache-dir
-	apt install black pylint
+install: ## Installs the locked dependencies, dev group included. Usage: make install
+	uv sync --frozen
 
 run: ## Run the application. Usage: make run
-	uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
+	uv run uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 
 search: ## Searchs for a token in the code. Usage: make search token=your_token
-	grep -rnw . --exclude-dir=venv --exclude-dir=.git --exclude=poetry.lock -e "$(token)"
+	grep -rnw . --exclude-dir=venv --exclude-dir=.git --exclude=uv.lock -e "$(token)"
 
 replace: ## Replaces a token in the code. Usage: make replace token=your_token
 	sed -i 's/$(token)/$(new_token)/g' $$(grep -rl "$(token)" . \
 		--exclude-dir=venv \
 		--exclude-dir=.git \
-		--exclude=poetry.lock)
+		--exclude=uv.lock)
 
 test: ## Test the application. Usage: make test
-	poetry run coverage run --rcfile=.coveragerc -m pytest
+	uv run pytest --cov=backend
 
 test-watch: ## Run tests on watchdog mode. Usage: make ptw-watch
-	ptw --quiet --spool 200 --clear --nobeep --config pytest.ini --ext=.py --onfail="echo Tests failed, fix the issues"
+	uv run ptw --quiet --spool 200 --clear --nobeep --config pytest.ini --ext=.py --onfail="echo Tests failed, fix the issues"
 
 test-report: test ## Generate coverage report. Usage: make report
-	coverage report --omit=$(OMIT_PATHS) --show-missing
+	uv run coverage report --omit=$(OMIT_PATHS) --show-missing
 
-minimal-requirements: ## Generates minimal requirements. Usage: make requirements
-	python3 scripts/clean_packages.py requirements.txt requirements.txt
-	
+lock: ## Update uv.lock after editing pyproject.toml. Usage: make lock
+	uv lock
+
 lint: ## Perform inplace lint fixes. Usage: make lint
 	@autopep8 --in-place --aggressive --aggressive $(shell git ls-files '*.py')
 	@ruff check --unsafe-fixes --fix .

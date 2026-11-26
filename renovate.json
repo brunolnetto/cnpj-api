@@ -2,5 +2,25 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "constraints": {
+    "python": "3.12"
+  },
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "Starlette must stay inside the range FastAPI supports",
+      "matchPackageNames": ["fastapi", "starlette"],
+      "groupName": "fastapi"
+    },
+    {
+      "description": "The Docker base image and requires-python move together",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["python"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    }
   ]
 }

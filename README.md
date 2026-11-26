@@ -2,12 +2,20 @@
 
 Esta aplicação depende da base de dados da receita federal de CNPJs. O autor desta API utiliza scrapper em repositório [1]. 
 
-Veja arquivo `Makefile` para aprender como: 
+## Desenvolvimento
 
-- Testar;
-- Gerar ambiente virtual;
-- Instalar dependencias;
-- Rodar aplicação localmente;
+Requer Python 3.12 e [uv](https://docs.astral.sh/uv/). As dependências ficam em `pyproject.toml`, e o `uv.lock` fixa todas as versões, inclusive as transitivas.
+
+```bash
+uv sync            # cria .venv e instala dependências (inclusive as de dev)
+cp .env.template .env
+uv run uvicorn backend.app.main:app --reload
+uv run pytest      # testes
+```
+
+Para adicionar ou atualizar uma dependência, use `uv add <pacote>==<versão>` (ou `uv add --dev ...`), ou edite o `pyproject.toml` e rode `uv lock`. Faça commit do `pyproject.toml` e do `uv.lock` juntos: o CI usa `uv sync --frozen` e falha se o lock estiver desatualizado.
+
+Veja o `Makefile` para outros atalhos (`make install`, `make run`, `make test`).
 
 Atualmente, esta aplicação acessa instância de banco de dados não dockerizada, como local ou hospedada na nuvem. 
 
