@@ -121,3 +121,22 @@ def test_query_params_without_state_abbrev():
 def test_query_params_rejects_invalid_state_abbrev():
     with pytest.raises(ValueError, match="exactly 2 characters"):
         CNPJQueryParams(state_abbrev="SPA")
+
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("09857010", "09857010"),
+        ("09857-010", "09857010"),
+        ("9857010", "09857010"),
+        ("14800507", "14800507"),
+    ],
+)
+def test_query_params_zipcode_keeps_leading_zero(raw, expected):
+    assert CNPJQueryParams(zipcode=raw).zipcode == expected
+
+
+@pytest.mark.parametrize("raw", ["098570", "12345", "098570100", "0985A010"])
+def test_query_params_rejects_invalid_zipcode(raw):
+    with pytest.raises(ValueError):
+        CNPJQueryParams(zipcode=raw)

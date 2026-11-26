@@ -111,3 +111,10 @@ def test_cnpjs_by_states_is_bound(repository, session):
     sql, params = _single_call(session)
     assert PAYLOAD not in sql
     assert params["states"] == ["SP", PAYLOAD]
+
+
+def test_zipcode_with_leading_zero_is_bound_unchanged(repository, session):
+    repository.get_cnpjs_raw(CNPJQueryParams(zipcode="09857010"))
+
+    _, params = _single_call(session)
+    assert params["zipcode"] == "09857010"
