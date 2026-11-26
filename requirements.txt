@@ -14,7 +14,7 @@ psycopg2-binary==2.9.10
 pyarrow==17.0.0
 pydantic-settings==2.8.1
 starlette==0.52.1
-slowapi==0.1.9
+slowapi==0.1.10
 SQLAlchemy==2.0.40
 typing-extensions==4.14.0
 python-dotenv==1.0.1
