@@ -30,7 +30,7 @@ def test_info_does_not_require_token(client, monkeypatch):
         "version": "0.1.0",
         "description": "A cool package",
     }
-    monkeypatch.setattr("toml.load", lambda _: {"tool": {"poetry": info_dict}})
+    monkeypatch.setattr("toml.load", lambda _: {"project": info_dict})
 
     response = client.get("/info")
 
