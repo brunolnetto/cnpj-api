@@ -1,6 +1,6 @@
 alembic==1.15.2
 asyncpg==0.30.0
-APScheduler==4.0.0a5
+APScheduler==4.0.0a6
 bs4==0.0.2
 fastapi==0.115.12
 gunicorn==23.0.0
