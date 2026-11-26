@@ -618,8 +618,9 @@ class CNPJRepository:
         company_df = empty_df if len(company_result) == 0 else company_df
         company_df["cnpj_basico"] = company_df["cnpj_basico"].apply(zfill_factory(8))
 
+        # Same type as the populated result: a dict keyed by CNPJ
         if len(company_df) == 0:
-            return []
+            return {}
 
         company_dict = dataframe_to_nested_dict(company_df, "cnpj_basico")
 
@@ -1270,14 +1271,16 @@ class CNPJRepository:
                     from nosso_cnae
                     group by cnpj_basico
                 )
+                -- Start from the main activity: an establishment without
+                -- secondary activities must still be returned
                 select
-                    a_s.cnpj_basico as cnpj_basico,
+                    a_p.cnpj_basico as cnpj_basico,
                     a_p.atividade_principal as atividade_principal,
                     a_s.atividades_secundarias as atividades_secundarias
                 from
-                    atividades_secundarias a_s
-                inner join
                     atividade_principal a_p
+                left join
+                    atividades_secundarias a_s
                 on
                     a_s.cnpj_basico::text = a_p.cnpj_basico::text
             """
@@ -1297,12 +1300,17 @@ class CNPJRepository:
 
         partners_df = empty_df if len(partners_df) == 0 else partners_df
 
+        if len(partners_df) == 0:
+            return {}
+
         partners_dict = partners_df.to_dict(orient="records")[0]
 
         main_activities_str = partners_dict["atividade_principal"]
         side_activities_str = partners_dict["atividades_secundarias"]
         main_activities = string_to_json(main_activities_str)
-        side_activities = string_to_json(side_activities_str)
+        side_activities = (
+            string_to_json(side_activities_str) if side_activities_str else []
+        )
 
         is_empty = len(side_activities) == 1 and side_activities[0] == {}
         side_activities = [] if is_empty else side_activities

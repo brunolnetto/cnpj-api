@@ -768,12 +768,14 @@ class CNPJService:
 
         return query_params
 
-    def _process_cnpjs(self, cnpjs_raw_list: list) -> dict:
-        """Convert raw CNPJs to objects and fetch additional info if available."""
+    def _process_cnpjs(self, cnpjs_raw_list: list) -> list:
+        """Convert raw CNPJs to objects and fetch their records."""
         cnpj_objs = list(map(cnpj_str_to_obj, cnpjs_raw_list))
-        if cnpj_objs:
-            return self.repository.get_cnpjs_info(cnpj_objs)
-        return {}
+        if not cnpj_objs:
+            return []
+
+        # The repository answers {} when it finds nothing: keep the list type
+        return self.repository.get_cnpjs_info(cnpj_objs) or []
 
     def get_cnpjs(self, query_params: CNPJQueryParams):
         """
@@ -940,7 +942,8 @@ class CNPJService:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         return {
-            "success": self.repository.get_cnpjs_info(valid_cnpj_objs),
+            # The repository answers {} when it finds nothing: keep the list type
+            "success": self.repository.get_cnpjs_info(valid_cnpj_objs) or [],
             "fail": invalid_cnpjs,
         }
 

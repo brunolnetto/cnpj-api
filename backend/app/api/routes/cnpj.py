@@ -1,4 +1,4 @@
-from typing import Union, Dict
+from typing import Dict, List, Union
 
 from fastapi import APIRouter, Request, Depends
 
@@ -8,6 +8,19 @@ from backend.app.api.dependencies.auth import JWTDependency
 from backend.app.api.models.base import BatchModel
 from backend.app.api.models.cnpj import CNPJBatch, CNPJQueryParams
 from backend.app.api.models.misc import LimitOffsetParams, PaginatedLimitOffsetParams
+from backend.app.api.models.responses import (
+    Activities,
+    CityCandidates,
+    CNPJBatchResult,
+    CNPJRecord,
+    CodeDescriptionMap,
+    CodeText,
+    CodeTextListing,
+    Company,
+    Establishment,
+    Partners,
+    SimplesSimei,
+)
 
 # Types
 CodeType = Union[str, int]
@@ -15,7 +28,11 @@ CodeType = Union[str, int]
 router = APIRouter(tags=["CNPJ"], dependencies=[JWTDependency])
 
 
-@router.get("/cnaes")
+@router.get(
+    "/cnaes",
+    response_model=CodeTextListing,
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnaes(
     request: Request,
@@ -34,7 +51,11 @@ def get_cnaes(
     )
 
 
-@router.post("/cnaes")
+@router.post(
+    "/cnaes",
+    response_model=List[CodeText],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnae_objects(
     request: Request,
@@ -48,7 +69,11 @@ def get_cnae_objects(
     return cnpj_service.get_cnae_objects(cnae_code_batch)
 
 
-@router.post("/cnaes/cnpjs")
+@router.post(
+    "/cnaes/cnpjs",
+    response_model=List[CNPJRecord],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnpjs_by_cnaes(
     request: Request,
@@ -63,8 +88,17 @@ def get_cnpjs_by_cnaes(
     return cnpj_service.get_cnpjs_by_cnaes(cnae_batch, query_params)
 
 
-@router.get("/cnaes/{cnae_code}")
-@router.get("/cnae/{cnae_code}", deprecated=True)
+@router.get(
+    "/cnaes/{cnae_code}",
+    response_model=CodeText,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/cnae/{cnae_code}",
+    response_model=CodeText,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_cnae_description(
     request: Request,
@@ -77,8 +111,17 @@ def get_cnae_description(
     return cnpj_service.get_cnae_description(cnae_code)
 
 
-@router.get("/cnaes/{cnae_code}/cnpjs")
-@router.get("/cnae/{cnae_code}/cnpjs", deprecated=True)
+@router.get(
+    "/cnaes/{cnae_code}/cnpjs",
+    response_model=List[CNPJRecord],
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/cnae/{cnae_code}/cnpjs",
+    response_model=List[CNPJRecord],
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_cnpjs_with_cnae(
     request: Request,
@@ -93,7 +136,11 @@ def get_cnpjs_with_cnae(
     return cnpj_service.get_cnpjs_with_cnae(cnae_code, query_params)
 
 
-@router.post("/states/cnpjs")
+@router.post(
+    "/states/cnpjs",
+    response_model=List[CNPJRecord],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnpjs_by_state(
     request: Request,
@@ -110,7 +157,11 @@ def get_cnpjs_by_state(
     )
 
 
-@router.get("/company/sizes")
+@router.get(
+    "/company/sizes",
+    response_model=CodeDescriptionMap,
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_company_sizes(
     request: Request,
@@ -122,8 +173,17 @@ def get_company_sizes(
     return cnpj_service.get_company_size_dict()
 
 
-@router.get("/company/situations")
-@router.get("/company/situation", deprecated=True)
+@router.get(
+    "/company/situations",
+    response_model=CodeDescriptionMap,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/company/situation",
+    response_model=CodeDescriptionMap,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_situations(
     request: Request,
@@ -135,7 +195,11 @@ def get_situations(
     return cnpj_service.get_company_situation_dict()
 
 
-@router.get("/establishment/types")
+@router.get(
+    "/establishment/types",
+    response_model=CodeDescriptionMap,
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_establishment_sizes(
     request: Request,
@@ -148,8 +212,17 @@ def get_establishment_sizes(
     return cnpj_service.get_establishment_type_dict()
 
 
-@router.get("/cities/{city_code}")
-@router.get("/city/{city_code}", deprecated=True)
+@router.get(
+    "/cities/{city_code}",
+    response_model=CodeText,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/city/{city_code}",
+    response_model=CodeText,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_city(
     request: Request,
@@ -162,7 +235,11 @@ def get_city(
     return cnpj_service.get_city(city_code)
 
 
-@router.get("/cities")
+@router.get(
+    "/cities",
+    response_model=List[CodeText],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cities(
     request: Request,
@@ -175,7 +252,11 @@ def get_cities(
     return cnpj_service.get_cities(query_params.limit, query_params.offset)
 
 
-@router.post("/cities")
+@router.post(
+    "/cities",
+    response_model=List[CodeText],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cities_list(
     request: Request,
@@ -188,7 +269,11 @@ def get_cities_list(
     return cnpj_service.get_cities_list(cities_code_batch)
 
 
-@router.post("/cities/infer")
+@router.post(
+    "/cities/infer",
+    response_model=CityCandidates,
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def infer_city(
     request: Request,
@@ -202,8 +287,17 @@ def infer_city(
     return cnpj_service.get_city_candidates(city_name_batch)
 
 
-@router.get("/legal-natures/{legal_nature_code}")
-@router.get("/legal-nature/{legal_nature_code}", deprecated=True)
+@router.get(
+    "/legal-natures/{legal_nature_code}",
+    response_model=CodeText,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/legal-nature/{legal_nature_code}",
+    response_model=CodeText,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_legal_nature(
     request: Request,
@@ -216,7 +310,11 @@ def get_legal_nature(
     return cnpj_service.get_legal_nature(legal_nature_code)
 
 
-@router.get("/legal-natures")
+@router.get(
+    "/legal-natures",
+    response_model=CodeTextListing,
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_legal_natures(
     request: Request,
@@ -229,7 +327,11 @@ def get_legal_natures(
     return cnpj_service.get_legal_natures(query_params)
 
 
-@router.post("/legal-natures")
+@router.post(
+    "/legal-natures",
+    response_model=List[CodeText],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_legal_natures_list(
     request: Request,
@@ -242,8 +344,17 @@ def get_legal_natures_list(
     return cnpj_service.get_legal_natures_list(legal_natures_code_batch)
 
 
-@router.get("/registration-statuses/{registration_status_code}")
-@router.get("/registration-status/{registration_status_code}", deprecated=True)
+@router.get(
+    "/registration-statuses/{registration_status_code}",
+    response_model=CodeText,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/registration-status/{registration_status_code}",
+    response_model=CodeText,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_registration_status(
     request: Request,
@@ -256,7 +367,11 @@ def get_registration_status(
     return cnpj_service.get_registration_status(registration_status_code)
 
 
-@router.get("/registration-statuses")
+@router.get(
+    "/registration-statuses",
+    response_model=CodeTextListing,
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_registration_statuses(
     request: Request,
@@ -269,7 +384,11 @@ def get_registration_statuses(
     return cnpj_service.get_registration_statuses(query_params)
 
 
-@router.post("/registration-statuses")
+@router.post(
+    "/registration-statuses",
+    response_model=List[CodeText],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_registration_statuses_list(
     request: Request,
@@ -283,8 +402,17 @@ def get_registration_statuses_list(
     return cnpj_service.get_registration_statuses_list(registration_code_batch)
 
 
-@router.get("/cnpjs/{cnpj}")
-@router.get("/cnpj/{cnpj}", deprecated=True)
+@router.get(
+    "/cnpjs/{cnpj}",
+    response_model=CNPJRecord,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/cnpj/{cnpj}",
+    response_model=CNPJRecord,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_cnpj_info(
     request: Request,
@@ -298,8 +426,17 @@ def get_cnpj_info(
     return cnpj_service.get_cnpj_info(cnpj)
 
 
-@router.get("/cnpjs/{cnpj}/activities")
-@router.get("/cnpj/{cnpj}/activities", deprecated=True)
+@router.get(
+    "/cnpjs/{cnpj}/activities",
+    response_model=Activities,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/cnpj/{cnpj}/activities",
+    response_model=Activities,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_cnpj_activities(
     request: Request,
@@ -313,8 +450,17 @@ def get_cnpj_activities(
     return cnpj_service.get_cnpj_activities(cnpj)
 
 
-@router.get("/cnpjs/{cnpj}/partners")
-@router.get("/cnpj/{cnpj}/partners", deprecated=True)
+@router.get(
+    "/cnpjs/{cnpj}/partners",
+    response_model=Partners,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/cnpj/{cnpj}/partners",
+    response_model=Partners,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_cnpj_partners(
     request: Request,
@@ -328,8 +474,17 @@ def get_cnpj_partners(
     return cnpj_service.get_cnpj_partners(cnpj)
 
 
-@router.get("/cnpjs/{cnpj}/simples-simei")
-@router.get("/cnpj/{cnpj}/simples-simei", deprecated=True)
+@router.get(
+    "/cnpjs/{cnpj}/simples-simei",
+    response_model=SimplesSimei,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/cnpj/{cnpj}/simples-simei",
+    response_model=SimplesSimei,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_cnpj_simples_simei(
     request: Request,
@@ -343,8 +498,17 @@ def get_cnpj_simples_simei(
     return cnpj_service.get_cnpj_simples_simei(cnpj)
 
 
-@router.get("/cnpjs/{cnpj}/company")
-@router.get("/cnpj/{cnpj}/company", deprecated=True)
+@router.get(
+    "/cnpjs/{cnpj}/company",
+    response_model=Company,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/cnpj/{cnpj}/company",
+    response_model=Company,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_cnpj_company(
     request: Request,
@@ -357,8 +521,17 @@ def get_cnpj_company(
     return cnpj_service.get_cnpj_company(cnpj)
 
 
-@router.get("/cnpjs/{cnpj}/establishment")
-@router.get("/cnpj/{cnpj}/establishment", deprecated=True)
+@router.get(
+    "/cnpjs/{cnpj}/establishment",
+    response_model=Establishment,
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/cnpj/{cnpj}/establishment",
+    response_model=Establishment,
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_cnpj_establishment(
     request: Request,
@@ -371,8 +544,17 @@ def get_cnpj_establishment(
     return cnpj_service.get_cnpj_establishment(cnpj)
 
 
-@router.get("/cnpjs/{cnpj}/establishments")
-@router.get("/cnpj/{cnpj}/establishments", deprecated=True)
+@router.get(
+    "/cnpjs/{cnpj}/establishments",
+    response_model=List[Establishment],
+    response_model_exclude_unset=True,
+)
+@router.get(
+    "/cnpj/{cnpj}/establishments",
+    response_model=List[Establishment],
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
 @rate_limit()
 def get_cnpj_establishments(
     request: Request,
@@ -386,7 +568,11 @@ def get_cnpj_establishments(
     return cnpj_service.get_cnpj_establishments(cnpj)
 
 
-@router.get("/cnpjs")
+@router.get(
+    "/cnpjs",
+    response_model=List[CNPJRecord],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnpjs(
     request: Request,
@@ -400,7 +586,11 @@ def get_cnpjs(
     return cnpj_service.get_cnpjs(query_params)
 
 
-@router.post("/cnpjs")
+@router.post(
+    "/cnpjs",
+    response_model=CNPJBatchResult,
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnpjs_info(
     request: Request,
@@ -414,7 +604,11 @@ def get_cnpjs_info(
     return cnpj_service.get_cnpjs_info(cnpj_batch)
 
 
-@router.post("/cnpjs/partners")
+@router.post(
+    "/cnpjs/partners",
+    response_model=Dict[str, Partners],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnpjs_partners(
     request: Request,
@@ -427,7 +621,11 @@ def get_cnpjs_partners(
     return cnpj_service.get_cnpjs_partners(cnpj_batch)
 
 
-@router.post("/cnpjs/company")
+@router.post(
+    "/cnpjs/company",
+    response_model=Dict[str, Company],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnpjs_company(
     request: Request,
@@ -440,7 +638,11 @@ def get_cnpjs_company(
     return cnpj_service.get_cnpjs_company(cnpj_batch)
 
 
-@router.post("/cnpjs/establishment")
+@router.post(
+    "/cnpjs/establishment",
+    response_model=Dict[str, Establishment],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnpjs_establishment(
     request: Request,
@@ -453,7 +655,11 @@ def get_cnpjs_establishment(
     return cnpj_service.get_cnpjs_establishment(cnpj_batch)
 
 
-@router.post("/cnpjs/simples-simei")
+@router.post(
+    "/cnpjs/simples-simei",
+    response_model=Dict[str, SimplesSimei],
+    response_model_exclude_unset=True,
+)
 @rate_limit()
 def get_cnpjs_simples_simei(
     request: Request,
