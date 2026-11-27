@@ -5,7 +5,7 @@ description = "API para consulta de CNPJ"
 authors = [{ name = "Bruno Peixoto", email = "brunolnetto@gmail.com" }]
 license = { text = "MIT" }
 readme = "README.md"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.15,<3.16"
 
 # Exact pins: uv.lock also pins every transitive dependency, and Renovate
 # updates both together
