@@ -40,7 +40,7 @@ dev = [
     "pytest-mock==3.14.0",
     "pytest-watch==4.2.0",
     "pytest==8.2.2",
-    "virtualenv==20.26.2",
+    "virtualenv==20.39.1",
 ]
 
 [tool.uv]
