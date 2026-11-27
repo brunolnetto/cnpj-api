@@ -202,7 +202,7 @@ dev = [
     { name = "pytest-cov", specifier = "==5.0.0" },
     { name = "pytest-mock", specifier = "==3.14.0" },
     { name = "pytest-watch", specifier = "==4.2.0" },
-    { name = "virtualenv", specifier = "==20.26.2" },
+    { name = "virtualenv", specifier = "==20.39.1" },
 ]
 
 [[package]]
@@ -946,16 +946,16 @@ wheels = [
 
 [[package]]
 name = "virtualenv"
-version = "20.26.2"
+version = "20.39.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "distlib" },
     { name = "filelock" },
     { name = "platformdirs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/44/5a/cabd5846cb550e2871d9532def625d0771f4e38f765c30dc0d101be33697/virtualenv-20.26.2.tar.gz", hash = "sha256:82bf0f4eebbb78d36ddaee0283d43fe5736b53880b8a8cdcd37390a07ac3741c", size = 7290363, upload-time = "2024-05-13T20:40:09.856Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/08/28/3b1b939f7d7d1b370c86919fcbc7e44549aa5bd94254b5ca8f8cb10d8aef/virtualenv-20.39.1.tar.gz", hash = "sha256:c551ea1072d7717a273dd9a4a0adad8f45571af134b0f63a12430e85f6ac1c08", size = 5870061, upload-time = "2026-02-25T19:26:41.253Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0a/02/085eee8570e807db9a1aa905e18c9123efec753ae9021b029115c6e0bb28/virtualenv-20.26.2-py3-none-any.whl", hash = "sha256:a624db5e94f01ad993d476b9ee5346fdf7b9de43ccaee0e0197012dc838a0e9b", size = 3917916, upload-time = "2024-05-13T20:40:04.994Z" },
+    { url = "https://files.pythonhosted.org/packages/f6/7f/89d7e8a397752826dbbb81127dfb8feab8286f4f1f91a820f646f04368fb/virtualenv-20.39.1-py3-none-any.whl", hash = "sha256:a00332e0b089ba64edefbf94ef34e6db33f45fe5184df0652cf0b754dcd36190", size = 5839941, upload-time = "2026-02-25T19:26:39.273Z" },
 ]
 
 [[package]]
